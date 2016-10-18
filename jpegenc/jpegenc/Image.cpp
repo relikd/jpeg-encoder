@@ -6,34 +6,50 @@
 //  Copyright © 2016 FHWS. All rights reserved.
 //
 
+#include <iostream>
 #include "Image.hpp"
 
-struct Pixel {
-    int r, g, b;
+Pixel Image::getPixel(size_t x, size_t y) {
+    if(x >= width) {
+        x = width-1;
+    }
+    if(y >= height) {
+        y = height-1;
+    }
     
-    Pixel(int r=0, int g=0, int b=0) : r(r), g(g), b(b) {}
+    return pixels[getIndex(x, y)];
 };
 
-struct Image {
-    size_t width, height;
-    Pixel* pixels;
-    
-    Image(size_t width, size_t height) : width(width), height(height) {
-        pixels = (Pixel*) malloc(sizeof(Pixel) * width * height);
+void Image::setPixel(size_t x, size_t y, Pixel pixel){
+    if (x >= width || y >= height) {
+        std::cout << "Cant set pixel out of range " << x << " " << y << std::endl;
+        return;
     }
     
-    ~Image() {
-        delete[] pixels;
+    pixels[getIndex(x, y)] = pixel;
+};
+
+void Image::setPixel(size_t index, Pixel pixel) {
+    if (index >= width * height) {
+        std::cout << "Cant set pixel out of range " << index << std::endl;
+        return;
     }
     
-    Pixel getPixel(size_t x, size_t y) {
-        if(x >= width) {
-            x = width-1;
-        }
-        if(y >= height) {
-            y = height-1;
+    pixels[index] = pixel;
+};
+
+size_t Image::getIndex(size_t x, size_t y) const {
+    return x + width * y;
+};
+
+void Image::print() const {
+    for(int i = 0; i < width * height; ++i){
+        if (i % width == 0) {
+            std::cout << std::endl;
         }
         
-        return pixels[x + width * y];
+        std::cout << pixels[i].r << " " << pixels[i].g << " " << pixels[i].b << "     ";
     }
-};
+}
+
+
