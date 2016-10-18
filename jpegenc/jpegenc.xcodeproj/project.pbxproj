@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		12C147C91DB656CF0043E18E /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12C147C71DB656CF0043E18E /* Image.cpp */; };
+		542102FD1DB6A83C004A1246 /* very_small.ppm in CopyFiles */ = {isa = PBXBuildFile; fileRef = 542102FA1DB6A7D9004A1246 /* very_small.ppm */; };
 		545A4D491DB6471500B5E365 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 545A4D481DB6471500B5E365 /* main.cpp */; };
 		95E82ED61DB663CD002ED335 /* PPMLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95E82ED41DB663CD002ED335 /* PPMLoader.cpp */; };
 /* End PBXBuildFile section */
@@ -15,18 +16,20 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		545A4D431DB6471500B5E365 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = /usr/share/man/man1/;
-			dstSubfolderSpec = 0;
+			buildActionMask = 12;
+			dstPath = data;
+			dstSubfolderSpec = 16;
 			files = (
+				542102FD1DB6A83C004A1246 /* very_small.ppm in CopyFiles */,
 			);
-			runOnlyForDeploymentPostprocessing = 1;
+			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		12C147C71DB656CF0043E18E /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
 		12C147C81DB656CF0043E18E /* Image.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Image.hpp; sourceTree = "<group>"; };
+		542102FA1DB6A7D9004A1246 /* very_small.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = very_small.ppm; sourceTree = "<group>"; };
 		545A4D451DB6471500B5E365 /* jpegenc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = jpegenc; sourceTree = BUILT_PRODUCTS_DIR; };
 		545A4D481DB6471500B5E365 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		95E82ED41DB663CD002ED335 /* PPMLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PPMLoader.cpp; sourceTree = "<group>"; };
@@ -44,6 +47,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		542102F91DB6A7D9004A1246 /* data */ = {
+			isa = PBXGroup;
+			children = (
+				542102FA1DB6A7D9004A1246 /* very_small.ppm */,
+			);
+			path = data;
+			sourceTree = "<group>";
+		};
 		545A4D3C1DB6471500B5E365 = {
 			isa = PBXGroup;
 			children = (
@@ -63,6 +74,7 @@
 		545A4D471DB6471500B5E365 /* jpegenc */ = {
 			isa = PBXGroup;
 			children = (
+				542102F91DB6A7D9004A1246 /* data */,
 				545A4D481DB6471500B5E365 /* main.cpp */,
 				12C147C71DB656CF0043E18E /* Image.cpp */,
 				12C147C81DB656CF0043E18E /* Image.hpp */,
