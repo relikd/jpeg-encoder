@@ -7,9 +7,8 @@
 //
 
 #include "PPMLoader.hpp"
-#include <iostream>
 
-Image* PPMLoader::load() {
+std::shared_ptr<Image> PPMLoader::load() {
     
     FILE* file = fopen(this->file, "r");
     
@@ -28,7 +27,7 @@ Image* PPMLoader::load() {
     fscanf(file, "%d %d\n", &width, &height);
     fscanf(file, "%d\n", &maxValue);
     
-    auto image = new Image(width, height);
+    auto image = std::make_shared<Image>(width, height);
     
     size_t index = 0;
     
