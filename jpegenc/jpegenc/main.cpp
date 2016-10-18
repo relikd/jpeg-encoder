@@ -16,7 +16,7 @@ int main(int argc, const char * argv[]) {
     
     PPMLoader loader("example.ppm");
     
-    auto* image = loader.load();
+    auto image = loader.load();
     
     image->print();
     return 0;

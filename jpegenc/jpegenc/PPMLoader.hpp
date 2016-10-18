@@ -9,7 +9,7 @@
 #ifndef PPMLoader_hpp
 #define PPMLoader_hpp
 
-#include <stdio.h>
+#include <iostream>
 #include "Image.hpp"
 
 
@@ -18,6 +18,6 @@ struct PPMLoader {
     
     PPMLoader(const char* file): file(file) {}
     
-    Image* load();
+    std::shared_ptr<Image> load();
 };
 #endif /* PPMLoader_hpp */
