@@ -55,3 +55,6 @@ xcuserdata/
 *.moved-aside
 *.xccheckout
 *.xcscmblueprint
+
+##CLion Projekt Information
+.idea/
