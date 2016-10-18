@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		12C147C91DB656CF0043E18E /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12C147C71DB656CF0043E18E /* Image.cpp */; };
 		542102FD1DB6A83C004A1246 /* very_small.ppm in CopyFiles */ = {isa = PBXBuildFile; fileRef = 542102FA1DB6A7D9004A1246 /* very_small.ppm */; };
+		542103001DB6C6C1004A1246 /* ParserYCbCr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 542102FE1DB6C6C1004A1246 /* ParserYCbCr.cpp */; };
 		545A4D491DB6471500B5E365 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 545A4D481DB6471500B5E365 /* main.cpp */; };
 		95E82ED61DB663CD002ED335 /* PPMLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 95E82ED41DB663CD002ED335 /* PPMLoader.cpp */; };
 /* End PBXBuildFile section */
@@ -30,8 +31,11 @@
 		12C147C71DB656CF0043E18E /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
 		12C147C81DB656CF0043E18E /* Image.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Image.hpp; sourceTree = "<group>"; };
 		542102FA1DB6A7D9004A1246 /* very_small.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = very_small.ppm; sourceTree = "<group>"; };
+		542102FE1DB6C6C1004A1246 /* ParserYCbCr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ParserYCbCr.cpp; sourceTree = "<group>"; };
+		542102FF1DB6C6C1004A1246 /* ParserYCbCr.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ParserYCbCr.hpp; sourceTree = "<group>"; };
 		545A4D451DB6471500B5E365 /* jpegenc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = jpegenc; sourceTree = BUILT_PRODUCTS_DIR; };
 		545A4D481DB6471500B5E365 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		54A027DD1DB6CFFB0053733A /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = CMakeLists.txt; path = ../CMakeLists.txt; sourceTree = "<group>"; };
 		95E82ED41DB663CD002ED335 /* PPMLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PPMLoader.cpp; sourceTree = "<group>"; };
 		95E82ED51DB663CD002ED335 /* PPMLoader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PPMLoader.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -58,6 +62,7 @@
 		545A4D3C1DB6471500B5E365 = {
 			isa = PBXGroup;
 			children = (
+				54A027DD1DB6CFFB0053733A /* CMakeLists.txt */,
 				545A4D471DB6471500B5E365 /* jpegenc */,
 				545A4D461DB6471500B5E365 /* Products */,
 			);
@@ -80,6 +85,8 @@
 				12C147C81DB656CF0043E18E /* Image.hpp */,
 				95E82ED41DB663CD002ED335 /* PPMLoader.cpp */,
 				95E82ED51DB663CD002ED335 /* PPMLoader.hpp */,
+				542102FE1DB6C6C1004A1246 /* ParserYCbCr.cpp */,
+				542102FF1DB6C6C1004A1246 /* ParserYCbCr.hpp */,
 			);
 			path = jpegenc;
 			sourceTree = "<group>";
@@ -141,6 +148,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				542103001DB6C6C1004A1246 /* ParserYCbCr.cpp in Sources */,
 				95E82ED61DB663CD002ED335 /* PPMLoader.cpp in Sources */,
 				545A4D491DB6471500B5E365 /* main.cpp in Sources */,
 				12C147C91DB656CF0043E18E /* Image.cpp in Sources */,

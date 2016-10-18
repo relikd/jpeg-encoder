@@ -7,6 +7,7 @@
 //
 
 #include "PPMLoader.hpp"
+#include "ParserYCbCr.hpp"
 
 std::shared_ptr<Image> PPMLoader::load() {
 	
@@ -44,5 +45,6 @@ std::shared_ptr<Image> PPMLoader::load() {
 		image->setPixel(index++, Pixel(r,g,b).set_highest_to_255_from(maxValue));
 	}
 	
+	return ParserYCbCr::parse(image);
 	return image;
 }
