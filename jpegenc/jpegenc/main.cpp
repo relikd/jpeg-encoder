@@ -13,11 +13,11 @@
 int main(int argc, const char * argv[]) {
 	// insert code here...
 	std::cout << "Hello, World!\n";
-    
-    PPMLoader loader("data/very_small.ppm");
-    
-    auto image = loader.load();
-    
-    image->print();
-    return 0;
+	
+	PPMLoader loader("data/very_small.ppm");
+	
+	auto image = loader.load();
+	
+	image->print();
+	return 0;
 }

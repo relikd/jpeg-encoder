@@ -14,10 +14,10 @@
 
 
 struct PPMLoader {
-    const char* file;
-    
-    PPMLoader(const char* file): file(file) {}
-    
-    std::shared_ptr<Image> load();
+	const char* file;
+	
+	PPMLoader(const char* file): file(file) {}
+	
+	std::shared_ptr<Image> load();
 };
 #endif /* PPMLoader_hpp */
