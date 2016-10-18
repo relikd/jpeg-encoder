@@ -7,5 +7,7 @@ set(SOURCE_FILES
         jpegenc/jpegenc/main.cpp
         jpegenc/jpegenc/Image.hpp
         jpegenc/jpegenc/Image.cpp
+        jpegenc/jpegenc/PPMLoader.hpp
+        jpegenc/jpegenc/PPMLoader.cpp
         )
 add_executable(jpeg-encoder ${SOURCE_FILES})
