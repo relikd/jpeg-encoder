@@ -16,10 +16,6 @@ struct Pixel {
 	size_t r, g, b;
 	
 	Pixel(size_t r=0, size_t g=0, size_t b=0) : r(r), g(g), b(b) {}
-	Pixel(size_t r, size_t g, size_t b, size_t max, size_t new_max)
-	: r(Pixel::new_upper_bound(r, max, new_max)),
-	  g(Pixel::new_upper_bound(g, max, new_max)),
-	  b(Pixel::new_upper_bound(b, max, new_max)) {}
 	
 	Pixel set_highest_to_255_from(size_t current) {
 		r = new_upper_bound(r, current, (size_t)255);
