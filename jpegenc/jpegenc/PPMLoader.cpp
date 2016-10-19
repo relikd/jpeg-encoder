@@ -6,6 +6,7 @@
 //  Copyright © 2016 FHWS. All rights reserved.
 //
 
+#include <memory>
 #include "PPMLoader.hpp"
 #include "ParserYCbCr.hpp"
 

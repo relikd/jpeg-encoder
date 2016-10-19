@@ -6,6 +6,7 @@
 //  Copyright © 2016 FHWS. All rights reserved.
 //
 
+#include <memory>
 #include "ParserYCbCr.hpp"
 
 std::shared_ptr<Image> ParserYCbCr::parse(std::shared_ptr<Image> img) {
