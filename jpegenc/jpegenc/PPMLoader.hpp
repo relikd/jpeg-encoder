@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include "Image.hpp"
+#include <memory>
 
 
 struct PPMLoader {
