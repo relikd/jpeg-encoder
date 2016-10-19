@@ -56,5 +56,8 @@ xcuserdata/
 *.xccheckout
 *.xcscmblueprint
 
-##CLion Projekt Information
+## CLion Projekt Information
 .idea/
+
+## Images
+images/
