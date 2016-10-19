@@ -1,14 +1,9 @@
 #include <iostream>
 #include "PPMLoader.hpp"
-#include "Image.hpp"
 
-int main(int argc, const char * argv[]) {
-	std::cout << "Hello, World!\n";
-	
-	PPMLoader loader("data/very_small.ppm");
-	
-	auto image = loader.load();
-	
+int main(int argc, const char *argv[]) {
+	PPMLoader loader;
+	auto image = loader.load("/home/marv/Projects/jpeg-encoder/jpegenc/jpegenc/data/very_small.ppm");
 	image->print();
 	return 0;
 }

@@ -2,15 +2,13 @@
 #define PPMLoader_hpp
 
 #include <iostream>
-#include "Image.hpp"
 #include <memory>
-
+#include "Image.hpp"
 
 struct PPMLoader {
-	const char* file;
-	
-	PPMLoader(const char* file): file(file) {}
-	
-	std::shared_ptr<Image> load();
+	PPMLoader() {}
+
+	std::shared_ptr<Image> load(const char *pathToImage);
 };
+
 #endif /* PPMLoader_hpp */
