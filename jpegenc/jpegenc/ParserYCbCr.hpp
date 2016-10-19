@@ -1,11 +1,3 @@
-//
-//  ParserYCbCr.hpp
-//  jpegenc
-//
-//  Created by Oleg on 18/10/16.
-//  Copyright © 2016 FHWS. All rights reserved.
-//
-
 #ifndef ParserYCbCr_hpp
 #define ParserYCbCr_hpp
 

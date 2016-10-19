@@ -1,11 +1,3 @@
-//
-//  PPMLoader.hpp
-//  jpegenc
-//
-//  Created by Christian Braun on 18/10/16.
-//  Copyright © 2016 FHWS. All rights reserved.
-//
-
 #ifndef PPMLoader_hpp
 #define PPMLoader_hpp
 

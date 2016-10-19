@@ -1,11 +1,3 @@
-//
-//  ParserYCbCr.cpp
-//  jpegenc
-//
-//  Created by Oleg on 18/10/16.
-//  Copyright © 2016 FHWS. All rights reserved.
-//
-
 #include <memory>
 #include "ParserYCbCr.hpp"
 
