@@ -7,10 +7,8 @@ set(SOURCE_FILES
     jpegenc/jpegenc/Image.cpp
     jpegenc/jpegenc/Image.hpp
     jpegenc/jpegenc/main.cpp
-    jpegenc/jpegenc/ParserYCbCr.cpp
-    jpegenc/jpegenc/ParserYCbCr.hpp
-    jpegenc/jpegenc/PPMLoader.cpp
+        jpegenc/jpegenc/PPMLoader.cpp
     jpegenc/jpegenc/PPMLoader.hpp
-    LICENSE)
+    LICENSE jpegenc/jpegenc/RGBToYCbCrConverter.cpp jpegenc/jpegenc/RGBToYCbCrConverter.hpp)
 
 add_executable(jpeg_encoder ${SOURCE_FILES})

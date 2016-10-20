@@ -4,7 +4,7 @@
 std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 	FILE *file = fopen(pathToImage, "r");
 
-	char magicNumber[255];
+	char magicNumber[8];
 	fscanf(file, "%s\n", magicNumber);
 
 	int width, height;
@@ -18,13 +18,21 @@ std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 	size_t index = 0;
 
 	while (1) {
-		int r, g, b;
+		uint8_t r, g, b;
 		int elementsRead = fscanf(file, "%d %d %d", &r, &g, &b);
 
 		if (elementsRead < 3) {
 			break;
 		}
-		image->setPixel(index++, Pixel(r, g, b).set_highest_to_255_from(maxValue));
+		image->setValueOnChannel1(index, normalize(r, maxValue, 255));
+		image->setValueOnChannel2(index, normalize(g, maxValue, 255));
+		image->setValueOnChannel3(index, normalize(b, maxValue, 255));
+		index++;
 	}
+	image->setColorSpace( "RGB" );
 	return image;
+}
+
+size_t PPMLoader::normalize(size_t colorValue, int originalMaxValue, int normalizedMaxValue) {
+	return (size_t) ((colorValue / (float) originalMaxValue) * normalizedMaxValue);
 }
