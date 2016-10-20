@@ -40,7 +40,7 @@ void Image::print() const {
 			std::cout << std::endl;
 		}
 		
-		std::cout << pixels[i].r << " " << pixels[i].g << " " << pixels[i].b << "	 ";
+		std::cout << pixels[i].r << "\t" << pixels[i].g << "\t" << pixels[i].b << "\t\t";
 	}
 }
 
