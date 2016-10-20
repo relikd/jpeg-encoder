@@ -9,6 +9,9 @@ struct PPMLoader {
 	PPMLoader() {}
 
 	std::shared_ptr<Image> load(const char *pathToImage);
+
+private:
+	size_t normalize(size_t colorValue, int originalMaxValue, int normalizedMaxValue);
 };
 
 #endif /* PPMLoader_hpp */
