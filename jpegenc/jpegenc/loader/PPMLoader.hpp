@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <memory>
-#include "Image.hpp"
+#include "../model/Image.hpp"
 
 struct PPMLoader {
 	PPMLoader() {}

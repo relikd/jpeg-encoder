@@ -1,6 +1,6 @@
 #include <iostream>
-#include "PPMLoader.hpp"
-#include "RGBToYCbCrConverter.hpp"
+#include "loader/PPMLoader.hpp"
+#include "converter/RGBToYCbCrConverter.hpp"
 
 int main(int argc, const char *argv[]) {
 
