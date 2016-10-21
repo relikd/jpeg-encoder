@@ -36,15 +36,15 @@ size_t Image::getValueFromChannel3(size_t x, size_t y) {
 }
 
 size_t Image::getValueFromChannel1(size_t index) {
-	return channel1->values[index];
+	return channel1->values[(index * channel1->channelSize) / numberOfPixels];
 }
 
 size_t Image::getValueFromChannel2(size_t index) {
-	return channel2->values[index];
+	return channel2->values[(index * channel2->channelSize) / numberOfPixels];
 }
 
 size_t Image::getValueFromChannel3(size_t index) {
-	return channel3->values[index];
+	return channel3->values[(index * channel3->channelSize) / numberOfPixels];
 }
 
 void Image::setValueOnChannel1(size_t x, size_t y, size_t value) {
