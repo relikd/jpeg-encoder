@@ -29,7 +29,7 @@ std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 		image->setValueOnChannel3(index, normalize(b, maxValue, 255));
 		index++;
 	}
-	image->setColorSpace( "RGB" );
+	image->colorSpace = ColorSpaceRGB;
 	return image;
 }
 

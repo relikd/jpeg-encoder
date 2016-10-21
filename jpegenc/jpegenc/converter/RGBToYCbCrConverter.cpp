@@ -16,6 +16,6 @@ std::shared_ptr<Image> RGBToYCbCrConverter::convert(std::shared_ptr<Image> origi
 		convertedImage->setValueOnChannel2(index, cb);
 		convertedImage->setValueOnChannel3(index, cr);
 	}
-	convertedImage->setColorSpace("YCbCr");
+	convertedImage->colorSpace = ColorSpaceYCbCr;
 	return convertedImage;
 }
