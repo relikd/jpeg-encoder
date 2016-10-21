@@ -9,6 +9,6 @@ set(SOURCE_FILES
     jpegenc/jpegenc/main.cpp
         jpegenc/jpegenc/loader/PPMLoader.cpp
         jpegenc/jpegenc/loader/PPMLoader.hpp
-    LICENSE jpegenc/jpegenc/converter/RGBToYCbCrConverter.cpp jpegenc/jpegenc/converter/RGBToYCbCrConverter.hpp)
+    LICENSE jpegenc/jpegenc/converter/RGBToYCbCrConverter.cpp jpegenc/jpegenc/converter/RGBToYCbCrConverter.hpp jpegenc/jpegenc/converter/YCbCrToRGBConverter.cpp jpegenc/jpegenc/converter/YCbCrToRGBConverter.h)
 
 add_executable(jpeg_encoder ${SOURCE_FILES})
