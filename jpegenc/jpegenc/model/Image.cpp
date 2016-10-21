@@ -122,3 +122,48 @@ void Image::reduceBySubSamplingChannel3(size_t stepWidth) {
 	}
 	*channel3 = *reducedChannel;
 }
+
+void Image::reduceByAveragingChannel1(size_t stepWidth) {
+	Channel *reducedChannel = new Channel(channel1->channelSize/stepWidth);
+
+	for ( int i = 0; i < reducedChannel->channelSize; ++i) {
+		size_t sum = 0;
+
+		for ( int k = 0; k < stepWidth; k++ )
+		{
+			sum = sum + channel1->values[i*stepWidth + k];
+		}
+		reducedChannel->values[i] = (size_t) sum / stepWidth;
+	}
+	*channel1 = *reducedChannel;
+}
+
+void Image::reduceByAveragingChannel2(size_t stepWidth) {
+	Channel *reducedChannel = new Channel(channel2->channelSize/stepWidth);
+
+	for ( int i = 0; i < reducedChannel->channelSize; ++i) {
+		size_t sum = 0;
+
+		for ( int k = 0; k < stepWidth; k++ )
+		{
+			sum = sum + channel2->values[i * stepWidth + k];
+		}
+		reducedChannel->values[i] = (size_t) sum / stepWidth;
+	}
+	*channel2 = *reducedChannel;
+}
+
+void Image::reduceByAveragingChannel3(size_t stepWidth) {
+	Channel *reducedChannel = new Channel(channel3->channelSize/stepWidth);
+
+	for ( int i = 0; i < reducedChannel->channelSize; ++i) {
+		size_t sum = 0;
+
+		for ( int k = 0; k < stepWidth; k++ )
+		{
+			sum = sum + channel3->values[i * stepWidth + k];
+		}
+		reducedChannel->values[i] = (size_t) sum / stepWidth;
+	}
+	*channel3 = *reducedChannel;
+}

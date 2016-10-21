@@ -15,9 +15,14 @@ int main(int argc, const char *argv[]) {
 //	YCbCrToRGBConverter converter2;
 //	image = converter2.convert(image);
 
-	image->reduceBySubSamplingChannel1(2);
-	image->reduceBySubSamplingChannel2(2);
-	image->reduceBySubSamplingChannel3(2);
+//	image->reduceBySubSamplingChannel1(2);
+//	image->reduceBySubSamplingChannel2(2);
+//	image->reduceBySubSamplingChannel3(2);
+
+	image->reduceByAveragingChannel1(2);
+	image->reduceByAveragingChannel2(2);
+	image->reduceByAveragingChannel3(2);
+
 	image->print();
 
 	return 0;
