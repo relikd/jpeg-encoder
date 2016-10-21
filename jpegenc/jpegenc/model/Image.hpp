@@ -5,10 +5,10 @@
 #include <stdio.h>
 
 struct Channel {
-	size_t size;
+	size_t channelSize;
 	size_t *values;
 
-	Channel(size_t size = 0) : size(size) {
+	Channel(size_t size = 0) : channelSize(size) {
 		values = new size_t[size];
 	}
 
@@ -19,16 +19,16 @@ struct Channel {
 
 struct Image {
 	size_t width, height;
+	size_t numberOfPixels;
 	std::string colorSpace;
 	Channel *channel1;
 	Channel *channel2;
 	Channel *channel3;
 
-	Image(size_t width, size_t height) : width(width), height(height) {
-		size_t channelSize = width * height;
-		channel1 = new Channel(channelSize);
-		channel2 = new Channel(channelSize);
-		channel3 = new Channel(channelSize);
+	Image(size_t width, size_t height) : width(width), height(height), numberOfPixels(width * height) {
+		channel1 = new Channel(numberOfPixels);
+		channel2 = new Channel(numberOfPixels);
+		channel3 = new Channel(numberOfPixels);
 	}
 
 	~Image() {
