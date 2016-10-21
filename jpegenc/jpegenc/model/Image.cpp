@@ -89,9 +89,9 @@ void Image::print() {
 		if (i % width == 0) {
 			std::cout << std::endl;
 		}
-		std::cout << getValueFromChannel1( size_t (i) ) << " ";
-		std::cout << getValueFromChannel2( size_t (i) ) << " ";
-		std::cout << getValueFromChannel3( size_t (i) ) << "	 ";
+		std::cout << getValueFromChannel1( size_t (i) ) << "\t";
+		std::cout << getValueFromChannel2( size_t (i) ) << "\t";
+		std::cout << getValueFromChannel3( size_t (i) ) << "\t\t";
 	}
 	std::cout << std::endl << std::endl;
 }
