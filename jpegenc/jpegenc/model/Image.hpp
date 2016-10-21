@@ -63,11 +63,15 @@ struct Image {
 
 	void setValueOnChannel3(size_t index, size_t value);
 
-	void print() const;
+	void print();
 
 	void setColorSpace(std::string colorSpace) {
 		this->colorSpace = colorSpace;
 	}
+
+	void reduceBySubSamplingChannel1(size_t stepWidth);
+	void reduceBySubSamplingChannel2(size_t stepWidth);
+	void reduceBySubSamplingChannel3(size_t stepWidth);
 };
 
 #endif /* Image_hpp */

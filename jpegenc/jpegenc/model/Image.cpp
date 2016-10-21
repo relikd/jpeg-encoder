@@ -83,13 +83,42 @@ void Image::setValueOnChannel3(size_t index, size_t value) {
 	channel3->values[index] = value;
 }
 
-void Image::print() const {
+void Image::print() {
 	std::cout << "Color space: " << colorSpace;
 	for (int i = 0; i < width * height; ++i) {
 		if (i % width == 0) {
 			std::cout << std::endl;
 		}
-		std::cout << channel1->values[i] << " " << channel2->values[i] << " " << channel3->values[i] << "	 ";
+		std::cout << getValueFromChannel1( size_t (i) ) << " ";
+		std::cout << getValueFromChannel2( size_t (i) ) << " ";
+		std::cout << getValueFromChannel3( size_t (i) ) << "	 ";
 	}
 	std::cout << std::endl << std::endl;
+}
+
+void Image::reduceBySubSamplingChannel1(size_t stepWidth) {
+	Channel *reducedChannel = new Channel(channel1->channelSize/stepWidth);
+
+	for ( int i = 0; i < reducedChannel->channelSize; ++i) {
+		reducedChannel->values[i] = channel1->values[i*stepWidth];
+	}
+	*channel1 = *reducedChannel;
+}
+
+void Image::reduceBySubSamplingChannel2(size_t stepWidth) {
+	Channel *reducedChannel = new Channel(channel2->channelSize/stepWidth);
+
+	for ( int i = 0; i < reducedChannel->channelSize; ++i) {
+		reducedChannel->values[i] = channel2->values[i*stepWidth];
+	}
+	*channel2 = *reducedChannel;
+}
+
+void Image::reduceBySubSamplingChannel3(size_t stepWidth) {
+	Channel *reducedChannel = new Channel(channel3->channelSize/stepWidth);
+
+	for ( int i = 0; i < reducedChannel->channelSize; ++i) {
+		reducedChannel->values[i] = channel3->values[i*stepWidth];
+	}
+	*channel3 = *reducedChannel;
 }
