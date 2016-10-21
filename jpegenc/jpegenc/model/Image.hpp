@@ -70,8 +70,16 @@ struct Image {
 	}
 
 	void reduceBySubSamplingChannel1(size_t stepWidth);
+
 	void reduceBySubSamplingChannel2(size_t stepWidth);
+
 	void reduceBySubSamplingChannel3(size_t stepWidth);
+
+	void reduceByAveragingChannel1(size_t stepWidth);
+
+	void reduceByAveragingChannel2(size_t stepWidth);
+
+	void reduceByAveragingChannel3(size_t stepWidth);
 };
 
 #endif /* Image_hpp */
