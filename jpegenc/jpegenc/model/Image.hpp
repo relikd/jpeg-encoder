@@ -17,10 +17,16 @@ struct Channel {
 	}
 };
 
+typedef enum {
+	ColorSpaceRGB,
+	ColorSpaceYCbCr,
+} ColorSpace;
+
 struct Image {
 	size_t width, height;
 	size_t numberOfPixels;
-	std::string colorSpace;
+	ColorSpace colorSpace;
+	
 	Channel *channel1;
 	Channel *channel2;
 	Channel *channel3;
@@ -64,10 +70,6 @@ struct Image {
 	void setValueOnChannel3(size_t index, size_t value);
 
 	void print();
-
-	void setColorSpace(std::string colorSpace) {
-		this->colorSpace = colorSpace;
-	}
 
 	void reduceBySubSamplingChannel1(size_t stepWidth);
 
