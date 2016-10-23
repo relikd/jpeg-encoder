@@ -52,43 +52,7 @@ struct Image {
 
 	size_t getIndex(size_t x, size_t y) const;
 
-	size_t getValueFromChannel1(size_t x, size_t y);
-
-	size_t getValueFromChannel2(size_t x, size_t y);
-
-	size_t getValueFromChannel3(size_t x, size_t y);
-
-	size_t getValueFromChannel1(size_t index);
-
-	size_t getValueFromChannel2(size_t index);
-
-	size_t getValueFromChannel3(size_t index);
-
-	void setValueOnChannel1(size_t x, size_t y, size_t value);
-
-	void setValueOnChannel2(size_t x, size_t y, size_t value);
-
-	void setValueOnChannel3(size_t x, size_t y, size_t value);
-
-	void setValueOnChannel1(size_t index, size_t value);
-
-	void setValueOnChannel2(size_t index, size_t value);
-
-	void setValueOnChannel3(size_t index, size_t value);
-
 	void print();
-
-	void reduceBySubSamplingChannel1(size_t stepWidth);
-
-	void reduceBySubSamplingChannel2(size_t stepWidth);
-
-	void reduceBySubSamplingChannel3(size_t stepWidth);
-
-	void reduceByAveragingChannel1(size_t stepWidth);
-
-	void reduceByAveragingChannel2(size_t stepWidth);
-
-	void reduceByAveragingChannel3(size_t stepWidth);
 };
 
 #endif /* Image_hpp */
