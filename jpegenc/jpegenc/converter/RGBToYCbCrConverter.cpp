@@ -6,9 +6,9 @@ std::shared_ptr<Image> RGBToYCbCrConverter::convert(std::shared_ptr<Image> origi
 
 	while (index) {
 		--index;
-		size_t r = originalImage->getValueFromChannel1(index);
-		size_t g = originalImage->getValueFromChannel2(index);
-		size_t b = originalImage->getValueFromChannel3(index);
+		size_t r = originalImage->channel1->getValue(index, originalImage->numberOfPixels );
+		size_t g = originalImage->channel2->getValue(index, originalImage->numberOfPixels );
+		size_t b = originalImage->channel3->getValue(index, originalImage->numberOfPixels );
 		size_t y = (size_t) (0.299 * r + 0.587 * g + 0.114 * b);
 		size_t cb = (size_t) (-0.1687 * r - 0.3312 * g + 0.5 * b + 128);
 		size_t cr = (size_t) (0.5 * r - 0.4186 * g - 0.0813 * b + 128);
