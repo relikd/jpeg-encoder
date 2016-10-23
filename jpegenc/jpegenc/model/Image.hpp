@@ -15,6 +15,13 @@ struct Channel {
 	~Channel() {
 		delete[] values;
 	}
+
+	size_t getValue(size_t x, size_t y, size_t width, size_t height);
+	size_t getValue(size_t index, size_t numberOfPixels);
+	void setValue(size_t x, size_t y, size_t width, size_t height, size_t value);
+	void setValue(size_t index, size_t value);
+	void reduceBySubSampling(size_t stepWidth);
+	void reduceByAveraging(size_t stepWidth);
 };
 
 typedef enum {
@@ -26,7 +33,7 @@ struct Image {
 	size_t width, height;
 	size_t numberOfPixels;
 	ColorSpace colorSpace;
-	
+
 	Channel *channel1;
 	Channel *channel2;
 	Channel *channel3;
