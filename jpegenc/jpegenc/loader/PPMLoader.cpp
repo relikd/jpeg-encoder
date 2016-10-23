@@ -24,10 +24,10 @@ std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 		if (elementsRead < 3) {
 			break;
 		}
-		image->setValueOnChannel1(index, normalize(r, maxValue, 255));
-		image->setValueOnChannel2(index, normalize(g, maxValue, 255));
-		image->setValueOnChannel3(index, normalize(b, maxValue, 255));
-		index++;
+		image->channel1->setValue( index, normalize(r, maxValue, 255));
+		image->channel2->setValue( index, normalize(g, maxValue, 255));
+		image->channel3->setValue( index, normalize(b, maxValue, 255));
+		++index;
 	}
 	image->colorSpace = ColorSpaceRGB;
 	return image;
