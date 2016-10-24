@@ -18,7 +18,7 @@ std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 	size_t index = 0;
 
 	while (1) {
-		uint8_t r, g, b;
+		size_t r, g, b;
 		int elementsRead = fscanf(file, "%d %d %d", &r, &g, &b);
 
 		if (elementsRead < 3) {
