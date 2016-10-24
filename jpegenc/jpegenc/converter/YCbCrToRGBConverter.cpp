@@ -6,16 +6,15 @@ std::shared_ptr<Image> YCbCrToRGBConverter::convert(std::shared_ptr<Image> origi
 
 	while (index) {
 		--index;
-		int y = (int) originalImage->getValueFromChannel1(index);
-		int cb = (int) originalImage->getValueFromChannel2(index);
-		int cr = (int) originalImage->getValueFromChannel3(index);
+		int y = (int) originalImage->channel1->getValue(index, originalImage->numberOfPixels);
+		int cb = (int) originalImage->channel2->getValue(index, originalImage->numberOfPixels);
+		int cr = (int) originalImage->channel3->getValue(index, originalImage->numberOfPixels);
 		int r = (int) (y + 1.4021 * (cr - 128));
 		int g = (int) (y - 0.3441 * (cb - 128) - 0.7142 * (cr - 128));
 		int b = (int) (y + 1.772 * (cb - 128));
-
-		convertedImage->setValueOnChannel1(index, normalize(r));
-		convertedImage->setValueOnChannel2(index, normalize(g));
-		convertedImage->setValueOnChannel3(index, normalize(b));
+		convertedImage->channel1->setValue(index, normalize(r));
+		convertedImage->channel2->setValue(index, normalize(g));
+		convertedImage->channel3->setValue(index, normalize(b));
 	}
 	convertedImage->colorSpace = ColorSpaceRGB;
 	return convertedImage;
