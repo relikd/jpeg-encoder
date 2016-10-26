@@ -3,25 +3,25 @@
 
 std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 	FILE *file = fopen(pathToImage, "r");
-
+	
 	char magicNumber[8];
-	fscanf(file, "%s\n", magicNumber);
+	scanForPattern(file, "%s\n", magicNumber);
 
 	int width, height;
-	fscanf(file, "%d %d\n", &width, &height);
+	scanForPattern(file, "%d %d\n", &width, &height);
 
 	int maxValue;
-	fscanf(file, "%d\n", &maxValue);
+	scanForPattern(file, "%d\n", &maxValue);
 
 	auto image = std::make_shared<Image>(width, height);
 
 	size_t index = 0;
 
 	while (1) {
-		size_t r, g, b;
-		int elementsRead = fscanf(file, "%d %d %d", &r, &g, &b);
+		uint r, g, b;
+		int elementsRead = scanForPattern(file, "%d %d %d", &r, &g, &b);
 
-		if (elementsRead < 3) {
+		if (elementsRead  == EOF) {
 			break;
 		}
 		image->channel1->setValue( index, normalize(r, maxValue, 255));
@@ -36,3 +36,26 @@ std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 size_t PPMLoader::normalize(size_t colorValue, int originalMaxValue, int normalizedMaxValue) {
 	return (size_t) ((colorValue / (float) originalMaxValue) * normalizedMaxValue);
 }
+
+int	PPMLoader::scanForPattern(FILE * file, const char * fmt , void* arg0, void* arg1, void* arg2) {
+	int actualFound = 0;
+	bool continueSearch = true;
+	while(continueSearch) {
+		char comment[255];
+		continueSearch = fscanf(file, "# %99[^\n]", comment);
+		
+		if (!continueSearch) {
+			if (arg2 != nullptr) {
+				actualFound = fscanf(file, fmt, arg0, arg1, arg2);
+			} else if (arg1 != nullptr) {
+				actualFound = fscanf(file, fmt, arg0, arg1);
+			} else {
+				actualFound = fscanf(file, fmt, arg0);
+			}
+		}
+	}
+	
+	return actualFound;
+}
+
+
