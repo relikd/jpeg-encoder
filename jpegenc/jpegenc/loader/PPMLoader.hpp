@@ -12,6 +12,7 @@ struct PPMLoader {
 
 private:
 	size_t normalize(size_t colorValue, int originalMaxValue, int normalizedMaxValue);
+	int	scanForPattern(FILE * file, const char * fmt , void* arg0, void* arg1 = nullptr, void* arg2 = nullptr);
 };
 
 #endif /* PPMLoader_hpp */
