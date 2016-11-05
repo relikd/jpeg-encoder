@@ -33,6 +33,122 @@ std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 	return image;
 }
 
+std::shared_ptr<Image> PPMLoader::customLoad(const char *pathToImage) {
+	
+	FILE *file = fopen(pathToImage, "rb");
+	if (file==NULL) {fputs ("File error",stderr); exit (1);}
+	
+	fseek (file , 0 , SEEK_END);
+	long lSize = ftell (file);
+	rewind (file);
+	
+	// allocate memory to contain the whole file:
+	char * buffer = (char*) malloc (sizeof(char)*lSize);
+	if (buffer == NULL) {fputs ("Memory error",stderr); exit (2);}
+	
+	// copy the file into the buffer:
+	size_t result = fread (buffer,1,lSize,file);
+	if (result != lSize) {fputs ("Reading error",stderr); exit (3);}
+	
+	/* the whole file is now loaded in the memory buffer. */
+	
+	bool isComment = false;
+	bool skipNextWhitespace = true;
+	int step = 0;
+	int width=0, height=0, maxValue=0;
+	
+	size_t lastPos = 0;
+	
+	for (size_t i=0; i < lSize; i++) {
+		char c = buffer[i];
+		if (c=='#')
+			isComment = true;
+		else if (isComment == false)
+		{
+			if (skipNextWhitespace == false && (c==' ' || c=='\t' || c=='\n')) {
+				step++;
+				
+				if (step == 6) {
+					lastPos = i+1;
+					break;
+				}
+				
+				skipNextWhitespace = true;
+				continue;
+			}
+			
+			bool changed = true;
+			if (step==0 && c=='P')
+				step++;
+			else if (step==1 && c=='3')
+				step++;
+			else if (step==3 && c>47 && c<59) // width
+				width = width*10 + c-48;
+			else if (step==4 && c>47 && c<59) // height
+				height = height*10 + c-48;
+			else if (step==5 && c>47 && c<59) // max Value
+				maxValue = maxValue*10 + c-48;
+			else
+				changed = false;
+			
+			if (changed)
+				skipNextWhitespace = false;
+		}
+		else if (c=='\n')
+			isComment = false;
+	}
+	
+	
+	auto image = std::make_shared<Image>(width, height);
+	size_t index = 0;
+	size_t singleValue = 0;
+	Channel * channels[] = {image->channel1, image->channel2, image->channel3};
+	char cSel = 0;
+	
+	skipNextWhitespace = true;
+	
+	for (size_t i=lastPos; i < lSize; i++) {
+		char c = buffer[i];
+		if (c=='#')
+			isComment = true;
+		else if (isComment == false)
+		{
+			if (skipNextWhitespace == false && (c==' ' || c=='\t' || c=='\n')) {
+				
+				channels[cSel]->setValue(index, normalize(singleValue, maxValue, 255));
+				
+				cSel = (cSel+1)%3;
+				if (cSel==0)
+					index++;
+				singleValue = 0;
+				skipNextWhitespace = true;
+				continue;
+			}
+			
+			if (c>47 && c<59) {
+				singleValue = singleValue*10 + c-48;
+				skipNextWhitespace = false;
+			}
+			
+			
+		}
+		else if (c=='\n')
+			isComment = false;
+	}
+	
+	if (singleValue > 0)
+		channels[cSel]->setValue(index, normalize(singleValue, maxValue, 255));
+	
+	
+	// terminate
+	fclose (file);
+	free (buffer);
+	
+	image->colorSpace = ColorSpaceRGB;
+	return image;
+
+}
+
 size_t PPMLoader::normalize(size_t colorValue, int originalMaxValue, int normalizedMaxValue) {
 	return (size_t) ((colorValue / (float) originalMaxValue) * normalizedMaxValue);
 }
