@@ -13,6 +13,7 @@
 		546A42FB1DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F21DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp */; };
 		546A42FC1DBA7A8D006C2629 /* PPMLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F51DBA7A8D006C2629 /* PPMLoader.cpp */; };
 		546A42FD1DBA7A8D006C2629 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F81DBA7A8D006C2629 /* Image.cpp */; };
+		95FA179A1DC0CCFB0042DA1B /* singapore4k.test.ppm in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9572F5271DC0CA7D00FC7CE2 /* singapore4k.test.ppm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -22,6 +23,7 @@
 			dstPath = data;
 			dstSubfolderSpec = 16;
 			files = (
+				95FA179A1DC0CCFB0042DA1B /* singapore4k.test.ppm in CopyFiles */,
 				542102FD1DB6A83C004A1246 /* very_small.ppm in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -41,6 +43,7 @@
 		546A42F81DBA7A8D006C2629 /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
 		546A42F91DBA7A8D006C2629 /* Image.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Image.hpp; sourceTree = "<group>"; };
 		54A027DD1DB6CFFB0053733A /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = CMakeLists.txt; path = ../CMakeLists.txt; sourceTree = "<group>"; };
+		9572F5271DC0CA7D00FC7CE2 /* singapore4k.test.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = singapore4k.test.ppm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,6 +60,7 @@
 		542102F91DB6A7D9004A1246 /* data */ = {
 			isa = PBXGroup;
 			children = (
+				9572F5271DC0CA7D00FC7CE2 /* singapore4k.test.ppm */,
 				542102FA1DB6A7D9004A1246 /* very_small.ppm */,
 			);
 			path = data;
