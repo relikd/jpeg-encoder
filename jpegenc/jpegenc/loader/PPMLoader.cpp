@@ -6,18 +6,18 @@ std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 	
 	char magicNumber[8];
 	scanForPattern(file, "%s\n", magicNumber);
-	int width, height;
+	int width=0, height=0;
 	scanForPattern(file, "%d %d\n", &width, &height);
 
-	int maxValue;
+	int maxValue=0;
 	scanForPattern(file, "%d\n", &maxValue);
 
-	auto image = std::make_shared<Image>(width, height);
+	auto image = std::make_shared<Image>(Dimension(width, height));
 
 	size_t index = 0;
 
 	while (1) {
-		uint r, g, b;
+		color r=0, g=0, b=0;
 		int elementsRead = scanForPattern(file, "%d %d %d", &r, &g, &b);
 
 		if (elementsRead  == EOF) {
@@ -42,7 +42,8 @@ std::shared_ptr<Image> PPMLoader::customLoad(const char *pathToImage) {
 	rewind (file);
 	
 	// allocate memory to contain the whole file:
-	char * buffer = (char*) malloc (sizeof(char)*lSize);
+//	char * buffer = (char*) malloc (sizeof(char)*lSize);
+	char * buffer = new char[lSize];
 	if (buffer == NULL) {fputs ("Memory error",stderr); exit (2);}
 	
 	// copy the file into the buffer:
@@ -67,7 +68,7 @@ std::shared_ptr<Image> PPMLoader::customLoad(const char *pathToImage) {
 			if (skipNextWhitespace == false && (c==' ' || c=='\t' || c=='\n')) {
 				step++;
 				
-				if (step == 6) {
+				if (step == 4) {
 					lastPos = i+1;
 					break;
 				}
@@ -77,15 +78,16 @@ std::shared_ptr<Image> PPMLoader::customLoad(const char *pathToImage) {
 			}
 			
 			bool changed = true;
-			if (step==0 && c=='P')
-				step++;
-			else if (step==1 && c=='3')
-				step++;
-			else if (step==3 && c>47 && c<59) // width
+			if (step==0 && c=='P') // read Magic Number
+				if (buffer[i+1]!='3') {
+					fputs ("Invalid format. PPM P3 expected.\n",stderr);
+					exit (4);
+				} else {}
+			else if (step==1 && c>47 && c<59) // width
 				width = width*10 + c-48;
-			else if (step==4 && c>47 && c<59) // height
+			else if (step==2 && c>47 && c<59) // height
 				height = height*10 + c-48;
-			else if (step==5 && c>47 && c<59) // max Value
+			else if (step==3 && c>47 && c<59) // max Value
 				maxValue = maxValue*10 + c-48;
 			else
 				changed = false;
@@ -98,7 +100,7 @@ std::shared_ptr<Image> PPMLoader::customLoad(const char *pathToImage) {
 	}
 	
 	
-	auto image = std::make_shared<Image>(width, height);
+	auto image = std::make_shared<Image>(Dimension(width, height));
 	size_t index = 0;
 	size_t singleValue = 0;
 	Channel * channels[] = {image->channel1, image->channel2, image->channel3};
@@ -141,7 +143,8 @@ std::shared_ptr<Image> PPMLoader::customLoad(const char *pathToImage) {
 	
 	// terminate
 	fclose (file);
-	free (buffer);
+//	free (buffer);
+	delete[] buffer;
 	
 	image->colorSpace = ColorSpaceRGB;
 	return image;

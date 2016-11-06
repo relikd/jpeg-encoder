@@ -1,17 +1,19 @@
 #include "YCbCrToRGBConverter.h"
 
 std::shared_ptr<Image> YCbCrToRGBConverter::convert(std::shared_ptr<Image> originalImage) {
-	auto convertedImage = std::make_shared<Image>(originalImage->width, originalImage->height);
-	size_t index = originalImage->width * originalImage->height;
-
+	
+	auto convertedImage = std::make_shared<Image>(originalImage->imageSize);
+	size_t originalImagePixelCount = originalImage->imageSize.pixelCount;
+	size_t index = originalImagePixelCount;
+	
 	while (index) {
 		--index;
-		int y = (int) originalImage->channel1->getValue(index, originalImage->numberOfPixels);
-		int cb = (int) originalImage->channel2->getValue(index, originalImage->numberOfPixels);
-		int cr = (int) originalImage->channel3->getValue(index, originalImage->numberOfPixels);
-		int r = (int) (y + 1.4021 * (cr - 128));
-		int g = (int) (y - 0.3441 * (cb - 128) - 0.7142 * (cr - 128));
-		int b = (int) (y + 1.772 * (cb - 128));
+		color y = (color) originalImage->channel1->getValue(index, originalImagePixelCount);
+		color cb = (color) originalImage->channel2->getValue(index, originalImagePixelCount);
+		color cr = (color) originalImage->channel3->getValue(index, originalImagePixelCount);
+		color r = (color) (y + 1.4021 * (cr - 128));
+		color g = (color) (y - 0.3441 * (cb - 128) - 0.7142 * (cr - 128));
+		color b = (color) (y + 1.772 * (cb - 128));
 		convertedImage->channel1->setValue(index, normalize(r));
 		convertedImage->channel2->setValue(index, normalize(g));
 		convertedImage->channel3->setValue(index, normalize(b));
@@ -20,12 +22,10 @@ std::shared_ptr<Image> YCbCrToRGBConverter::convert(std::shared_ptr<Image> origi
 	return convertedImage;
 }
 
-size_t YCbCrToRGBConverter::normalize(int value) {
-	if (value < 0) {
+color YCbCrToRGBConverter::normalize(color value) {
+	if (value < 0)
 		value = 0;
-	}
-	if (value > 255) {
+	if (value > 255) // TODO: only valid for 8bit
 		value = 255;
-	}
-	return (size_t) value;
+	return (color) value;
 }
