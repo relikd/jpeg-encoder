@@ -6,7 +6,6 @@ std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 	
 	char magicNumber[8];
 	scanForPattern(file, "%s\n", magicNumber);
-
 	int width, height;
 	scanForPattern(file, "%d %d\n", &width, &height);
 
@@ -155,12 +154,13 @@ size_t PPMLoader::normalize(size_t colorValue, int originalMaxValue, int normali
 
 int	PPMLoader::scanForPattern(FILE * file, const char * fmt , void* arg0, void* arg1, void* arg2) {
 	int actualFound = 0;
-	bool continueSearch = true;
-	while(continueSearch) {
+	int continueSearch = 1;
+	while(continueSearch != EOF && continueSearch > 0) {
 		char comment[255];
 		continueSearch = fscanf(file, "# %99[^\n]", comment);
 		
-		if (!continueSearch) {
+		// No comments found
+		if (continueSearch == 0) {
 			if (arg2 != nullptr) {
 				actualFound = fscanf(file, fmt, arg0, arg1, arg2);
 			} else if (arg1 != nullptr) {
