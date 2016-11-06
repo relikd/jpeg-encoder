@@ -1,28 +1,8 @@
 #ifndef Image_hpp
 #define Image_hpp
 
-#include <stdlib.h>
-#include <stdio.h>
-
-struct Channel {
-	size_t channelSize;
-	size_t *values;
-
-	Channel(size_t size = 0) : channelSize(size) {
-		values = new size_t[size];
-	}
-
-	~Channel() {
-		delete[] values;
-	}
-
-	size_t getValue(size_t x, size_t y, size_t width, size_t height);
-	size_t getValue(size_t index, size_t numberOfPixels);
-	void setValue(size_t x, size_t y, size_t width, size_t height, size_t value);
-	void setValue(size_t index, size_t value);
-	void reduceBySubSampling(size_t stepWidth);
-	void reduceByAveraging(size_t stepWidth);
-};
+#include "Channel.hpp"
+#include <iostream>
 
 typedef enum {
 	ColorSpaceRGB,
@@ -30,18 +10,17 @@ typedef enum {
 } ColorSpace;
 
 struct Image {
-	size_t width, height;
-	size_t numberOfPixels;
+	Dimension imageSize;
 	ColorSpace colorSpace;
 
 	Channel *channel1;
 	Channel *channel2;
 	Channel *channel3;
 
-	Image(size_t width, size_t height) : width(width), height(height), numberOfPixels(width * height) {
-		channel1 = new Channel(numberOfPixels);
-		channel2 = new Channel(numberOfPixels);
-		channel3 = new Channel(numberOfPixels);
+	Image(Dimension dim) : imageSize(dim) {
+		channel1 = new Channel(imageSize);
+		channel2 = new Channel(imageSize);
+		channel3 = new Channel(imageSize);
 	}
 
 	~Image() {
@@ -50,9 +29,9 @@ struct Image {
 		delete channel3;
 	}
 
-	size_t getIndex(size_t x, size_t y) const;
-
 	void print();
+	void reduceBySubSample(size_t xdiv, size_t ydiv);
+	void reduceByAvarage(size_t xdiv, size_t ydiv);
 };
 
 #endif /* Image_hpp */

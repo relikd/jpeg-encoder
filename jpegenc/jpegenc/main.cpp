@@ -14,26 +14,21 @@ int main(int argc, const char *argv[]) {
 	
 
 //	auto image = loader.load("/home/marv/Projects/jpeg-encoder/jpegenc/jpegenc/data/very_small.ppm");
-	//image->print();
+//	image->print();
 
-	RGBToYCbCrConverter converter1;
-	image = converter1.convert(image);
+//	RGBToYCbCrConverter converter1;
+//	image = converter1.convert(image);
 	
 	t = clock() - t;
-	printf ("It took me %d clicks (%f seconds).\n",t,((float)t)/CLOCKS_PER_SEC);
+	printf ("It took me %lu clicks (%f seconds).\n",t,((float)t)/CLOCKS_PER_SEC);
 
 //	YCbCrToRGBConverter converter2;
 //	image = converter2.convert(image);
 
-//	image->channel1->reduceBySubSampling(2);
-//	image->channel2->reduceBySubSampling(2);
-//	image->channel3->reduceBySubSampling(2);
-
-//	image->channel1->reduceByAveraging(2);
-//	image->channel2->reduceByAveraging(2);
-//	image->channel3->reduceByAveraging(2);
-
-	//image->print();
+//	image->reduceBySubSample(2,2);
+//	image->reduceByAvarage(2,2);
+	
+//	image->print();
 
 	return 0;
 }
