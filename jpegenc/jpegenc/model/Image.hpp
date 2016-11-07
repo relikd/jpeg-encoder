@@ -31,7 +31,7 @@ struct Image {
 
 	void print();
 	void reduceBySubSample(size_t xdiv, size_t ydiv);
-	void reduceByAvarage(size_t xdiv, size_t ydiv);
+	void reduceByAverage(size_t xdiv, size_t ydiv);
 };
 
 #endif /* Image_hpp */

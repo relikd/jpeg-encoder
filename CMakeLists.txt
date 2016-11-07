@@ -9,8 +9,8 @@ set(SOURCE_FILES
         jpegenc/jpegenc/model/Channel.cpp
         jpegenc/jpegenc/model/Channel.hpp
     jpegenc/jpegenc/main.cpp
-        jpegenc/jpegenc/loader/PPMLoader.cpp
-        jpegenc/jpegenc/loader/PPMLoader.hpp
+        jpegenc/jpegenc/io/PPMLoader.cpp
+        jpegenc/jpegenc/io/PPMLoader.hpp
     LICENSE jpegenc/jpegenc/converter/RGBToYCbCrConverter.cpp jpegenc/jpegenc/converter/RGBToYCbCrConverter.hpp jpegenc/jpegenc/converter/YCbCrToRGBConverter.cpp jpegenc/jpegenc/converter/YCbCrToRGBConverter.h)
 
 add_executable(jpeg_encoder ${SOURCE_FILES})
