@@ -32,9 +32,9 @@ public:
 		delete[] values;
 	}
 	
-	color getValue(size_t x, size_t y, Dimension size);
-	color getValue(size_t index, size_t numberOfPixels);
-	void setValue(size_t x, size_t y, Dimension size, color value);
+	color getValue(size_t x, size_t y, Dimension mapped_size);
+	color getValue(size_t index, Dimension mapped_size);
+	void setValue(size_t x, size_t y, color value);
 	void setValue(size_t index, color value);
 	void reduceBySubSampling(size_t stepWidth, size_t stepHeight=1);
 	void reduceByAveraging(size_t stepWidth, size_t stepHeight=1);

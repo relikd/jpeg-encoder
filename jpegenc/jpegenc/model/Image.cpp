@@ -19,9 +19,9 @@ void Image::print() {
 		if (i % imageSize.width == 0) {
 			std::cout << std::endl;
 		}
-		std::cout << channel1->getValue( i, numberOfPixels ) << "\t";
-		std::cout << channel2->getValue( i, numberOfPixels ) << "\t";
-		std::cout << channel3->getValue( i, numberOfPixels ) << "\t\t";
+		std::cout << channel1->getValue( i, imageSize ) << "\t";
+		std::cout << channel2->getValue( i, imageSize ) << "\t";
+		std::cout << channel3->getValue( i, imageSize ) << "\t\t";
 	}
 	std::cout << std::endl << std::endl;
 }
