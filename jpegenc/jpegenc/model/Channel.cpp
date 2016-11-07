@@ -7,12 +7,17 @@ color Channel::getValue(size_t x, size_t y, Dimension mapped_size) {
 		x = mapped_size.width - 1;
 	if (y >= mapped_size.height)
 		y = mapped_size.height - 1;
-	size_t col = x * (imageSize.width / (float)mapped_size.width);
-	size_t row = y * (imageSize.height / (float)mapped_size.height);
-	return values[ col + row*imageSize.width ];
+	
+	if (imageSize != mapped_size) {
+		x *= (imageSize.width / (float)mapped_size.width);
+		y *= (imageSize.height / (float)mapped_size.height);
+	}
+	return values[ x + y*imageSize.width ];
 }
 
 color Channel::getValue(size_t index, Dimension mapped_size) {
+	if (imageSize == mapped_size)
+		return values[index];
 	return getValue(index%mapped_size.width, index/mapped_size.width, mapped_size);
 }
 

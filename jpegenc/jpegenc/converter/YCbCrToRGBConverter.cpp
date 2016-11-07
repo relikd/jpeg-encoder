@@ -2,15 +2,15 @@
 
 std::shared_ptr<Image> YCbCrToRGBConverter::convert(std::shared_ptr<Image> originalImage) {
 	
-	auto convertedImage = std::make_shared<Image>(originalImage->imageSize);
-	size_t originalImagePixelCount = originalImage->imageSize.pixelCount;
-	size_t index = originalImagePixelCount;
+	Dimension size = originalImage->imageSize;
+	auto convertedImage = std::make_shared<Image>(size);
 	
+	size_t index = size.pixelCount;
 	while (index) {
 		--index;
-		color y = (color) originalImage->channel1->getValue(index, originalImage->imageSize);
-		color cb = (color) originalImage->channel2->getValue(index, originalImage->imageSize);
-		color cr = (color) originalImage->channel3->getValue(index, originalImage->imageSize);
+		color y = (color) originalImage->channel1->getValue(index, size);
+		color cb = (color) originalImage->channel2->getValue(index, size);
+		color cr = (color) originalImage->channel3->getValue(index, size);
 		color r = (color) (y + 1.4021 * (cr - 128));
 		color g = (color) (y - 0.3441 * (cb - 128) - 0.7142 * (cr - 128));
 		color b = (color) (y + 1.772 * (cb - 128));

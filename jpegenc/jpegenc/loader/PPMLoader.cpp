@@ -42,7 +42,6 @@ std::shared_ptr<Image> PPMLoader::customLoad(const char *pathToImage) {
 	rewind (file);
 	
 	// allocate memory to contain the whole file:
-//	char * buffer = (char*) malloc (sizeof(char)*lSize);
 	char * buffer = new char[lSize];
 	if (buffer == NULL) {fputs ("Memory error",stderr); exit (2);}
 	
@@ -143,7 +142,6 @@ std::shared_ptr<Image> PPMLoader::customLoad(const char *pathToImage) {
 	
 	// terminate
 	fclose (file);
-//	free (buffer);
 	delete[] buffer;
 	
 	image->colorSpace = ColorSpaceRGB;
@@ -151,8 +149,8 @@ std::shared_ptr<Image> PPMLoader::customLoad(const char *pathToImage) {
 
 }
 
-size_t PPMLoader::normalize(size_t colorValue, int originalMaxValue, int normalizedMaxValue) {
-	return (size_t) ((colorValue / (float) originalMaxValue) * normalizedMaxValue);
+color PPMLoader::normalize(color colorValue, int originalMaxValue, int normalizedMaxValue) {
+	return (color) ((colorValue / (float) originalMaxValue) * normalizedMaxValue);
 }
 
 int	PPMLoader::scanForPattern(FILE * file, const char * fmt , void* arg0, void* arg1, void* arg2) {
@@ -176,5 +174,3 @@ int	PPMLoader::scanForPattern(FILE * file, const char * fmt , void* arg0, void* 
 	
 	return actualFound;
 }
-
-

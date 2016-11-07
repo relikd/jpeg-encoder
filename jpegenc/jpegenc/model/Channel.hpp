@@ -16,6 +16,8 @@ struct Dimension {
 	Dimension& operator/=(const Dimension &other) {
 		width/=other.width; height/=other.height; pixelCount/=other.pixelCount; return *this;
 	}
+	bool operator==(const Dimension &other) { return (pixelCount == other.pixelCount); }
+	bool operator!=(const Dimension &other) { return (pixelCount != other.pixelCount); }
 };
 
 
