@@ -1,5 +1,6 @@
 #include <memory>
 #include <fstream>
+#include <sstream>
 #include "PPMLoader.hpp"
 std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 	FILE *file = fopen(pathToImage, "r");
@@ -189,20 +190,20 @@ void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
 	std::ofstream outputStream(pathToImage);
 	size_t pixelCount = imageSize.pixelCount;
 
-	outputStream << "P3" << std::endl;
-	outputStream << "# Created by Team Awesome" << std::endl;
-	outputStream << imageSize.width << " " << imageSize.height << std::endl;
-	outputStream << "255" << std::endl;
+	outputStream << "P3" << "\n";
+	outputStream << "# Created by Team Awesome" << "\n";
+	outputStream << imageSize.width << " " << imageSize.height << "\n";
+	outputStream << "255" << "\n";
 
 	for (size_t i = 0; i < pixelCount; ++i) {
 		outputStream << (size_t) image->channel1->getValue(i, imageSize) << " ";
 		outputStream << (size_t) image->channel2->getValue(i, imageSize) << " ";
 		outputStream << (size_t) image->channel3->getValue(i, imageSize) << " ";
-
+		
 		if ( (i + 1) % 4 == 0 ) {
-			outputStream << std::endl;
+			outputStream << "\n";
 		}
 	}
-	outputStream << std::endl;
+	outputStream << "n";
 	outputStream.close();
 }
