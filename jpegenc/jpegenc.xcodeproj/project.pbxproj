@@ -47,6 +47,7 @@
 		5496ABDC1DCFA97100FED0CF /* Channel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Channel.hpp; sourceTree = "<group>"; };
 		54A027DD1DB6CFFB0053733A /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = CMakeLists.txt; path = ../CMakeLists.txt; sourceTree = "<group>"; };
 		9572F5271DC0CA7D00FC7CE2 /* singapore4k.test.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = singapore4k.test.ppm; sourceTree = "<group>"; };
+		95FD0A111DD0E852005A89BB /* gigantic.test.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = gigantic.test.ppm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +73,7 @@
 		542102F91DB6A7D9004A1246 /* data */ = {
 			isa = PBXGroup;
 			children = (
+				95FD0A111DD0E852005A89BB /* gigantic.test.ppm */,
 				9572F5271DC0CA7D00FC7CE2 /* singapore4k.test.ppm */,
 				542102FA1DB6A7D9004A1246 /* very_small.ppm */,
 			);

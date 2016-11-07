@@ -2,39 +2,8 @@
 #include <fstream>
 #include <sstream>
 #include "PPMLoader.hpp"
-std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
-	FILE *file = fopen(pathToImage, "r");
-
-	char magicNumber[8];
-	scanForPattern(file, "%s\n", magicNumber);
-	int width = 0, height = 0;
-	scanForPattern(file, "%d %d\n", &width, &height);
-
-	int maxValue = 0;
-	scanForPattern(file, "%d\n", &maxValue);
-
-	auto image = std::make_shared<Image>(Dimension(width, height));
-
-	size_t index = 0;
-
-	while (1) {
-		color r = 0, g = 0, b = 0;
-		int elementsRead = scanForPattern(file, "%d %d %d", &r, &g, &b);
-
-		if (elementsRead == EOF) {
-			break;
-		}
-		image->channel1->setValue(index, normalize(r, maxValue, 255));
-		image->channel2->setValue(index, normalize(g, maxValue, 255));
-		image->channel3->setValue(index, normalize(b, maxValue, 255));
-		++index;
-	}
-	image->colorSpace = ColorSpaceRGB;
-	return image;
-}
 
 std::shared_ptr<Image> PPMLoader::customLoad(const char *pathToImage) {
-
 	FILE *file = fopen(pathToImage, "rb");
 	if (file == NULL) {
 		fputs("File error", stderr);
@@ -155,29 +124,11 @@ std::shared_ptr<Image> PPMLoader::customLoad(const char *pathToImage) {
 
 }
 
-color PPMLoader::normalize(color colorValue, int originalMaxValue, int normalizedMaxValue) {
-	return (color) ((colorValue / (float) originalMaxValue) * normalizedMaxValue);
-}
-
-int PPMLoader::scanForPattern(FILE *file, const char *fmt, void *arg0, void *arg1, void *arg2) {
-	int actualFound = 0;
-	int continueSearch = 1;
-	while (continueSearch != EOF && continueSearch > 0) {
-		char comment[255];
-		continueSearch = fscanf(file, "# %99[^\n]", comment);
-
-		// No comments found
-		if (continueSearch == 0) {
-			if (arg2 != nullptr) {
-				actualFound = fscanf(file, fmt, arg0, arg1, arg2);
-			} else if (arg1 != nullptr) {
-				actualFound = fscanf(file, fmt, arg0, arg1);
-			} else {
-				actualFound = fscanf(file, fmt, arg0);
-			}
-		}
+color PPMLoader::normalize(color colorValue, int originalMaxValue, int normalizedMaxValue){
+	if (originalMaxValue == normalizedMaxValue) {
+		return colorValue;
 	}
-	return actualFound;
+	return (color) ((colorValue / (float) originalMaxValue) * normalizedMaxValue);
 }
 
 void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
