@@ -12,7 +12,7 @@ struct PPMLoader {
 	std::shared_ptr<Image> customLoad(const char *pathToImage);
 
 private:
-	size_t normalize(size_t colorValue, int originalMaxValue, int normalizedMaxValue);
+	color normalize(color colorValue, int originalMaxValue, int normalizedMaxValue);
 	int	scanForPattern(FILE * file, const char * fmt , void* arg0, void* arg1 = nullptr, void* arg2 = nullptr);
 };
 
