@@ -8,7 +8,7 @@ struct YCbCrToRGBConverter {
 	std::shared_ptr<Image> convert(std::shared_ptr<Image> originalImage);
 
 private:
-	color normalize(color value);
+	color normalize(int value);
 };
 
 #endif //JPEG_ENCODER_YCBCRTORGBCONVERTER_H
