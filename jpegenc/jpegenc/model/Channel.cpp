@@ -2,27 +2,26 @@
 #include <math.h>
 #include "Channel.hpp"
 
-color Channel::getValue(size_t x, size_t y, Dimension size) {
-	if (x >= size.width)
-		x = size.width - 1;
-	if (y >= size.height)
-		y = size.height - 1;
-	
-	size_t index = x + size.width * y;
-	size_t numberOfPixels = x * y;
-	return getValue(index, numberOfPixels);
+color Channel::getValue(size_t x, size_t y, Dimension mapped_size) {
+	if (x >= mapped_size.width)
+		x = mapped_size.width - 1;
+	if (y >= mapped_size.height)
+		y = mapped_size.height - 1;
+	size_t col = x * (imageSize.width / (float)mapped_size.width);
+	size_t row = y * (imageSize.height / (float)mapped_size.height);
+	return values[ col + row*imageSize.width ];
 }
 
-color Channel::getValue(size_t index, size_t numberOfPixels) {
-	return values[ (index * imageSize.pixelCount) / numberOfPixels];
+color Channel::getValue(size_t index, Dimension mapped_size) {
+	return getValue(index%mapped_size.width, index/mapped_size.width, mapped_size);
 }
 
-void Channel::setValue(size_t x, size_t y, Dimension size, color value) {
-	if (x >= size.width || y >= size.height) {
+void Channel::setValue(size_t x, size_t y, color value) {
+	if (x >= imageSize.width || y >= imageSize.height) {
 		std::cout << "Cant set pixel out of range " << x << " " << y << std::endl;
 		return;
 	}
-	size_t index = x + size.width * y;
+	size_t index = x + imageSize.width * y;
 	setValue(index, value);
 }
 
