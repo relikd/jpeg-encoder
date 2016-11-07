@@ -33,7 +33,7 @@ void Image::reduceBySubSample(size_t xdiv, size_t ydiv) {
 	imageSize /= Dimension(xdiv,ydiv);
 }
 
-void Image::reduceByAvarage(size_t xdiv, size_t ydiv) {
+void Image::reduceByAverage(size_t xdiv, size_t ydiv) {
 	channel1->reduceByAveraging(xdiv, ydiv);
 	channel2->reduceByAveraging(xdiv, ydiv);
 	channel3->reduceByAveraging(xdiv, ydiv);

@@ -1,4 +1,5 @@
 #include "YCbCrToRGBConverter.h"
+#include <math.h>
 
 std::shared_ptr<Image> YCbCrToRGBConverter::convert(std::shared_ptr<Image> originalImage) {
 	
@@ -11,12 +12,12 @@ std::shared_ptr<Image> YCbCrToRGBConverter::convert(std::shared_ptr<Image> origi
 		color y = (color) originalImage->channel1->getValue(index, size);
 		color cb = (color) originalImage->channel2->getValue(index, size);
 		color cr = (color) originalImage->channel3->getValue(index, size);
-		color r = (color) (y + 1.4021 * (cr - 128));
-		color g = (color) (y - 0.3441 * (cb - 128) - 0.7142 * (cr - 128));
-		color b = (color) (y + 1.772 * (cb - 128));
-		convertedImage->channel1->setValue(index, normalize(r));
-		convertedImage->channel2->setValue(index, normalize(g));
-		convertedImage->channel3->setValue(index, normalize(b));
+		color r = (color) round((y + 1.4021 * (cr - 128)));
+		color g = (color) round((y - 0.3441 * (cb - 128) - 0.7142 * (cr - 128)));
+		color b = (color) round((y + 1.772 * (cb - 128)));
+		convertedImage->channel1->setValue(index, r);
+		convertedImage->channel2->setValue(index, g);
+		convertedImage->channel3->setValue(index, b);
 	}
 	convertedImage->colorSpace = ColorSpaceRGB;
 	return convertedImage;
