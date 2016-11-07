@@ -11,26 +11,18 @@ int main(int argc, const char *argv[]) {
 	clock_t t;
 	t = clock();
 
-	auto image = loader.customLoad("/home/marv/Projects/jpeg-encoder/jpegenc/jpegenc/data/singapore4k.test.ppm");
-
-	std::cout << (size_t) image->channel1->getValue( 0, image->imageSize.height - 1, image->imageSize ) << std::endl;
+	auto image = loader.customLoad("data/singapore4k.test.ppm");
 
 	RGBToYCbCrConverter converter1;
 	image = converter1.convert(image);
 
-	std::cout << (size_t) image->channel1->getValue( 0, image->imageSize.height - 1, image->imageSize ) << std::endl;
-
 	image->channel2->reduceBySubSampling( image->imageSize.width, image->imageSize.height );
 	image->channel3->reduceBySubSampling( image->imageSize.width, image->imageSize.height );
-
-	std::cout << (size_t) image->channel1->getValue( 0, image->imageSize.height - 1, image->imageSize ) << std::endl;
 
 	YCbCrToRGBConverter converter2;
 	image = converter2.convert(image);
 
-	std::cout << (size_t) image->channel1->getValue( 0, image->imageSize.height - 1, image->imageSize ) << std::endl;
-
-	loader.write("/home/marv/Projects/jpeg-encoder/jpegenc/jpegenc/data/output.test.ppm", image);
+	loader.write("data/output.test.ppm", image);
 
 //	auto image = loader.load("data/singapore4k.test.ppm");
 //	image->print();

@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		540D8CAF1DD0BE4D00A4E4C9 /* PPMLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 540D8CAD1DD0BE4D00A4E4C9 /* PPMLoader.cpp */; };
 		542102FD1DB6A83C004A1246 /* very_small.ppm in CopyFiles */ = {isa = PBXBuildFile; fileRef = 542102FA1DB6A7D9004A1246 /* very_small.ppm */; };
 		545A4D491DB6471500B5E365 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 545A4D481DB6471500B5E365 /* main.cpp */; };
 		546A42FA1DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F01DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp */; };
 		546A42FB1DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F21DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp */; };
-		546A42FC1DBA7A8D006C2629 /* PPMLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F51DBA7A8D006C2629 /* PPMLoader.cpp */; };
 		546A42FD1DBA7A8D006C2629 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F81DBA7A8D006C2629 /* Image.cpp */; };
 		5496ABDD1DCFA97100FED0CF /* Channel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5496ABDB1DCFA97100FED0CF /* Channel.cpp */; };
 		95FA179A1DC0CCFB0042DA1B /* singapore4k.test.ppm in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9572F5271DC0CA7D00FC7CE2 /* singapore4k.test.ppm */; };
@@ -32,6 +32,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		540D8CAD1DD0BE4D00A4E4C9 /* PPMLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PPMLoader.cpp; sourceTree = "<group>"; };
+		540D8CAE1DD0BE4D00A4E4C9 /* PPMLoader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PPMLoader.hpp; sourceTree = "<group>"; };
 		542102FA1DB6A7D9004A1246 /* very_small.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = very_small.ppm; sourceTree = "<group>"; };
 		545A4D451DB6471500B5E365 /* jpegenc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = jpegenc; sourceTree = BUILT_PRODUCTS_DIR; };
 		545A4D481DB6471500B5E365 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
@@ -39,8 +41,6 @@
 		546A42F11DBA7A8D006C2629 /* RGBToYCbCrConverter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = RGBToYCbCrConverter.hpp; sourceTree = "<group>"; };
 		546A42F21DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = YCbCrToRGBConverter.cpp; sourceTree = "<group>"; };
 		546A42F31DBA7A8D006C2629 /* YCbCrToRGBConverter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YCbCrToRGBConverter.h; sourceTree = "<group>"; };
-		546A42F51DBA7A8D006C2629 /* PPMLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PPMLoader.cpp; sourceTree = "<group>"; };
-		546A42F61DBA7A8D006C2629 /* PPMLoader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PPMLoader.hpp; sourceTree = "<group>"; };
 		546A42F81DBA7A8D006C2629 /* Image.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image.cpp; sourceTree = "<group>"; };
 		546A42F91DBA7A8D006C2629 /* Image.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Image.hpp; sourceTree = "<group>"; };
 		5496ABDB1DCFA97100FED0CF /* Channel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Channel.cpp; sourceTree = "<group>"; };
@@ -60,6 +60,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		540D8CAC1DD0BE4D00A4E4C9 /* io */ = {
+			isa = PBXGroup;
+			children = (
+				540D8CAD1DD0BE4D00A4E4C9 /* PPMLoader.cpp */,
+				540D8CAE1DD0BE4D00A4E4C9 /* PPMLoader.hpp */,
+			);
+			path = io;
+			sourceTree = "<group>";
+		};
 		542102F91DB6A7D9004A1246 /* data */ = {
 			isa = PBXGroup;
 			children = (
@@ -92,7 +101,7 @@
 				542102F91DB6A7D9004A1246 /* data */,
 				545A4D481DB6471500B5E365 /* main.cpp */,
 				546A42EF1DBA7A8D006C2629 /* converter */,
-				546A42F41DBA7A8D006C2629 /* loader */,
+				540D8CAC1DD0BE4D00A4E4C9 /* io */,
 				546A42F71DBA7A8D006C2629 /* model */,
 			);
 			path = jpegenc;
@@ -107,15 +116,6 @@
 				546A42F31DBA7A8D006C2629 /* YCbCrToRGBConverter.h */,
 			);
 			path = converter;
-			sourceTree = "<group>";
-		};
-		546A42F41DBA7A8D006C2629 /* loader */ = {
-			isa = PBXGroup;
-			children = (
-				546A42F51DBA7A8D006C2629 /* PPMLoader.cpp */,
-				546A42F61DBA7A8D006C2629 /* PPMLoader.hpp */,
-			);
-			path = loader;
 			sourceTree = "<group>";
 		};
 		546A42F71DBA7A8D006C2629 /* model */ = {
@@ -186,9 +186,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				540D8CAF1DD0BE4D00A4E4C9 /* PPMLoader.cpp in Sources */,
 				545A4D491DB6471500B5E365 /* main.cpp in Sources */,
 				546A42FB1DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp in Sources */,
-				546A42FC1DBA7A8D006C2629 /* PPMLoader.cpp in Sources */,
 				546A42FA1DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp in Sources */,
 				546A42FD1DBA7A8D006C2629 /* Image.cpp in Sources */,
 				5496ABDD1DCFA97100FED0CF /* Channel.cpp in Sources */,
