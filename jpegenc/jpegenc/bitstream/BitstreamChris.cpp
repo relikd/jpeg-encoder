@@ -29,7 +29,13 @@ void BitStream::add(bool bit){
 }
 
 bool BitStream::read(size_t index){
-	return false;
+	auto given_intIndex = index / 32;
+	auto given_blockIndex = given_intIndex / bufferSize;
+	auto given_bufferIndex = given_intIndex - bufferSize * given_blockIndex;
+	auto given_bitIndex = 31 - index % 32;
+	
+	std::cout << given_blockIndex << " " << given_bufferIndex << " " << given_bitIndex << std::endl;
+	return (blocks[given_blockIndex][given_bufferIndex] >> given_bitIndex) & 1;
 }
 
 void BitStream::print(){
