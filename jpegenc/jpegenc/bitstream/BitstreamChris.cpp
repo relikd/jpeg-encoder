@@ -6,23 +6,26 @@
 //  Copyright © 2016 FHWS. All rights reserved.
 //
 
+#include <bitset>
 #include "BitstreamChris.hpp"
 
 void BitStream::add(bool bit){
-	// 2147483616 represents 1111111111111111111111111100000 which works as a bitmask
-	// to get the 5 bits at the end which contain the current position in the given int
-	//	if(bit)
 	
+	if(bitIndex == -1) {
+		bitIndex = 31;
+		++bufferIndex;
+	}
 	
-	blocks[blockIndex][bitIndex / 32] ^= bit << (31 - (bitIndex ^ 2147483616)) ;
-	blockIndex = bitIndex / 32;
-	
-	//	std::cout << blockIndex << " " << bitIndex / 32 << std::endl;
-	++bitIndex;
-	
-	if(bitIndex % bufferSize == 0) {
+	if(bufferIndex == bufferSize) {
+		bufferIndex = 0;
+		blocks.push_back(new uint32_t[bufferSize]);
 		++blockIndex;
 	}
+	
+	if(bit)
+		blocks[blockIndex][bufferIndex] ^= bit << bitIndex ;
+	
+	--bitIndex;
 }
 
 bool BitStream::read(size_t index){
@@ -30,9 +33,14 @@ bool BitStream::read(size_t index){
 }
 
 void BitStream::print(){
+	std::cout << blockIndex << " " << bufferIndex << " " << bitIndex << std::endl;
 	for (size_t i = 0; i <= blockIndex; ++i) {
-		for (int i = 0;  i < bufferSize; ++i) {
-			std::cout << blocks[0][i] << std::endl;
+		for (int k = 0;  k <= bufferSize; ++k) {
+			std::cout << i << " " << k << " " << std::endl;
+			std::cout << std::bitset<32>(blocks[i][k]) << std::endl;
+			
+			if (i == blockIndex && k >= bufferIndex && bitIndex <= 31)
+				break;
 		}
 	}
 }

@@ -15,9 +15,9 @@
 
 struct BitStream {
 	
+	int bitIndex = 31;
 	size_t blockIndex = 0;
 	size_t bufferIndex = 0;
-	size_t bitIndex = 0;
 	size_t bufferSize;
 	std::vector<uint32_t*> blocks;
 	
