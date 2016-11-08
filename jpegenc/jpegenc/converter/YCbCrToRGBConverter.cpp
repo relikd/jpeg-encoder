@@ -1,4 +1,4 @@
-#include "YCbCrToRGBConverter.h"
+#include "YCbCrToRGBConverter.hpp"
 #include <math.h>
 
 std::shared_ptr<Image> YCbCrToRGBConverter::convert(std::shared_ptr<Image> originalImage) {
