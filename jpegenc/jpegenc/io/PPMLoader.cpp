@@ -1,32 +1,59 @@
-#include <memory>
 #include <fstream>
-#include <sstream>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+
 #include "PPMLoader.hpp"
 
-std::shared_ptr<Image> PPMLoader::customLoad(const char *pathToImage) {
-	FILE *file = fopen(pathToImage, "rb");
-	if (file == NULL) {
-		fputs("File error", stderr);
-		exit(1);
+std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
+	
+	// just to get the file size
+	FILE *fl = fopen(pathToImage, "r");
+	fseek(fl, 0, SEEK_END);
+	long lSize = ftell(fl);
+	fclose(fl);
+	
+	// start actual file reading with mmap
+	int fd;
+	char *buffer;
+	
+	fd = open(pathToImage, O_RDONLY);
+	if (fd == -1) {
+		perror("Error opening file for reading");
+		exit(EXIT_FAILURE);
 	}
-
-	fseek(file, 0, SEEK_END);
-	long lSize = ftell(file);
-	rewind(file);
-
-	// allocate memory to contain the whole file:
-	char *buffer = new char[lSize];
-	if (buffer == NULL) {
-		fputs("Memory error", stderr);
-		exit(2);
+	
+	buffer = (char*)mmap(0, lSize, PROT_READ, MAP_SHARED, fd, 0);
+	if (buffer == MAP_FAILED) {
+		close(fd);
+		perror("Error mmapping the file");
+		exit(EXIT_FAILURE);
 	}
-
-	// copy the file into the buffer:
-	size_t result = fread(buffer, 1, lSize, file);
-	if (result != lSize) {
-		fputs("Reading error", stderr);
-		exit(3);
-	}
+	close(fd);
+	
+//	FILE *file = fopen(pathToImage, "r");
+//	if (file == NULL) {
+//		fputs("File error", stderr);
+//		exit(1);
+//	}
+//
+//	fseek(file, 0, SEEK_END);
+//	long lSize = ftell(file);
+//	rewind(file);
+//
+//	// allocate memory to contain the whole file:
+//	char *buffer = new char[lSize];
+//	if (buffer == NULL) {
+//		fputs("Memory error", stderr);
+//		exit(2);
+//	}
+//
+//	// copy the file into the buffer:
+//	size_t result = fread(buffer, 1, lSize, file);
+//	if (result != lSize) {
+//		fputs("Reading error", stderr);
+//		exit(3);
+//	}
 
 	/* the whole file is now loaded in the memory buffer. */
 
@@ -116,8 +143,8 @@ std::shared_ptr<Image> PPMLoader::customLoad(const char *pathToImage) {
 
 
 	// terminate
-	fclose(file);
-	delete[] buffer;
+//	fclose(file);
+//	delete[] buffer;
 
 	image->colorSpace = ColorSpaceRGB;
 	return image;

@@ -8,7 +8,7 @@
 struct PPMLoader {
 	PPMLoader() {}
 	
-	std::shared_ptr<Image> customLoad(const char *pathToImage);
+	std::shared_ptr<Image> load(const char *pathToImage);
 	void write(const char *pathToImage, std::shared_ptr<Image> image);
 
 private:
