@@ -1,5 +1,6 @@
 #include <iostream>
 #include "io/PPMLoader.hpp"
+#include "bitstream/BitstreamMarcel.hpp"
 #include <stdlib.h>
 
 int main(int argc, const char *argv[]) {
@@ -8,7 +9,7 @@ int main(int argc, const char *argv[]) {
 	clock_t t;
 	t = clock();
 
-	auto image = loader.load("/home/marv/Projects/jpeg-encoder/images/very_small.ppm");
+	//auto image = loader.load("/home/marv/Projects/jpeg-encoder/images/very_small.ppm");
 
 //	image->print();
 
@@ -31,6 +32,16 @@ int main(int argc, const char *argv[]) {
 //	printf ("It took me %lu clicks (%f seconds).\n",t,((float)t)/CLOCKS_PER_SEC);
 
 //	image->print();
+
+	BitstreamMarcel bitstream;
+
+	for (int i = 0; i < 16; ++i) {
+		bitstream.add(true);
+	}
+
+	bitstream.print();
+
+	//cout << bitstream.read(30) << endl;
 
 	return 0;
 }
