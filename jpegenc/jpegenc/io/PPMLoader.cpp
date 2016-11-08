@@ -6,156 +6,24 @@
 #include "PPMLoader.hpp"
 
 std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
+	readFileToMemory(pathToImage);
 	
-	// just to get the file size
-	FILE *fl = fopen(pathToImage, "r");
-	fseek(fl, 0, SEEK_END);
-	long lSize = ftell(fl);
-	fclose(fl);
-
-	// start actual file reading with mmap
-	int fd;
-	char *buffer;
-
-	fd = open(pathToImage, O_RDONLY);
-	if (fd == -1) {
-		perror("Error opening file for reading");
-		exit(EXIT_FAILURE);
-	}
-
-	buffer = (char*)mmap(0, lSize, PROT_READ, MAP_SHARED, fd, 0);
-	if (buffer == MAP_FAILED) {
-		close(fd);
-		perror("Error mmapping the file");
-		exit(EXIT_FAILURE);
-	}
-	close(fd);
+	size_t bufferIndex = 2; // start right after the first two bytes 'P3'
+	size_t width = 0, height = 0;
+	unsigned int maxValue = 0; // uint because PPM maxVal is limited to 65535
+	bool successfull = parseHeader(bufferIndex, width, height, maxValue);
 	
-//	FILE *file = fopen(pathToImage, "r");
-//	if (file == NULL) {
-//		fputs("File error", stderr);
-//		exit(1);
-//	}
-//
-//	fseek(file, 0, SEEK_END);
-//	long lSize = ftell(file);
-//	rewind(file);
-//
-//	// allocate memory to contain the whole file:
-//	char *buffer = new char[lSize];
-//	if (buffer == NULL) {
-//		fputs("Memory error", stderr);
-//		exit(2);
-//	}
-//
-//	// copy the file into the buffer:
-//	size_t result = fread(buffer, 1, lSize, file);
-//	if (result != lSize) {
-//		fputs("Reading error", stderr);
-//		exit(3);
-//	}
-
-	/* the whole file is now loaded in the memory buffer. */
-
-	bool isComment = false;
-	bool skipNextWhitespace = true;
-	int step = 0;
-	int width = 0, height = 0, maxValue = 0;
-
-	size_t lastPos = 0;
-
-	for (size_t i = 0; i < lSize; i++) {
-		char c = buffer[i];
-		if (c == '#')
-			isComment = true;
-		else if (isComment == false) {
-			if (skipNextWhitespace == false && (c == ' ' || c == '\t' || c == '\n')) {
-				step++;
-
-				if (step == 4) {
-					lastPos = i + 1;
-					break;
-				}
-
-				skipNextWhitespace = true;
-				continue;
-			}
-
-			bool changed = true;
-			if (step == 0 && c == 'P') // read Magic Number
-				if (buffer[i + 1] != '3') {
-					fputs("Invalid format. PPM P3 expected.\n", stderr);
-					exit(4);
-				} else {}
-			else if (step == 1 && c > 47 && c < 59) // width
-				width = width * 10 + c - 48;
-			else if (step == 2 && c > 47 && c < 59) // height
-				height = height * 10 + c - 48;
-			else if (step == 3 && c > 47 && c < 59) // max Value
-				maxValue = maxValue * 10 + c - 48;
-			else
-				changed = false;
-
-			if (changed)
-				skipNextWhitespace = false;
-		} else if (c == '\n')
-			isComment = false;
+	if (successfull) {
+		auto image = std::make_shared<Image>(Dimension(width, height));
+		image->colorSpace = ColorSpaceRGB;
+		
+		parseData(bufferIndex, image, maxValue);
+		
+		buffer = NULL; // not necessary, but anyway
+		return image;
 	}
-
-
-	auto image = std::make_shared<Image>(Dimension(width, height));
-	size_t index = 0;
-	size_t singleValue = 0;
-	Channel *channels[] = {image->channel1, image->channel2, image->channel3};
-	char cSel = 0;
-
-	skipNextWhitespace = true;
-
-	for (size_t i = lastPos; i < lSize; i++) {
-		char c = buffer[i];
-		if (c == '#')
-			isComment = true;
-		else if (isComment == false) {
-			if (skipNextWhitespace == false && (c == ' ' || c == '\t' || c == '\n')) {
-
-				channels[cSel]->setValue(index, normalize(singleValue, maxValue, 255));
-
-				cSel = (cSel + 1) % 3;
-				if (cSel == 0)
-					index++;
-				singleValue = 0;
-				skipNextWhitespace = true;
-				continue;
-			}
-
-			if (c > 47 && c < 59) {
-				singleValue = singleValue * 10 + c - 48;
-				skipNextWhitespace = false;
-			}
-
-
-		} else if (c == '\n')
-			isComment = false;
-	}
-
-	if (singleValue > 0)
-		channels[cSel]->setValue(index, normalize(singleValue, maxValue, 255));
-
-
-	// terminate
-//	fclose(file);
-//	delete[] buffer;
-
-	image->colorSpace = ColorSpaceRGB;
-	return image;
-
-}
-
-color PPMLoader::normalize(color colorValue, int originalMaxValue, int normalizedMaxValue){
-	if (originalMaxValue == normalizedMaxValue) {
-		return colorValue;
-	}
-	return (color) ((colorValue / (float) originalMaxValue) * normalizedMaxValue);
+	buffer = NULL; // not necessary, but anyway
+	return nullptr;
 }
 
 void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
@@ -185,3 +53,132 @@ void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
 	outputStream << "n";
 	outputStream.close();
 }
+
+// ################################################################
+// #
+// #  Helper Methods
+// #
+// ################################################################
+
+color PPMLoader::normalize(color colorValue, const unsigned int originalMaxValue, const unsigned int normalizedMaxValue){
+	if (originalMaxValue == normalizedMaxValue) {
+		return colorValue;
+	}
+	return (color) ((colorValue / (float) originalMaxValue) * normalizedMaxValue);
+}
+
+
+// ################################################################
+// #
+// #  Read File
+// #
+// ################################################################
+
+void PPMLoader::readFileToMemory(const char *pathToImage) {
+	// fopen is used only to get the file size
+	FILE *fl = fopen(pathToImage, "r");
+	fseek(fl, 0, SEEK_END);
+	filesize = ftell(fl);
+	fclose(fl);
+	
+	// start actual file reading with mmap
+	int fd = open(pathToImage, O_RDONLY);
+	if (fd == -1) {
+		perror("Error opening file for reading");
+		exit(EXIT_FAILURE);
+	}
+	
+	buffer = (char*)mmap(0, filesize, PROT_READ, MAP_SHARED, fd, 0);
+	if (buffer == MAP_FAILED) {
+		close(fd);
+		perror("Error mmapping the file");
+		exit(EXIT_FAILURE);
+	}
+	close(fd);
+	/* the whole file is now loaded in the memory buffer. */
+}
+
+bool PPMLoader::parseHeader(size_t &index, size_t &width, size_t &height, unsigned int &maxValue) {
+	// check if file is in the correct format
+	if (buffer[0] != 'P' || buffer[1] != '3') {
+		fputs("Invalid format. PPM P3 expected.\n", stderr);
+		return false;
+	}
+	
+	char c;
+	int headerIndex = 0; // 0 = width, 1 = height, 2 = maxValue, 3 = first data value
+	int headerValue = 0; // holds the actual number
+	bool headerValueChanged = false;
+	bool isComment = false;
+	
+	while (headerIndex < 4) {
+		c = buffer[ index++ ];
+		// skip comments till end of line
+		if (isComment) {
+			if (c == '\n')
+				isComment = false;
+			continue;
+		}
+		// calculate number
+		if (c > 47 && c < 59) {
+			if (headerIndex >2)
+				return true; // index = begining of the first data value
+			
+			headerValue = headerValue * 10 + c - 48;
+			headerValueChanged = true;
+			continue;
+		}
+		// save number to header info
+		if (headerValueChanged) {
+			switch ( headerIndex++ ) {
+				case 0:    width = headerValue; break;
+				case 1:   height = headerValue; break;
+				case 2: maxValue = headerValue; break;
+			}
+			headerValue = 0;
+			headerValueChanged = false;
+		}
+		
+		if (c == '#')
+			isComment = true;
+	}
+	return true;
+}
+
+void PPMLoader::parseData(size_t &index, std::shared_ptr<Image> image, const unsigned int maxValue) {
+	char c;
+	size_t pixelIndex = 0; // logical index to channel array index
+	int value = 0; // holds the actual number
+	bool valueChanged = false;
+	
+	Channel *channels[] = {image->channel1, image->channel2, image->channel3};
+	char channelIndex = 0; // constantly switch the three channels
+	
+	while (index < filesize) {
+		c = buffer[ index++ ];
+		
+		// calculate number
+		if (c > 47 && c < 59) {
+			value = value * 10 + c - 48;
+			valueChanged = true;
+			continue;
+		}
+		// save number to channel array
+		if (valueChanged) {
+			
+			channels[channelIndex]->setValue(pixelIndex, normalize(value, maxValue, 255));
+			
+			channelIndex = (channelIndex + 1) % 3;
+			if (channelIndex == 0)
+				++pixelIndex;
+			
+			value = 0;
+			valueChanged = false;
+		}
+	}
+	
+	// if there's no whitespace after the last number! Otherwise the loop will omit it
+	if (value > 0)
+		channels[channelIndex]->setValue(pixelIndex, normalize(value, maxValue, 255));
+}
+
