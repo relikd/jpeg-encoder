@@ -121,9 +121,10 @@ bool PPMLoader::parseHeader(size_t &index, size_t &width, size_t &height, unsign
 		}
 		// calculate number
 		if (c > 47 && c < 59) {
-			if (headerIndex >2)
+			if (headerIndex >2) {
+				--index;
 				return true; // index = begining of the first data value
-			
+			}
 			headerValue = headerValue * 10 + c - 48;
 			headerValueChanged = true;
 			continue;
