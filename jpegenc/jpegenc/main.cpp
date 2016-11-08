@@ -11,7 +11,7 @@ int main(int argc, const char *argv[]) {
 	clock_t t;
 	t = clock();
 
-	auto image = loader.customLoad("data/gigantic.test.ppm");
+	auto image = loader.load("data/gigantic.test.ppm");
 
 //	RGBToYCbCrConverter converter1;
 //	image = converter1.convert(image);
@@ -24,7 +24,7 @@ int main(int argc, const char *argv[]) {
 //
 //	loader.write("data/output.test.ppm", image);
 
-//	auto image = loader.load("data/singapore4k.test.ppm");
+//	auto image = loader.load("data/output.test.ppm");
 //	image->print();
 
 
