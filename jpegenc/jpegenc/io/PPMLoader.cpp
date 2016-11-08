@@ -12,17 +12,17 @@ std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 	fseek(fl, 0, SEEK_END);
 	long lSize = ftell(fl);
 	fclose(fl);
-	
+
 	// start actual file reading with mmap
 	int fd;
 	char *buffer;
-	
+
 	fd = open(pathToImage, O_RDONLY);
 	if (fd == -1) {
 		perror("Error opening file for reading");
 		exit(EXIT_FAILURE);
 	}
-	
+
 	buffer = (char*)mmap(0, lSize, PROT_READ, MAP_SHARED, fd, 0);
 	if (buffer == MAP_FAILED) {
 		close(fd);
