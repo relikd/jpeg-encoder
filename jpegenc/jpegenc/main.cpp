@@ -58,19 +58,29 @@ void testMarv() {
 	bitStreamMarv.add(false);
 
 	// Test adding bytes
-	char byte = 0xd2;   // 11010010
+	char byte = (char) 0xd2;   // 11010010
 	bitStreamMarv.add( byte );
 
 	// Test printing
 	bitStreamMarv.print();
 
-	// Test reading
+	// Test reading bits
 	for (size_t i = 0; i < bitStreamMarv.size(); ++i) {
 		std::cout << bitStreamMarv.read(i);
 	}
 	std::cout << std::endl;
 
-	// Test performance
+	// Test reading multiple bits
+	size_t firstIndex = 0;
+	size_t lastIndex = bitStreamMarv.size() - 1;
+	bool *bits = bitStreamMarv.read(firstIndex, lastIndex);
+	for (size_t i = 0; i < bitStreamMarv.size(); ++i) {
+		std:cout << bits[i];
+	}
+	std::cout << std::endl;
+	delete[] bits;
+
+	// Test performance adding bits
 	size_t numberOfRounds = 100;
 	size_t numberOfElements = 10000000;
 	clock_t timeStamp;
@@ -91,6 +101,28 @@ void testMarv() {
 	clock_t averageTime = totalTime / numberOfRounds;
 
 	printf("Adding %lu single bits took %lu clicks (%f seconds) on average (%lu times).\n",numberOfElements, averageTime,((float)averageTime)/CLOCKS_PER_SEC, numberOfRounds);
+
+	// Test performance adding bytes
+	numberOfRounds = 100;
+	numberOfElements = 10000000;
+	totalTime = 0;
+
+	for (size_t i = 0; i < numberOfRounds; ++i)
+	{
+		timeStamp = clock();
+
+		BitStreamMarv bitStream(numberOfElements);
+		for (size_t k = 0; k < numberOfElements; ++k)
+		{
+			bitStream.add((char) 0xd2); // 11010010
+		}
+		timeStamp = clock() - timeStamp;
+		totalTime = totalTime + timeStamp;
+	}
+	averageTime = totalTime / numberOfRounds;
+
+	printf("Adding %lu bytes took %lu clicks (%f seconds) on average (%lu times).\n",numberOfElements, averageTime,((float)averageTime)/CLOCKS_PER_SEC, numberOfRounds);
+
 }
 
 void testOleg() {

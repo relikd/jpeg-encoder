@@ -29,6 +29,7 @@ public:
 	void add(bool bit);
 	void add(char byte);
 	bool read(size_t index);
+	bool *read(size_t firstIndex, size_t stop);
 	void print();
 
 	unsigned long size();
