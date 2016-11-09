@@ -15,6 +15,15 @@ bool BitStreamMarv::read(size_t index) {
 	return bits->at(index);
 }
 
+bool *BitStreamMarv::read(size_t firstIndex, size_t lastIndex) {
+	size_t size = lastIndex - firstIndex + 1;
+	bool *result = new bool[size];
+	for(size_t i = 0; i < size; ++i) {
+		result[i] = read(i);
+	}
+	return result;
+}
+
 void BitStreamMarv::print() {
 	std::cout << "Elements: " << bits->size() << std::endl;
 	std::cout << "Capacity: " << bits->capacity() << std::endl;
