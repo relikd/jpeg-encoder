@@ -1,49 +1,107 @@
 #include <iostream>
 #include "io/PPMLoader.hpp"
 #include "bitstream/BitstreamMarcel.hpp"
+#include "converter/RGBToYCbCrConverter.hpp"
+#include "converter/YCbCrToRGBConverter.hpp"
 #include <stdlib.h>
+#include "bitstream/BitstreamMarv.hpp"
 
-int main(int argc, const char *argv[]) {
-
+void testImage() {
 	PPMLoader loader;
 	clock_t t;
 	t = clock();
-	
-//	auto image = loader.load("data/very_small.ppm");
-//	auto image = loader.load("data/singapore4k.test.ppm");
-//	auto image = loader.load("data/gigantic.test.ppm");
 
-//	image->print();
+	auto image = loader.load("data/gigantic.test.ppm");
 
-//	RGBToYCbCrConverter converter1;
-//	image = converter1.convert(image);
+	RGBToYCbCrConverter converter1;
+	image = converter1.convert(image);
 
-//	image->print();
+	image->channel2->reduceBySubSampling( image->imageSize.width, image->imageSize.height );
+	image->channel3->reduceBySubSampling( image->imageSize.width, image->imageSize.height );
 
-//	image->channel2->reduceBySubSampling( image->imageSize.width, image->imageSize.height );
-//	image->channel3->reduceBySubSampling( image->imageSize.width, image->imageSize.height );
+	YCbCrToRGBConverter converter2;
+	image = converter2.convert(image);
 
-//	YCbCrToRGBConverter converter2;
-//	image = converter2.convert(image);
-//
-//	loader.write("data/output.test.ppm", image);
-
-//	auto image = loader.load("data/output.test.ppm");
+	loader.write("data/output.test.ppm", image);
 
 	t = clock() - t;
 	printf ("It took me %lu clicks (%f seconds).\n",t,((float)t)/CLOCKS_PER_SEC);
+}
 
-//	image->print();
+void testChris() {
+}
 
-//	BitstreamMarcel bitstream;
-//
-//	for (int i = 0; i < 16; ++i) {
-//		bitstream.add(true);
-//	}
-//
-//	bitstream.print();
+void testMarcel() {
+	BitstreamMarcel bitstream;
 
-	//cout << bitstream.read(30) << endl;
+	for (int i = 0; i < 16; ++i) {
+		bitstream.add(true);
+	}
+
+	bitstream.print();
+
+	cout << bitstream.read(30) << endl;
+}
+
+void testMarv() {
+
+	BitStreamMarv bitStreamMarv;
+
+	// Test adding bits
+	bitStreamMarv.add(true);
+	bitStreamMarv.add(true);
+	bitStreamMarv.add(false);
+	bitStreamMarv.add(true);
+	bitStreamMarv.add(false);
+	bitStreamMarv.add(false);
+	bitStreamMarv.add(true);
+	bitStreamMarv.add(false);
+
+	// Test adding bytes
+	char byte = 0xd2;   // 11010010
+	bitStreamMarv.add( byte );
+
+	// Test printing
+	bitStreamMarv.print();
+
+	// Test reading
+	for (size_t i = 0; i < bitStreamMarv.size(); ++i) {
+		std::cout << bitStreamMarv.read(i);
+	}
+	std::cout << std::endl;
+
+	// Test performance
+	size_t numberOfRounds = 100;
+	size_t numberOfElements = 10000000;
+	clock_t timeStamp;
+	clock_t totalTime = 0;
+
+	for (size_t i = 0; i < numberOfRounds; ++i)
+	{
+		timeStamp = clock();
+
+		BitStreamMarv bitStream(numberOfElements);
+		for (size_t k = 0; k < numberOfElements; ++k)
+		{
+			bitStream.add(true);
+		}
+		timeStamp = clock() - timeStamp;
+		totalTime = totalTime + timeStamp;
+	}
+	clock_t averageTime = totalTime / numberOfRounds;
+
+	printf("Adding %lu single bits took %lu clicks (%f seconds) on average (%lu times).\n",numberOfElements, averageTime,((float)averageTime)/CLOCKS_PER_SEC, numberOfRounds);
+}
+
+void testOleg() {
+}
+
+int main(int argc, const char *argv[]) {
+//	testImage();
+//	testChris();
+//	testMarcel();
+	testMarv();
+//	testOleg();
 
 	return 0;
 }
