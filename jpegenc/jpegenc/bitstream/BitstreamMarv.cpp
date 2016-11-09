@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include "BitstreamMarv.hpp"
 
 void BitStreamMarv::add(bool bit) {
@@ -19,7 +20,7 @@ bool *BitStreamMarv::read(size_t firstIndex, size_t lastIndex) {
 	size_t size = lastIndex - firstIndex + 1;
 	bool *result = new bool[size];
 	for(size_t i = 0; i < size; ++i) {
-		result[i] = read(i);
+		result[i] = bits->at(i);
 	}
 	return result;
 }
@@ -35,6 +36,17 @@ void BitStreamMarv::print() {
 		std::cout << "... (" << bits->size() - 100 << " more)";
 	}
 	std::cout << std::endl;
+}
+
+void BitStreamMarv::saveToFile(const char *pathToFile) {
+	std::ofstream outputStream;
+	outputStream.open(pathToFile);
+	for (size_t i = 0; i < size(); ++i)
+	{
+		outputStream << bits->at(i);
+	}
+	outputStream << "\n";
+	outputStream.close();
 }
 
 unsigned long BitStreamMarv::size() {

@@ -33,7 +33,8 @@ void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
 	}
 
 	Dimension imageSize = image->imageSize;
-	std::ofstream outputStream(pathToImage);
+	std::ofstream outputStream;
+	outputStream.open(pathToImage);
 	size_t pixelCount = imageSize.pixelCount;
 
 	outputStream << "P3" << "\n";
@@ -50,7 +51,7 @@ void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
 			outputStream << "\n";
 		}
 	}
-	outputStream << "n";
+	outputStream << "\n";
 	outputStream.close();
 }
 
