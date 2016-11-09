@@ -31,13 +31,8 @@ public:
 	bool read(size_t index);
 	bool *read(size_t firstIndex, size_t stop);
 	void print();
+	void saveToFile(const char *pathToFile);
 
 	unsigned long size();
 	unsigned long capacity();
 };
-// add( bit )
-// add ( byte, numberOfBits )
-// print
-// save( fileName )
-// read( index )
-// read( start,end )

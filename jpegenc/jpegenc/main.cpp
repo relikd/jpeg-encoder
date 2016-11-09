@@ -80,7 +80,10 @@ void testMarv() {
 	std::cout << std::endl;
 	delete[] bits;
 
-	// Test performance adding bits
+	// Test saving
+	bitStreamMarv.saveToFile("/home/marv/Projects/jpeg-encoder/bitstream.txt");
+
+	// Test performance adding bits (0.022s)
 	size_t numberOfRounds = 100;
 	size_t numberOfElements = 10000000;
 	clock_t timeStamp;
@@ -102,7 +105,7 @@ void testMarv() {
 
 	printf("Adding %lu single bits took %lu clicks (%f seconds) on average (%lu times).\n",numberOfElements, averageTime,((float)averageTime)/CLOCKS_PER_SEC, numberOfRounds);
 
-	// Test performance adding bytes
+	// Test performance adding bytes (0.154s)
 	numberOfRounds = 100;
 	numberOfElements = 10000000;
 	totalTime = 0;
@@ -122,7 +125,6 @@ void testMarv() {
 	averageTime = totalTime / numberOfRounds;
 
 	printf("Adding %lu bytes took %lu clicks (%f seconds) on average (%lu times).\n",numberOfElements, averageTime,((float)averageTime)/CLOCKS_PER_SEC, numberOfRounds);
-
 }
 
 void testOleg() {
@@ -132,7 +134,7 @@ int main(int argc, const char *argv[]) {
 //	testImage();
 //	testChris();
 //	testMarcel();
-	testMarv();
+//	testMarv();
 //	testOleg();
 
 	return 0;
