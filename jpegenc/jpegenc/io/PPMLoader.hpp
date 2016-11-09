@@ -1,6 +1,7 @@
 #ifndef PPMLoader_hpp
 #define PPMLoader_hpp
 
+#include <memory>
 #include "../model/Image.hpp"
 
 class PPMLoader {
