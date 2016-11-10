@@ -150,8 +150,8 @@
 				549E8DD41DD299540032006B /* BitstreamMarcel.hpp */,
 				549E8DD51DD299540032006B /* BitstreamMarv.cpp */,
 				549E8DD61DD299540032006B /* BitstreamMarv.hpp */,
-				54F3664D1DD3F2EE004D4AA7 /* BitstreamOleg.hpp */,
 				54F3664E1DD3F2EE004D4AA7 /* BitstreamOleg.cpp */,
+				54F3664D1DD3F2EE004D4AA7 /* BitstreamOleg.hpp */,
 			);
 			path = bitstream;
 			sourceTree = "<group>";
