@@ -29,7 +29,7 @@ struct Image {
 		delete channel3;
 	}
 
-	void print();
+	void print(bool useIntValues = true);
 	void reduceBySubSample(size_t xdiv, size_t ydiv);
 	void reduceByAverage(size_t xdiv, size_t ydiv);
 };

@@ -1,4 +1,3 @@
-#include <fstream>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
@@ -11,7 +10,7 @@ std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 	
 	size_t bufferIndex = 2; // start right after the first two bytes 'P3'
 	size_t width = 0, height = 0;
-	unsigned int maxValue = 0; // uint because PPM maxVal is limited to 65535
+	unsigned short maxValue = 0; // short because PPM maxVal is limited to 65535
 	bool successfull = parseHeader(bufferIndex, width, height, maxValue);
 	
 	if (successfull) {
@@ -37,7 +36,7 @@ void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
 	size_t pixelCount = imageSize.pixelCount * 3; // 3 channel
 	
 	char out[4096];
-	unsigned short idxLine = 0;
+	unsigned short idx = 0;
 	unsigned int zahl;
 	unsigned short stellen;
 	unsigned int zehnerPotenz;
@@ -46,38 +45,38 @@ void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
 	
 	//  HEADER
 	fwrite("P3\n# Created by Team Awesome\n", 1, 29, f);
-	readNumberToFileSaveBuffer(imageSize.width, out, idxLine);
-	readNumberToFileSaveBuffer(imageSize.height, out, idxLine);
-	out[idxLine++] = '\n';
-	readNumberToFileSaveBuffer(255, out, idxLine); // maxValue
-	out[idxLine++] = '\n';
+	readNumberToFileSaveBuffer(imageSize.width, out, idx);
+	readNumberToFileSaveBuffer(imageSize.height, out, idx);
+	out[idx++] = '\n';
+	readNumberToFileSaveBuffer(255, out, idx); // maxValue
+	out[idx++] = '\n';
 	
 	
 	Channel *channels[] = {image->channel1, image->channel2, image->channel3};
-	unsigned short idxTotal = idxLine;
-	idxLine = 0;
+	unsigned short charactersOnLine = 0;
 	
 	for (size_t i = 0; i < pixelCount; i++) {
 		
-		zahl = channels[i%3]->getValue(i/3, imageSize);
+		zahl = channels[i%3]->getValue(i/3, imageSize) * 255;
 		stellen = log10f(zahl);
 		
 		// if the next number will exceed the 70 character limit, start new line
-		if (idxLine + stellen + 2 > 69) { // + 1 for ' ' + 1 because of log10()
-			out[idxLine-1] = '\n'; // replace ' ' with '\n'
-			idxTotal += idxLine;
-			idxLine = 0;
+		if (charactersOnLine + stellen + 2 > 69) { // + 1 for ' ' + 1 because of log10()
+			out[idx-1] = '\n'; // replace ' ' with '\n'
+			charactersOnLine = 0;
 			
-			if (idxTotal + 70 > 4095) { // once buffer full, write to disk
-				fwrite(out, 1, idxTotal, f);
-				idxTotal = 0;
+			if (idx + 70 > 4095) { // once buffer full, write to disk
+				fwrite(out, 1, idx, f);
+				idx = 0;
 			}
 		}
-		readNumberToFileSaveBuffer(zahl, stellen, out, idxLine, zehnerPotenz);
+		// parse int-number to string-number
+		charactersOnLine += stellen + 2;
+		readNumberToFileSaveBuffer(zahl, stellen, out, idx, zehnerPotenz);
 	}
 	
 	// write all remaining bytes
-	fwrite(out, 1, idxTotal + idxLine - 1, f);
+	fwrite(out, 1, idx - 1, f);
 	fclose(f);
 }
 
@@ -106,11 +105,8 @@ void PPMLoader::readNumberToFileSaveBuffer(unsigned int &zahl, unsigned short &s
 // #
 // ################################################################
 
-color PPMLoader::normalize(color colorValue, const unsigned int originalMaxValue, const unsigned int normalizedMaxValue){
-	if (originalMaxValue == normalizedMaxValue) {
-		return colorValue;
-	}
-	return (color) ((colorValue / (float) originalMaxValue) * normalizedMaxValue);
+void PPMLoader::normalize(color &outputValue, const unsigned short &inputValue, const unsigned short &maxValue){
+	outputValue = inputValue / (color) maxValue;
 }
 
 
@@ -144,7 +140,7 @@ void PPMLoader::readFileToMemory(const char *pathToImage) {
 	/* the whole file is now loaded in the memory buffer. */
 }
 
-bool PPMLoader::parseHeader(size_t &index, size_t &width, size_t &height, unsigned int &maxValue) {
+bool PPMLoader::parseHeader(size_t &index, size_t &width, size_t &height, unsigned short &maxValue) {
 	// check if file is in the correct format
 	if (buffer[0] != 'P' || buffer[1] != '3') {
 		fputs("Invalid format. PPM P3 expected.\n", stderr);
@@ -192,7 +188,7 @@ bool PPMLoader::parseHeader(size_t &index, size_t &width, size_t &height, unsign
 	return true;
 }
 
-void PPMLoader::parseData(size_t &index, std::shared_ptr<Image> image, const unsigned int maxValue) {
+void PPMLoader::parseData(size_t &index, std::shared_ptr<Image> image, const unsigned short maxValue) {
 	char c;
 	size_t pixelIndex = 0; // logical index to channel array index
 	int value = 0; // holds the actual number
@@ -200,6 +196,7 @@ void PPMLoader::parseData(size_t &index, std::shared_ptr<Image> image, const uns
 	
 	Channel *channels[] = {image->channel1, image->channel2, image->channel3};
 	char channelIndex = 0; // constantly switch the three channels
+	color currentColor = 0;
 	
 	while (index < filesize) {
 		c = buffer[ index++ ];
@@ -213,7 +210,8 @@ void PPMLoader::parseData(size_t &index, std::shared_ptr<Image> image, const uns
 		// save number to channel array
 		if (valueChanged) {
 			
-			channels[channelIndex]->setValue(pixelIndex, normalize(value, maxValue, 255));
+			normalize(currentColor, value, maxValue);
+			channels[channelIndex]->setValue(pixelIndex, currentColor);
 			
 			channelIndex = (channelIndex + 1) % 3;
 			if (channelIndex == 0)
@@ -225,7 +223,9 @@ void PPMLoader::parseData(size_t &index, std::shared_ptr<Image> image, const uns
 	}
 	
 	// if there's no whitespace after the last number! Otherwise the loop will omit it
-	if (value > 0)
-		channels[channelIndex]->setValue(pixelIndex, normalize(value, maxValue, 255));
+	if (value > 0) {
+		normalize(currentColor, value, maxValue);
+		channels[channelIndex]->setValue(pixelIndex, currentColor);
+	}
 }
 

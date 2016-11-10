@@ -5,10 +5,10 @@
 #include "../model/Image.hpp"
 
 struct YCbCrToRGBConverter {
-	std::shared_ptr<Image> convert(std::shared_ptr<Image> originalImage);
+	void convert(std::shared_ptr<Image> image);
 
 private:
-	color normalize(int value);
+	color normalize(float value);
 };
 
 #endif //JPEG_ENCODER_YCBCRTORGBCONVERTER_H

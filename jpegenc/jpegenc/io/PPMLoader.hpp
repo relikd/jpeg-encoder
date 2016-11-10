@@ -14,12 +14,12 @@ private:
 	long filesize;
 	char *buffer; // the whole file content
 	
-	color normalize(color colorValue, const unsigned int originalMaxValue, const unsigned int normalizedMaxValue);
+	void normalize(color &outputValue, const unsigned short &inputValue, const unsigned short &maxValue);
 	
 	// read
 	void readFileToMemory(const char *pathToImage);
-	bool parseHeader(size_t &index, size_t &width, size_t &height, unsigned int &maxValue);
-	void parseData(size_t &index, std::shared_ptr<Image> image, const unsigned int maxValue);
+	bool parseHeader(size_t &index, size_t &width, size_t &height, unsigned short &maxValue);
+	void parseData(size_t &index, std::shared_ptr<Image> image, const unsigned short maxValue);
 	
 	// write
 	void readNumberToFileSaveBuffer(size_t number, char *buf, unsigned short &index);
