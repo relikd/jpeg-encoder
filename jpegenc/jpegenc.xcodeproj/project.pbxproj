@@ -19,6 +19,7 @@
 		549E8DD81DD299540032006B /* BitstreamMarv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 549E8DD51DD299540032006B /* BitstreamMarv.cpp */; };
 		54F3664F1DD3F2EE004D4AA7 /* BitstreamOleg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54F3664E1DD3F2EE004D4AA7 /* BitstreamOleg.cpp */; };
 		54F366541DD45335004D4AA7 /* Test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54F366521DD45335004D4AA7 /* Test.cpp */; };
+		957B728B1DD4CA070067F6D0 /* BitstreamChris.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 957B728A1DD4CA070067F6D0 /* BitstreamChris.cpp */; };
 		95FA179A1DC0CCFB0042DA1B /* singapore4k.test.ppm in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9572F5271DC0CA7D00FC7CE2 /* singapore4k.test.ppm */; };
 /* End PBXBuildFile section */
 
@@ -61,6 +62,8 @@
 		54F366521DD45335004D4AA7 /* Test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Test.cpp; sourceTree = "<group>"; };
 		54F366531DD45335004D4AA7 /* Test.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Test.hpp; sourceTree = "<group>"; };
 		9572F5271DC0CA7D00FC7CE2 /* singapore4k.test.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = singapore4k.test.ppm; sourceTree = "<group>"; };
+		957B72891DD4CA070067F6D0 /* BitstreamChris.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BitstreamChris.hpp; sourceTree = "<group>"; };
+		957B728A1DD4CA070067F6D0 /* BitstreamChris.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BitstreamChris.cpp; sourceTree = "<group>"; };
 		95FD0A111DD0E852005A89BB /* gigantic.test.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = gigantic.test.ppm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -150,6 +153,8 @@
 		549E8DD21DD299540032006B /* bitstream */ = {
 			isa = PBXGroup;
 			children = (
+				957B72891DD4CA070067F6D0 /* BitstreamChris.hpp */,
+				957B728A1DD4CA070067F6D0 /* BitstreamChris.cpp */,
 				549E8DD31DD299540032006B /* BitstreamMarcel.cpp */,
 				549E8DD41DD299540032006B /* BitstreamMarcel.hpp */,
 				549E8DD51DD299540032006B /* BitstreamMarv.cpp */,
@@ -233,6 +238,7 @@
 				549E8DD81DD299540032006B /* BitstreamMarv.cpp in Sources */,
 				546A42FB1DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp in Sources */,
 				546A42FA1DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp in Sources */,
+				957B728B1DD4CA070067F6D0 /* BitstreamChris.cpp in Sources */,
 				546A42FD1DBA7A8D006C2629 /* Image.cpp in Sources */,
 				5496ABDD1DCFA97100FED0CF /* Channel.cpp in Sources */,
 				54F366541DD45335004D4AA7 /* Test.cpp in Sources */,

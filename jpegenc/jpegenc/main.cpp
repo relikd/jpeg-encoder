@@ -6,6 +6,7 @@
 #include "helper/Test.hpp"
 
 #include "bitstream/BitstreamMarcel.hpp"
+#include "bitstream/BitstreamChris.hpp"
 #include "bitstream/BitstreamMarv.hpp"
 #include "bitstream/BitstreamOleg.hpp"
 
@@ -20,7 +21,7 @@ void testImage() {
 	std::cout << "Loading image ..." << std::endl;
 	Test::performance([]{
 		PPMLoader loader;
-		auto image = loader.load("data/singapore4k.test.ppm");
+		auto image = loader.load("data/gigantic.test.ppm");
 		
 //		RGBToYCbCrConverter converter1;
 //		image = converter1.convert(image);
@@ -42,6 +43,12 @@ void testImage() {
 //  ---------------------------------------------------------------
 
 void testChris() {
+	std::cout << "Tests Chris" << std::endl;
+	std::cout << "Write single bit: ";
+	BitStream bitstream;
+	Test::performance(10000000, 100, [&bitstream]{ bitstream = BitStream(); }, [&bitstream]{
+		bitstream.add(true);
+	});
 }
 
 void testMarcel() {
@@ -201,7 +208,7 @@ void testOleg() {
 
 int main(int argc, const char *argv[]) {
 //	testImage();
-//	testChris();
+	testChris();
 //	testMarcel();
 //	testMarv();
 //	testOleg();
