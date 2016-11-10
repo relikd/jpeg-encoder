@@ -1,10 +1,11 @@
 #include <iostream>
 #include "io/PPMLoader.hpp"
-#include "bitstream/BitstreamMarcel.hpp"
 #include "converter/RGBToYCbCrConverter.hpp"
 #include "converter/YCbCrToRGBConverter.hpp"
 #include <stdlib.h>
+#include "bitstream/BitstreamMarcel.hpp"
 #include "bitstream/BitstreamMarv.hpp"
+#include "bitstream/BitstreamOleg.hpp"
 
 void testImage() {
 	PPMLoader loader;
@@ -128,6 +129,69 @@ void testMarv() {
 }
 
 void testOleg() {
+//	BitstreamOleg bitstream;
+//	bitstream.add(true);
+//	bitstream.add(false);
+//	bitstream.add(false);
+//	bitstream.add(true);
+//	bitstream.add('A', 8); // 0100 0001
+//	bitstream.add('x', 8); // 0111 1000
+//	bitstream.add('l', 8); // 0110 1100
+//	bitstream.add('D', 8); // 0100 0100
+//	bitstream.add(' ', 8); // 0010 0000
+//	for (size_t i = 0; i < 131072*8-2; ++i) {
+//		bitstream.add(1);
+//	}
+//	bitstream.add(255, 6);
+//	bitstream.fillup(true);
+//	bitstream.add(0);
+//	bitstream.fillup();
+//	bitstream.print();
+	
+	
+	// Test performance adding bits (0.022s)
+	size_t numberOfRounds = 100;
+	size_t numberOfElements = 10000000;
+	clock_t timeStamp;
+	clock_t totalTime = 0;
+	
+	for (size_t i = 0; i < numberOfRounds; ++i)
+	{
+		timeStamp = clock();
+		
+		BitstreamOleg bitStream;
+		for (size_t k = 0; k < numberOfElements; ++k)
+		{
+			bitStream.add(true);
+		}
+		timeStamp = clock() - timeStamp;
+		totalTime = totalTime + timeStamp;
+	}
+	clock_t averageTime = totalTime / numberOfRounds;
+	
+	printf("Adding %lu single bits took %lu clicks (%f seconds) on average (%lu times).\n",numberOfElements, averageTime,((float)averageTime)/CLOCKS_PER_SEC, numberOfRounds);
+	
+	// Test performance adding bytes (0.154s)
+	numberOfRounds = 100;
+	numberOfElements = 10000000;
+	totalTime = 0;
+	
+	for (size_t i = 0; i < numberOfRounds; ++i)
+	{
+		timeStamp = clock();
+		
+		BitstreamOleg bitStream;
+//		bitStream.add(1);
+		for (size_t k = 0; k < numberOfElements; ++k)
+		{
+			bitStream.add((char) 0xd2, 8); // 11010010
+		}
+		timeStamp = clock() - timeStamp;
+		totalTime = totalTime + timeStamp;
+	}
+	averageTime = totalTime / numberOfRounds;
+	
+	printf("Adding %lu bytes took %lu clicks (%f seconds) on average (%lu times).\n",numberOfElements, averageTime,((float)averageTime)/CLOCKS_PER_SEC, numberOfRounds);
 }
 
 int main(int argc, const char *argv[]) {
