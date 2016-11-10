@@ -14,7 +14,7 @@ const size_t BLOCK_SIZE  = 0x80000;  // = 524288   =  2^19
 
 
 class BitstreamOleg {
-
+	
 	int allocatedPages = 1;
 	size_t index = 0; // 32bit: 10:19:3
 	std::vector<BitChar *> blocks;
@@ -24,6 +24,8 @@ public:
 	BitstreamOleg() {
 		blocks.push_back(new BitChar[BLOCK_SIZE]);
 	}
+	
+	size_t numberOfBits() { return index; }
 	
 	void add( const bool bit );
 	void add( const BitChar byte, short amount );

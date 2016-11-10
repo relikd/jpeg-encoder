@@ -18,6 +18,7 @@
 		549E8DD71DD299540032006B /* BitstreamMarcel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 549E8DD31DD299540032006B /* BitstreamMarcel.cpp */; };
 		549E8DD81DD299540032006B /* BitstreamMarv.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 549E8DD51DD299540032006B /* BitstreamMarv.cpp */; };
 		54F3664F1DD3F2EE004D4AA7 /* BitstreamOleg.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54F3664E1DD3F2EE004D4AA7 /* BitstreamOleg.cpp */; };
+		54F366541DD45335004D4AA7 /* Test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54F366521DD45335004D4AA7 /* Test.cpp */; };
 		95FA179A1DC0CCFB0042DA1B /* singapore4k.test.ppm in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9572F5271DC0CA7D00FC7CE2 /* singapore4k.test.ppm */; };
 /* End PBXBuildFile section */
 
@@ -57,6 +58,8 @@
 		54A027DD1DB6CFFB0053733A /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = CMakeLists.txt; path = ../CMakeLists.txt; sourceTree = "<group>"; };
 		54F3664D1DD3F2EE004D4AA7 /* BitstreamOleg.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BitstreamOleg.hpp; sourceTree = "<group>"; };
 		54F3664E1DD3F2EE004D4AA7 /* BitstreamOleg.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BitstreamOleg.cpp; sourceTree = "<group>"; };
+		54F366521DD45335004D4AA7 /* Test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Test.cpp; sourceTree = "<group>"; };
+		54F366531DD45335004D4AA7 /* Test.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Test.hpp; sourceTree = "<group>"; };
 		9572F5271DC0CA7D00FC7CE2 /* singapore4k.test.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = singapore4k.test.ppm; sourceTree = "<group>"; };
 		95FD0A111DD0E852005A89BB /* gigantic.test.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = gigantic.test.ppm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -115,6 +118,7 @@
 				545A4D481DB6471500B5E365 /* main.cpp */,
 				549E8DD21DD299540032006B /* bitstream */,
 				546A42EF1DBA7A8D006C2629 /* converter */,
+				54F366511DD45318004D4AA7 /* helper */,
 				540D8CAC1DD0BE4D00A4E4C9 /* io */,
 				546A42F71DBA7A8D006C2629 /* model */,
 			);
@@ -154,6 +158,15 @@
 				54F3664D1DD3F2EE004D4AA7 /* BitstreamOleg.hpp */,
 			);
 			path = bitstream;
+			sourceTree = "<group>";
+		};
+		54F366511DD45318004D4AA7 /* helper */ = {
+			isa = PBXGroup;
+			children = (
+				54F366521DD45335004D4AA7 /* Test.cpp */,
+				54F366531DD45335004D4AA7 /* Test.hpp */,
+			);
+			path = helper;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -222,6 +235,7 @@
 				546A42FA1DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp in Sources */,
 				546A42FD1DBA7A8D006C2629 /* Image.cpp in Sources */,
 				5496ABDD1DCFA97100FED0CF /* Channel.cpp in Sources */,
+				54F366541DD45335004D4AA7 /* Test.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
