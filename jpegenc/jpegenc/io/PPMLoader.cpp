@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <math.h>
 
 #include "PPMLoader.hpp"
 
@@ -31,28 +32,72 @@ void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
 	if (image->colorSpace != ColorSpaceRGB) {
 		std::cout << "Image color space is not RGB." << std::endl;
 	}
-
+	
 	Dimension imageSize = image->imageSize;
-	std::ofstream outputStream;
-	outputStream.open(pathToImage);
-	size_t pixelCount = imageSize.pixelCount;
-
-	outputStream << "P3" << "\n";
-	outputStream << "# Created by Team Awesome" << "\n";
-	outputStream << imageSize.width << " " << imageSize.height << "\n";
-	outputStream << "255" << "\n";
-
-	for (size_t i = 0; i < pixelCount; ++i) {
-		outputStream << (size_t) image->channel1->getValue(i, imageSize) << " ";
-		outputStream << (size_t) image->channel2->getValue(i, imageSize) << " ";
-		outputStream << (size_t) image->channel3->getValue(i, imageSize) << " ";
+	size_t pixelCount = imageSize.pixelCount * 3; // 3 channel
+	
+	char out[4096];
+	unsigned short idxLine = 0;
+	unsigned int zahl;
+	unsigned short stellen;
+	unsigned int zehnerPotenz;
+	
+	FILE *f = fopen(pathToImage, "w");
+	
+	//  HEADER
+	fwrite("P3\n# Created by Team Awesome\n", 1, 29, f);
+	readNumberToFileSaveBuffer(imageSize.width, out, idxLine);
+	readNumberToFileSaveBuffer(imageSize.height, out, idxLine);
+	out[idxLine++] = '\n';
+	readNumberToFileSaveBuffer(255, out, idxLine); // maxValue
+	out[idxLine++] = '\n';
+	
+	
+	Channel *channels[] = {image->channel1, image->channel2, image->channel3};
+	unsigned short idxTotal = idxLine;
+	idxLine = 0;
+	
+	for (size_t i = 0; i < pixelCount; i++) {
 		
-		if ( (i + 1) % 4 == 0 ) {
-			outputStream << "\n";
+		zahl = channels[i%3]->getValue(i/3, imageSize);
+		stellen = log10f(zahl);
+		
+		// if the next number will exceed the 70 character limit, start new line
+		if (idxLine + stellen + 2 > 69) { // + 1 for ' ' + 1 because of log10()
+			out[idxLine-1] = '\n'; // replace ' ' with '\n'
+			idxTotal += idxLine;
+			idxLine = 0;
+			
+			if (idxTotal + 70 > 4095) { // once buffer full, write to disk
+				fwrite(out, 1, idxTotal, f);
+				idxTotal = 0;
+			}
 		}
+		readNumberToFileSaveBuffer(zahl, stellen, out, idxLine, zehnerPotenz);
 	}
-	outputStream << "\n";
-	outputStream.close();
+	
+	// write all remaining bytes
+	fwrite(out, 1, idxTotal + idxLine - 1, f);
+	fclose(f);
+}
+
+void PPMLoader::readNumberToFileSaveBuffer(size_t number, char *buf, unsigned short &index) {
+	unsigned int zehnerPotenz;
+	unsigned int zahl = (unsigned int)number;
+	unsigned short stellen = log10f(zahl);
+	readNumberToFileSaveBuffer(zahl, stellen, buf, index, zehnerPotenz);
+}
+
+void PPMLoader::readNumberToFileSaveBuffer(unsigned int &zahl, unsigned short &stellen, char *buf, unsigned short &index, unsigned int &zehnerPotenz) {
+	
+	zehnerPotenz = powf(10, stellen);
+	while (stellen--) {
+		buf[index++] = (zahl / zehnerPotenz) + 48; // 48 == '0'
+		zahl %= zehnerPotenz;
+		zehnerPotenz /= 10;
+	}
+	buf[index++] = zahl + 48;
+	buf[index++] = ' ';
 }
 
 // ################################################################
