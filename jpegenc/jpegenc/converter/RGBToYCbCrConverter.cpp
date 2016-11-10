@@ -1,24 +1,31 @@
 #include "RGBToYCbCrConverter.hpp"
-#include <math.h>
 
-std::shared_ptr<Image> RGBToYCbCrConverter::convert(std::shared_ptr<Image> originalImage) {
+void RGBToYCbCrConverter::convert(std::shared_ptr<Image> image) {
 	
-	Dimension size = originalImage->imageSize;
-	auto convertedImage = std::make_shared<Image>(size);
+	Channel *ch1 = image->channel1;
+	Channel *ch2 = image->channel2;
+	Channel *ch3 = image->channel3;
 	
-	size_t index = size.pixelCount;
-	while (index) {
-		--index;
-		color r = originalImage->channel1->getValue(index, size);
-		color g = originalImage->channel2->getValue(index, size);
-		color b = originalImage->channel3->getValue(index, size);
-		color y = (color) round((0.299 * r + 0.587 * g + 0.114 * b));
-		color cb = (color) round((-0.1687 * r - 0.3312 * g + 0.5 * b + 128));
-		color cr = (color) round((0.5 * r - 0.4186 * g - 0.0813 * b + 128));
-		convertedImage->channel1->setValue(index, y);
-		convertedImage->channel2->setValue(index, cb);
-		convertedImage->channel3->setValue(index, cr);
+	if (ch1->numberOfPixel() != ch2->numberOfPixel() || ch1->numberOfPixel() != ch3->numberOfPixel()) {
+		fputs("Cannot compute YCbCr with different channel sizes\n", stderr);
+		return;
 	}
-	convertedImage->colorSpace = ColorSpaceYCbCr;
-	return convertedImage;
+	
+	color r, g, b;
+	color y, cb, cr;
+	Dimension size = image->imageSize;
+	size_t index = size.pixelCount;
+	
+	while (index--) {
+		r = ch1->getValue(index, size);
+		g = ch2->getValue(index, size);
+		b = ch3->getValue(index, size);
+		y  = (color)     (0.299f * r +    0.587f * g +    0.114f * b);
+		cb = (color) (-0.168736f * r - 0.331264f * g +      0.5f * b + 0.5f); // 0.5 == +128
+		cr = (color)       (0.5f * r - 0.418688f * g - 0.081312f * b + 0.5f); // 0.5 == +128
+		ch1->setValue(index, y);
+		ch2->setValue(index, cb);
+		ch3->setValue(index, cr);
+	}
+	image->colorSpace = ColorSpaceYCbCr;
 }

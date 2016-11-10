@@ -1,9 +1,9 @@
 #include <iostream>
 #include "Image.hpp"
 
-std::ostream& operator<<(std::ostream& out, const color value){
-	return out << (size_t)value;
-}
+//std::ostream& operator<<(std::ostream& out, const color value){
+//	return out << (size_t)value;
+//}
 
 std::ostream& operator<<(std::ostream& out, const ColorSpace value){
 	switch (value) {
@@ -12,16 +12,22 @@ std::ostream& operator<<(std::ostream& out, const ColorSpace value){
 	};
 }
 
-void Image::print() {
+void Image::print(bool useIntValues) {
 	std::cout << "Color space: " << colorSpace;
 	size_t numberOfPixels = imageSize.pixelCount;
 	for (size_t i = 0; i < numberOfPixels; ++i) {
-		if (i % imageSize.width == 0) {
+		if (i % imageSize.width == 0)
 			std::cout << std::endl;
+		
+		if (useIntValues) {
+			std::cout << (int)(channel1->getValue(i, imageSize)*255 + 0.5f) << "\t";
+			std::cout << (int)(channel2->getValue(i, imageSize)*255 + 0.5f) << "\t";
+			std::cout << (int)(channel3->getValue(i, imageSize)*255 + 0.5f) << "\t\t";
+		} else {
+			std::cout << (channel1->getValue(i, imageSize)) << "\t";
+			std::cout << (channel2->getValue(i, imageSize)) << "\t";
+			std::cout << (channel3->getValue(i, imageSize)) << "\t\t";
 		}
-		std::cout << channel1->getValue( i, imageSize ) << "\t";
-		std::cout << channel2->getValue( i, imageSize ) << "\t";
-		std::cout << channel3->getValue( i, imageSize ) << "\t\t";
 	}
 	std::cout << std::endl << std::endl;
 }

@@ -1,32 +1,37 @@
 #include "YCbCrToRGBConverter.hpp"
-#include <math.h>
 
-std::shared_ptr<Image> YCbCrToRGBConverter::convert(std::shared_ptr<Image> originalImage) {
+void YCbCrToRGBConverter::convert(std::shared_ptr<Image> image) {
 	
-	Dimension size = originalImage->imageSize;
-	auto convertedImage = std::make_shared<Image>(size);
+	Channel *ch1 = image->channel1;
+	Channel *ch2 = image->channel2;
+	Channel *ch3 = image->channel3;
 	
-	size_t index = size.pixelCount;
-	while (index) {
-		--index;
-		color y = (color) originalImage->channel1->getValue(index, size);
-		color cb = (color) originalImage->channel2->getValue(index, size);
-		color cr = (color) originalImage->channel3->getValue(index, size);
-		color r = normalize(round(y + 1.4021 * (cr - 128)));
-		color g = normalize(round(y - 0.3441 * (cb - 128) - 0.7142 * (cr - 128)));
-		color b = normalize(round(y + 1.772 * (cb - 128)));
-		convertedImage->channel1->setValue(index, r);
-		convertedImage->channel2->setValue(index, g);
-		convertedImage->channel3->setValue(index, b);
+	if (ch1->numberOfPixel() != ch2->numberOfPixel() || ch1->numberOfPixel() != ch3->numberOfPixel()) {
+		fputs("Cannot compute RGB with different channel sizes\n", stderr);
+		return;
 	}
-	convertedImage->colorSpace = ColorSpaceRGB;
-	return convertedImage;
+	
+	color r, g, b;
+	color y, cb, cr;
+	Dimension size = image->imageSize;
+	size_t index = size.pixelCount;
+	
+	while (index--) {
+		y  = ch1->getValue(index, size);
+		cb = ch2->getValue(index, size) - 0.5f;
+		cr = ch3->getValue(index, size) - 0.5f;
+		r = normalize(y +    1.402f * cr);
+		g = normalize(y - 0.344136f * cb - 0.714136f * cr);
+		b = normalize(y +    1.772f * cb);
+		ch1->setValue(index, r);
+		ch2->setValue(index, g);
+		ch3->setValue(index, b);
+	}
+	image->colorSpace = ColorSpaceRGB;
 }
 
-color YCbCrToRGBConverter::normalize(int value) {
-	if (value < 0)
-		value = 0;
-	if (value > 255) // TODO: only valid for 8bit
-		value = 255;
+color YCbCrToRGBConverter::normalize(float value) {
+	if (value < 0) return 0;
+	if (value > 1) return 1;
 	return (color) value;
 }

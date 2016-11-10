@@ -5,7 +5,7 @@
 #include "../model/Image.hpp"
 
 struct RGBToYCbCrConverter {
-	std::shared_ptr<Image> convert(std::shared_ptr<Image> originalImage);
+	void convert(std::shared_ptr<Image> image);
 };
 
 #endif //JPEG_ENCODER_RGBTOYCBCRCONVERTER_H
