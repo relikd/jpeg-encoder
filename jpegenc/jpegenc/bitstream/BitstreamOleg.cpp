@@ -6,27 +6,24 @@ void BitstreamOleg::saveToFile( const char *pathToFile ) {
 	std::ofstream outputStream;
 	outputStream.open(pathToFile);
 	
-	// complete the last byte
-	int bitsFilled = fillup(0);
+	int bitsFilled = fillup(1); // complete the last byte
 	
 	size_t page = 0;
 	size_t pageCount = index >> SHIFT_PAGE; // is actually the index, not count
 	
-	// for every complete page, copy the whole char array
-	for (; page < pageCount; page++)
-		outputStream << blocks[page];
-	
-	size_t bytesOnLastPage = (index & MASK_BLOCK) >> SHIFT_BLOCK;
-	BitChar *a = &blocks[page][0];
-	
-	// for the last page we have to loop over all char's separately
-	while (bytesOnLastPage--)
-		outputStream << *(a++); // move char pointer to the next char
+	for (; page <= pageCount; page++) {
+		BitChar *a = &blocks[page][0];
+		
+		size_t bytesOnPage = BLOCK_SIZE;
+		if (page == pageCount) // save last page only partly
+			bytesOnPage = (index & MASK_BLOCK) >> SHIFT_BLOCK;
+		
+		while (bytesOnPage--)
+			outputStream << *(a++); // move char pointer to the next char
+	}
 	
 	outputStream.close();
-	
-	// restore previous state
-	deleteBits(bitsFilled);
+	deleteBits(bitsFilled); // restore previous state
 }
 
 
@@ -37,9 +34,10 @@ void BitstreamOleg::saveToFile( const char *pathToFile ) {
 //  ---------------------------------------------------------------
 
 BitChar* BitstreamOleg::getByte( const size_t idx ) {
-	// when index is pointing to the last byte in this block, create a new block
-	if ((index & MASK_BLOCK) == MASK_BLOCK) {
+	// see if the next char is pointing to a new page
+	if (allocatedPages <= ((index + 8) >> SHIFT_PAGE)) {
 		blocks.push_back( new BitChar[BLOCK_SIZE] );
+		++allocatedPages;
 		memoryChanged = true;
 	}
 	// find the current block and return the correct byte
