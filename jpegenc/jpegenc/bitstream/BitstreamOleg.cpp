@@ -1,5 +1,34 @@
 #include <iostream>
+#include <fstream>
 #include "BitstreamOleg.hpp"
+
+void BitstreamOleg::saveToFile( const char *pathToFile ) {
+	std::ofstream outputStream;
+	outputStream.open(pathToFile);
+	
+	// complete the last byte
+	int bitsFilled = fillup(0);
+	
+	size_t page = 0;
+	size_t pageCount = index >> SHIFT_PAGE; // is actually the index, not count
+	
+	// for every complete page, copy the whole char array
+	for (; page < pageCount; page++)
+		outputStream << blocks[page];
+	
+	size_t bytesOnLastPage = (index & MASK_BLOCK) >> SHIFT_BLOCK;
+	BitChar *a = &blocks[page][0];
+	
+	// for the last page we have to loop over all char's separately
+	while (bytesOnLastPage--)
+		outputStream << *(a++); // move char pointer to the next char
+	
+	outputStream.close();
+	
+	// restore previous state
+	deleteBits(bitsFilled);
+}
+
 
 //  ---------------------------------------------------------------
 // |
@@ -7,20 +36,20 @@
 // |
 //  ---------------------------------------------------------------
 
-char* BitstreamOleg::getByte( const size_t idx ) {
+BitChar* BitstreamOleg::getByte( const size_t idx ) {
 	// when index is pointing to the last byte in this block, create a new block
 	if ((index & MASK_BLOCK) == MASK_BLOCK) {
-		blocks.push_back(new char[BLOCK_SIZE]);
-		memoryChanged = true; //
+		blocks.push_back( new BitChar[BLOCK_SIZE] );
+		memoryChanged = true;
 	}
 	// find the current block and return the correct byte
-	return &blocks[ index>>SHIFT_PAGE ][ (index&MASK_BLOCK)>>SHIFT_BLOCK ];
+	return &blocks[ index >> SHIFT_PAGE ][ (index & MASK_BLOCK) >> SHIFT_BLOCK ];
 }
 
 bool BitstreamOleg::read( const size_t idx ){
-	char* a = getByte(idx);
-	char selectedBit = index & MASK_BYTE;
-	return (*a >> (7-selectedBit)) & 1; // shift bit to lowest position
+	BitChar* a = getByte(idx);
+	short selectedBit = index & MASK_BYTE;
+	return (*a >> (7 - selectedBit)) & 1; // shift selected bit to lowest position
 }
 
 // TODO: Byte Reader mit (&a)++ und page break
@@ -32,59 +61,72 @@ bool BitstreamOleg::read( const size_t idx ){
 //  ---------------------------------------------------------------
 
 void BitstreamOleg::add( const bool bit ) {
-	char* a = getByte(index++);
+	BitChar* a = getByte(index);
 	*a <<= 1;
 	if (bit)
 		*a |= 1;
+	++index; // stupid thing cannot be done inside a function call
 }
 
-void BitstreamOleg::add( const char bits, int amount ) {
-	char* a = getByte(index);
-	char bitIndex = index & MASK_BYTE;
+void BitstreamOleg::add( const BitChar byte, short amount ) {
+	BitChar* a = getByte(index);
+	short bitIndex = index & MASK_BYTE;
 	
 	index += amount;
 	
 	// perfect match. just copy the byte
 	if (bitIndex == 0 && amount == 8) {
-		*a = bits;
+		*a = byte;
 		return;
 	}
 	
 	// calculate if we have to split the char in two
-	char overflow = bitIndex + amount - 8;
+	short overflow = bitIndex + amount - 8;
 	if (overflow > 0)
 		amount -= overflow;
 	
 	// append to the current char index
 	*a <<= amount;
-	*a |= (bits >> (8 - amount)); // shift the upmost bits down, then append bits
+	*a |= (byte >> (8 - amount)); // shift the upmost bits down, then append bits
 	
 	// if necessary append to the next one too
 	if (overflow > 0) {
 		if (memoryChanged) {
 			index -= overflow;
-			add((bits >> (8-amount-overflow)) << (8-overflow), overflow);
+			add( (byte >> (8 - amount - overflow)) << (8 - overflow), overflow );
 			memoryChanged = false;
 		} else {
 			// goto next char;  append trimmed overflow bits;  go back to current char
-			*(++a)-- |= (bits << amount) >> (8-overflow);
+			*(++a)-- |= (byte << amount) >> (8 - overflow);
 		}
 	}
 }
 
-void BitstreamOleg::fillup( const bool fillWithOnes ) {
-	char missingBits = 8 - (index & MASK_BYTE);
+unsigned short BitstreamOleg::fillup( const bool fillWithOnes ) {
+	short missingBits = 7 - ((index - 1) & MASK_BYTE);
 	if (missingBits == 0)
-		return; // no need to fill
+		return 0; // no need to fill
 	
-	char* a = getByte(index);
+	BitChar* a = getByte(index);
 	index += missingBits;
 	
-	while (missingBits--) { // for the last underfull byte append x bits
+	for (int i = missingBits; i>0; i--) { // for the last underfull byte append x bits
 		*a <<= 1;
 		if (fillWithOnes)
 			*a |= 1;
 	}
+	return missingBits;
+}
+
+void BitstreamOleg::deleteBits( const unsigned int amount ) {
+	short bitIndexLastChar = index & MASK_BYTE;
+	index -= amount;
+	BitChar *first = getByte(index); // we only care about the first char since the rest will be overwritten anyway
+	
+	if (amount <= bitIndexLastChar)
+		*first >>= amount; // is actually the last char
+	else
+		*first >>= ((amount - bitIndexLastChar) % 8); // subtract current bit index and all multiple of 8
 }
 
 //  ---------------------------------------------------------------
@@ -95,7 +137,7 @@ void BitstreamOleg::fillup( const bool fillWithOnes ) {
 
 void BitstreamOleg::print( const bool onlyCurrentPage ) {
 	size_t page = 0;
-	size_t pageCount = index>>SHIFT_PAGE; // is actually the index, not count
+	size_t pageCount = index >> SHIFT_PAGE; // is actually the index, not count
 	
 	if (onlyCurrentPage)
 		page = pageCount;
@@ -104,17 +146,17 @@ void BitstreamOleg::print( const bool onlyCurrentPage ) {
 			printPage(page);
 	
 	// print the current page
-	size_t bytesInLastPage = (index&MASK_BLOCK)>>SHIFT_BLOCK;
+	size_t bytesOnLastPage = (index & MASK_BLOCK) >> SHIFT_BLOCK;
 	if (index % 8)
-		++bytesInLastPage;
+		++bytesOnLastPage;
 	// else: last bit is exactly 8 bit filled
 	
-	printPage(page, bytesInLastPage);
+	printPage(page, bytesOnLastPage);
 }
 
 void BitstreamOleg::printPage( const size_t page, size_t truncate ) {
-	std::cout << "Page ["<<page<<"]:" << std::endl;
-	char *a = &blocks[page][0];
+	std::cout << "Page [" << page << "]:" << std::endl;
+	BitChar *a = &blocks[page][0];
 	while (truncate--) {
 		printByte(*(a++)); // move char pointer to the next char
 		std::cout << " ";
@@ -124,7 +166,7 @@ void BitstreamOleg::printPage( const size_t page, size_t truncate ) {
 	std::cout << std::endl;
 }
 
-void BitstreamOleg::printByte( const char &byte ) {
+void BitstreamOleg::printByte( const BitChar &byte ) {
 	std::cout
 	<< ((byte&0b10000000)>>7) // not pretty but efficient
 	<< ((byte&0b01000000)>>6)

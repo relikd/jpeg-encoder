@@ -129,27 +129,30 @@ void testMarv() {
 }
 
 void testOleg() {
-//	BitstreamOleg bitstream;
+	BitstreamOleg bitstream;
 //	bitstream.add(true);
 //	bitstream.add(false);
 //	bitstream.add(false);
 //	bitstream.add(true);
-//	bitstream.add('A', 8); // 0100 0001
-//	bitstream.add('x', 8); // 0111 1000
-//	bitstream.add('l', 8); // 0110 1100
-//	bitstream.add('D', 8); // 0100 0100
-//	bitstream.add(' ', 8); // 0010 0000
+	bitstream.add('A', 8); // 0100 0001
+	bitstream.add('x', 8); // 0111 1000
+	bitstream.add('l', 8); // 0110 1100
+	bitstream.add('D', 8); // 0100 0100
+	bitstream.add(' ', 8); // 0010 0000
 //	for (size_t i = 0; i < 131072*8-2; ++i) {
 //		bitstream.add(1);
 //	}
-//	bitstream.add(255, 6);
-//	bitstream.fillup(true);
+	bitstream.add(255, 6);
 //	bitstream.add(0);
-//	bitstream.fillup();
+	bitstream.saveToFile("data/out.txt");
+	bitstream.add(0);
+	bitstream.add(1);
+	bitstream.add(0);
+	bitstream.saveToFile("data/out2.txt");
 //	bitstream.print();
 	
 	
-	// Test performance adding bits (0.022s)
+	// Test performance adding bits
 	size_t numberOfRounds = 100;
 	size_t numberOfElements = 10000000;
 	clock_t timeStamp;
@@ -171,7 +174,7 @@ void testOleg() {
 	
 	printf("Adding %lu single bits took %lu clicks (%f seconds) on average (%lu times).\n",numberOfElements, averageTime,((float)averageTime)/CLOCKS_PER_SEC, numberOfRounds);
 	
-	// Test performance adding bytes (0.154s)
+	// Test performance adding bytes
 	numberOfRounds = 100;
 	numberOfElements = 10000000;
 	totalTime = 0;
