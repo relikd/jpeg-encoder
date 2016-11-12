@@ -51,11 +51,13 @@ void testImage() {
 //  ---------------------------------------------------------------
 
 void testChris() {
-	std::cout << "Tests Chris" << std::endl;
+	std::cout << "Testing, Chris" << std::endl;
 	std::cout << "Write single bit: ";
-	BitStream bitstream;
-	Test::performance(10000000, 100, [&bitstream]{ bitstream = BitStream(); }, [&bitstream]{
-		bitstream.add(true);
+	Test::performance(10000000, 10, [](size_t numberOfElements){
+		BitStream bitstream;
+		while (numberOfElements--) {
+			bitstream.add(true);
+		}
 	});
 }
 
@@ -111,48 +113,25 @@ void testMarv() {
 	// Test saving
 	bitStreamMarv.saveToFile("/home/marv/Projects/jpeg-encoder/bitstream.txt");
 	
-	// Test performance adding bits (0.022s)
-	size_t numberOfRounds = 100;
-	size_t numberOfElements = 10000000;
-	clock_t timeStamp;
-	clock_t totalTime = 0;
 	
-	for (size_t i = 0; i < numberOfRounds; ++i)
-	{
-		timeStamp = clock();
-		
+	std::cout << "Testing, Marv" << std::endl;
+	// Test performance adding bits (0.022s)
+	std::cout << "Write single bit: "; // (0.074520 seconds)
+	Test::performance(10000000, 10, [](size_t numberOfElements){
 		BitStreamMarv bitStream(numberOfElements);
-		for (size_t k = 0; k < numberOfElements; ++k)
-		{
+		while (numberOfElements--) {
 			bitStream.add(true);
 		}
-		timeStamp = clock() - timeStamp;
-		totalTime = totalTime + timeStamp;
-	}
-	clock_t averageTime = totalTime / numberOfRounds;
-	
-	printf("Adding %lu single bits took %lu clicks (%f seconds) on average (%lu times).\n",numberOfElements, averageTime,((float)averageTime)/CLOCKS_PER_SEC, numberOfRounds);
+	});
 	
 	// Test performance adding bytes (0.154s)
-	numberOfRounds = 100;
-	numberOfElements = 10000000;
-	totalTime = 0;
-	
-	for (size_t i = 0; i < numberOfRounds; ++i)
-	{
-		timeStamp = clock();
-		
+	std::cout << "Write byte bits: "; // (0.126076 seconds)
+	Test::performance(10000000, 10, [](size_t numberOfElements){
 		BitStreamMarv bitStream(numberOfElements);
-		for (size_t k = 0; k < numberOfElements; ++k)
-		{
+		while (numberOfElements--) {
 			bitStream.add((char) 0xd2); // 11010010
 		}
-		timeStamp = clock() - timeStamp;
-		totalTime = totalTime + timeStamp;
-	}
-	averageTime = totalTime / numberOfRounds;
-	
-	printf("Adding %lu bytes took %lu clicks (%f seconds) on average (%lu times).\n",numberOfElements, averageTime,((float)averageTime)/CLOCKS_PER_SEC, numberOfRounds);
+	});
 }
 
 void testOleg() {
@@ -179,32 +158,40 @@ void testOleg() {
 //	bitstream.print();
 	
 	
-	//  there is a significant amount of overhead even for an empty test (0.034109 seconds)
-	//testPerformance(10000000, 100, []{}, []{});
-	
 	std::cout << "Testing, Oleg" << std::endl;
+	
+	std::cout << "Write single bit: ";
+	Test::performance(10000000, 10, [](size_t numberOfElements){
+		BitstreamOleg bitstream;
+		while (numberOfElements--) {
+			bitstream.add(1);
+		}
+	});
+	
+	std::cout << "Write byte bits: ";
+	Test::performance(10000000, 10, [](size_t numberOfElements){
+		BitstreamOleg bitstream;
+		//bitstream.add(1);
+		while (numberOfElements--) {
+			bitstream.add(0xd2, 8);
+		}
+	});
+	
+	// create random bitstream for reading
 	BitstreamOleg testStream;
+	size_t fillRandom = 100000;
+	while (fillRandom--)
+		bitstream.add( arc4random() % 2 );
 	
-	std::cout << "Write single bit: "; // (0.074520 seconds)
-	Test::performance(10000000, 10, [&testStream]{ testStream = BitstreamOleg(); }, [&testStream]{
-		testStream.add(1);
-	});
-	
-	std::cout << "Write byte bits: "; // (0.126076 seconds)
-	Test::performance(10000000, 10, [&testStream]{
-		testStream = BitstreamOleg(); // init
-		testStream.add(1);
-	}, [&testStream]{
-		testStream.add((char) 0xd2, 8); // 11010010
-	});
-	
-	std::cout << "Read single bit: "; // (0.087629 seconds)
-	size_t maxRead = testStream.numberOfBits() - 2;
-	size_t idx = 0;
-	Test::performance(10000000, 10, []{}, [&testStream, &idx, maxRead]{
-		testStream.read(idx++);
-		if (idx > maxRead)
-			idx = 0;
+	std::cout << "Read single bit: ";
+	Test::performance(10000000, 10, [&testStream](size_t numberOfElements){
+		size_t maxRead = testStream.numberOfBits() - 2;
+		size_t idx = 0;
+		while (numberOfElements--) {
+			testStream.read(idx++);
+			if (idx > maxRead)
+				idx = 0;
+		}
 	});
 }
 
