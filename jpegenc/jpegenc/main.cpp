@@ -11,6 +11,9 @@
 #include "bitstream/BitstreamOleg.hpp"
 
 
+#define TEST_ITERATIONS 10000000
+#define TEST_REPEAT 10
+
 //  ---------------------------------------------------------------
 // |
 // |  PPM Image Processing
@@ -53,10 +56,10 @@ void testImage() {
 void testChris() {
 	std::cout << "Testing, Chris" << std::endl;
 	std::cout << "Write single bit: ";
-	Test::performance(10000000, 10, [](size_t numberOfElements){
+	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
 		BitStream bitstream;
 		while (numberOfElements--) {
-			bitstream.add(true);
+			bitstream.add(numberOfElements % 2);
 		}
 	});
 }
@@ -117,7 +120,7 @@ void testMarv() {
 	std::cout << "Testing, Marv" << std::endl;
 	// Test performance adding bits (0.022s)
 	std::cout << "Write single bit: "; // (0.074520 seconds)
-	Test::performance(10000000, 10, [](size_t numberOfElements){
+	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
 		BitStreamMarv bitStream(numberOfElements);
 		while (numberOfElements--) {
 			bitStream.add(true);
@@ -126,7 +129,7 @@ void testMarv() {
 	
 	// Test performance adding bytes (0.154s)
 	std::cout << "Write byte bits: "; // (0.126076 seconds)
-	Test::performance(10000000, 10, [](size_t numberOfElements){
+	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
 		BitStreamMarv bitStream(numberOfElements);
 		while (numberOfElements--) {
 			bitStream.add((char) 0xd2); // 11010010
@@ -134,7 +137,7 @@ void testMarv() {
 	});
 }
 
-void testOleg() {
+void testOleg(bool testSingleBit = false, bool testByteBit = false, bool testRead = false, bool testWriteFile = false) {
 	BitstreamOleg bitstream;
 //	bitstream.add(true);
 //	bitstream.add(false);
@@ -160,39 +163,53 @@ void testOleg() {
 	
 	std::cout << "Testing, Oleg" << std::endl;
 	
-	std::cout << "Write single bit: ";
-	Test::performance(10000000, 10, [](size_t numberOfElements){
-		BitstreamOleg bitstream;
-		while (numberOfElements--) {
-			bitstream.add(1);
-		}
-	});
+	if (testSingleBit) {
+		std::cout << "Write single bit: ";
+		Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
+			BitstreamOleg bitstream;
+			while (numberOfElements--) {
+				bitstream.add(numberOfElements % 2);
+			}
+		});
+	}
 	
-	std::cout << "Write byte bits: ";
-	Test::performance(10000000, 10, [](size_t numberOfElements){
-		BitstreamOleg bitstream;
-		//bitstream.add(1);
-		while (numberOfElements--) {
-			bitstream.add(0xd2, 8);
-		}
-	});
+	if (testByteBit) {
+		std::cout << "Write byte bits: ";
+		Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
+			BitstreamOleg bitstream;
+			// bitstream.add(1);
+			while (numberOfElements--) {
+				bitstream.add(0xd2, 8);
+			}
+		});
+	}
 	
 	// create random bitstream for reading
 	BitstreamOleg testStream;
-	size_t fillRandom = 100000;
+	size_t fillRandom = TEST_ITERATIONS;
 	while (fillRandom--)
-		bitstream.add( arc4random() % 2 );
+		testStream.add( arc4random() % 2 );
 	
-	std::cout << "Read single bit: ";
-	Test::performance(10000000, 10, [&testStream](size_t numberOfElements){
-		size_t maxRead = testStream.numberOfBits() - 2;
-		size_t idx = 0;
-		while (numberOfElements--) {
-			testStream.read(idx++);
-			if (idx > maxRead)
-				idx = 0;
-		}
-	});
+	
+	if (testRead) {
+		std::cout << "Read single bit: ";
+		Test::performance(TEST_ITERATIONS, TEST_REPEAT, [&testStream](size_t numberOfElements){
+			size_t maxRead = testStream.numberOfBits() - 2;
+			size_t idx = 0;
+			while (numberOfElements--) {
+				testStream.read(idx++);
+				if (idx > maxRead)
+					idx = 0;
+			}
+		});
+	}
+	
+	if (testWriteFile) {
+		std::cout << "Write file: ";
+		Test::performance([&testStream] {
+			testStream.saveToFile("data/writeOleg.txt");
+		});
+	}
 }
 
 // ################################################################
@@ -206,7 +223,7 @@ int main(int argc, const char *argv[]) {
 //	testChris();
 //	testMarcel();
 //	testMarv();
-//	testOleg();
+//	testOleg(true);
 	
 	return 0;
 }
