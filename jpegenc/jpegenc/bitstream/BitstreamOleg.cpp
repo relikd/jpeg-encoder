@@ -1,6 +1,69 @@
-#include <iostream>
-#include <fstream>
+//#include <iostream>
+//#include <fstream>
 #include "BitstreamOleg.hpp"
+
+
+//  ---------------------------------------------------------------
+// |
+// |  Indexing and BitChar Pointer Management
+// |
+//  ---------------------------------------------------------------
+
+inline void BitstreamOleg::appendPage() {
+	++pageIndex;
+	if (allocatedPages <= pageIndex) {
+		// create new page
+		blocks.push_back( new BitChar[BLOCK_SIZE] );
+		++allocatedPages;
+	}
+}
+
+inline void BitstreamOleg::appendByte() {
+	if (++byteIndex >= BLOCK_SIZE) {
+		byteIndex = 0;
+		appendPage();
+		currentChar = &blocks[pageIndex][0];
+	} else {
+		currentChar++;
+	}
+}
+
+inline void BitstreamOleg::upCountBit() {
+	if (++bitIndex >= BITS_PER_BITCHAR) {
+		bitIndex = 0;
+		appendByte();
+	}
+}
+
+inline void BitstreamOleg::upCountBits( const unsigned short amount ) {
+	bitIndex += amount;
+	if (bitIndex >= BITS_PER_BITCHAR) {
+		bitIndex %= BITS_PER_BITCHAR;
+		appendByte();
+	}
+}
+
+inline void BitstreamOleg::downCountBits( const size_t amount ) {
+	if (amount <= bitIndex) {
+		bitIndex -= amount;
+		return; // pointer stays on the current BitChar
+	}
+	
+	// combine all three indices to a single one and subtract the amount
+	size_t singleIndex = numberOfBits();
+	if (amount > singleIndex)
+		singleIndex = 0;
+	else
+		singleIndex -= amount;
+	
+	// then split the index into three again
+	pageIndex = (singleIndex >> SHIFT_PAGE);
+	byteIndex = (singleIndex & MASK_BLOCK) >> SHIFT_BLOCK;
+	bitIndex  = (singleIndex & MASK_BYTE);
+	
+	// move char to new position
+	currentChar = &blocks[ pageIndex ][ byteIndex ];
+}
 
 //  ---------------------------------------------------------------
 // |
@@ -8,24 +71,11 @@
 // |
 //  ---------------------------------------------------------------
 
-inline BitChar* BitstreamOleg::getByte( const size_t idx ) {
-	// see if the next char is pointing to a new page
-	if (allocatedPages <= ((idx + BITS_PER_BITCHAR) >> SHIFT_PAGE)) {
-		blocks.push_back( new BitChar[BLOCK_SIZE] );
-		++allocatedPages;
-		memoryChanged = true;
-	}
-	// find the current block and return the correct byte
-	return &blocks[ idx >> SHIFT_PAGE ][ (idx & MASK_BLOCK) >> SHIFT_BLOCK ];
-}
-
 bool BitstreamOleg::read( const size_t idx ){
-	BitChar* a = getByte(idx);
+	BitChar* a = &blocks[ idx >> SHIFT_PAGE ][ (idx & MASK_BLOCK) >> SHIFT_BLOCK ];
 	unsigned short selectedBit = idx & MASK_BYTE;
 	return (*a >> (MAX_BITCHAR_INDEX - selectedBit)) & 1; // shift selected bit to lowest position
 }
-
-// TODO: Byte Reader mit (&a)++ und page break
 
 //  ---------------------------------------------------------------
 // |
@@ -34,71 +84,51 @@ bool BitstreamOleg::read( const size_t idx ){
 //  ---------------------------------------------------------------
 
 void BitstreamOleg::add( const bool bit ) {
-	BitChar* a = getByte(index++);
-	*a = (*a << 1) | bit;
+	*currentChar = (*currentChar << 1) | bit;
+	upCountBit();
 }
 
 void BitstreamOleg::add( const BitChar byte, unsigned short amount ) {
-	BitChar* a = getByte(index);
-
 	// calculate if we have to split the char in two
-	short overflow = (index & MASK_BYTE) + amount - BITS_PER_BITCHAR;
-	
-	index += amount;
+	short overflow = bitIndex + amount - BITS_PER_BITCHAR;
 	
 	if (overflow > 0) {
 		// write current BitChar
 		amount -= overflow;
-		*a <<= amount;
-		*a |= (byte >> overflow) & BITS_MASK[amount];
-		
+		*currentChar = (*currentChar << amount) | ((byte >> overflow) & BITS_MASK[amount]);
+		upCountBits(amount);
 		// and append to the next one
-		if (memoryChanged) {
-			index -= overflow;
-			add( byte, overflow );
-			memoryChanged = false;
-		} else {
-			// append trimmed overflow bits to next BitChar
-			*(a+1) |= byte & BITS_MASK[overflow];
-		}
-	}
-	else // everything fits into the current BitChar
-	{
-		*a <<= amount;
-		*a |= byte & BITS_MASK[amount];
+		*currentChar = (byte & BITS_MASK[overflow]);
+		upCountBits(overflow);
+	} else {
+		// everything fits into the current BitChar
+		*currentChar = (*currentChar << amount) | (byte & BITS_MASK[amount]);
+		upCountBits(amount);
 	}
 }
 
 unsigned short BitstreamOleg::fillup( const bool fillWithOnes ) {
-	short missingBits = BITS_PER_BITCHAR - (index & MASK_BYTE);
-	if (missingBits == BITS_PER_BITCHAR)
+	if (bitIndex == 0)
 		return 0; // no need to fill
 	
-	BitChar* a = getByte(index);
-	index += missingBits;
+	short missingBits = BITS_PER_BITCHAR - bitIndex;
 	
-	*a <<= missingBits; // for the last underfull byte append x bits
+	*currentChar <<= missingBits; // for the last underfull byte append x bits
 	if (fillWithOnes)
-		*a |= (1 << missingBits) - 1;
+		*currentChar |= (1 << missingBits) - 1;
 	
+	upCountBits(missingBits);
 	return missingBits;
 }
 
 void BitstreamOleg::deleteBits( const size_t amount ) {
-	if (amount >= index) {
-		index = 0;
-		*getByte(index) = 0;
-		return;
-	}
-	
-	short bitIndexLastChar = index & MASK_BYTE;
-	index -= amount;
-	BitChar *first = getByte(index); // we only care about the first char since the rest will be overwritten anyway
-	
-	if (amount <= bitIndexLastChar)
-		*first >>= amount; // is actually the last char
+	short bitIndexBefore = bitIndex;
+	downCountBits(amount);
+	// we only care about the first char since the rest will be overwritten anyway
+	if (amount <= bitIndexBefore)
+		*currentChar >>= amount; // is actually the last char
 	else
-		*first >>= (amount - bitIndexLastChar) % BITS_PER_BITCHAR; // subtract current bit index and all multiples of BitChar size
+		*currentChar >>= (amount - bitIndexBefore) % BITS_PER_BITCHAR; // subtract current bit index and all multiples of BitChar size
 }
 
 //  ---------------------------------------------------------------
@@ -108,44 +138,40 @@ void BitstreamOleg::deleteBits( const size_t amount ) {
 //  ---------------------------------------------------------------
 
 void BitstreamOleg::print( const bool onlyCurrentPage ) {
-	size_t page = 0;
-	size_t pageCount = index >> SHIFT_PAGE; // is actually the index, not count
-	
-	if (onlyCurrentPage)
-		page = pageCount;
-	else // print all completely filled blocks
-		for (; page < pageCount; page++)
-			printPage(page);
-	
-	// print the current page
-	size_t bytesOnLastPage = (index & MASK_BLOCK) >> SHIFT_BLOCK;
-	if (index % BITS_PER_BITCHAR)
+	size_t bytesOnLastPage = byteIndex;
+	if (bitIndex % BITS_PER_BITCHAR)
 		++bytesOnLastPage;
-	// else: last bit is exactly 8 bit filled
+	// else: last byte is exactly 8 bit filled
 	
-	printPage(page, bytesOnLastPage);
+	for (size_t page = 0; page <= pageIndex; page++) {
+		if (page == pageIndex)
+			printPage(page, bytesOnLastPage); // print the current page
+		
+		else if (onlyCurrentPage == false)
+			printPage(page); // print all completely filled blocks
+	}
 }
 
 // new line after 8 bytes (64bit)
 const unsigned short breakByteAfter = 8 / BITCHAR_SIZE;
 
 void BitstreamOleg::printPage( const size_t page, size_t truncate ) {
-	std::cout << "Page [" << page << "]:" << std::endl;
+	printf("Page [%d]\n", (int)page);
 	BitChar *a = &blocks[page][0];
 	while (truncate--) {
 		printByte(*(a++)); // move char pointer to the next char
 		if (truncate % breakByteAfter == 0)
-			std::cout << std::endl;
+			printf("\n");
 	}
-	std::cout << std::endl;
+	printf("\n");
 }
 
 void BitstreamOleg::printByte( const BitChar &byte ) {
-	short idx = BITS_PER_BITCHAR;
+	unsigned short idx = BITS_PER_BITCHAR;
 	while (idx--) {
-		std::cout << ((byte >> idx) & 1); // get bit at index 'idx'
+		printf("%d", (bool)((byte >> idx) & 1)); // print bit at index 'idx'
 		if (idx % 8 == 0)
-			std::cout << " "; // space after 8bit / one byte
+			printf(" "); // space after 8bit / one byte
 	}
 }
 
@@ -157,48 +183,49 @@ void BitstreamOleg::printByte( const BitChar &byte ) {
 
 void BitstreamOleg::saveToFile( const char *pathToFile ) {
 	FILE *f = fopen(pathToFile, "w");
+	char *byteRemap = new char[BITCHAR_SIZE]; // needed to correct the byte order for int
 	
 	int bitsFilled = fillup(1); // complete the last byte
 	
-	size_t page = 0;
-	size_t pageCount = index >> SHIFT_PAGE; // is actually the index, not count
+	size_t bytesOnLastPage = byteIndex;
+	if (bytesOnLastPage > 0)
+		bytesOnLastPage -= 1;// -1 = process last BitChar separately
 	
-	char *byteRemap = new char[BITCHAR_SIZE];
 	
-	for (; page <= pageCount; page++) {
-		BitChar *a = &blocks[page][0];
-		
-		// how much bytes should be processed on this page
+	for (size_t page = 0; page <= pageIndex; page++) {
 		size_t bytesOnPage = BLOCK_SIZE;
-		if (page == pageCount) {// save last page only partly
-			bytesOnPage = ((index & MASK_BLOCK) >> SHIFT_BLOCK);
-			if (bytesOnPage > 0)
-				bytesOnPage -= 1;// -1 = process last BitChar separately
-		}
+		if (page == pageIndex)
+			bytesOnPage = bytesOnLastPage; // save last page only partly
+		
+		BitChar *a = &blocks[page][0];
 		
 		// save values to binary file
 		while (bytesOnPage--) {
-			toCString(*(a++), byteRemap);
+			mapBitCharToChar(*(a++), byteRemap);
 			fwrite(byteRemap, 1, BITCHAR_SIZE, f); // move char pointer to the next char
 		}
 		
-		// get last BitChar separately because it could contain 4 bytes and we only need 1 byte
-		if (page == pageCount) {
-			toCString(*a, byteRemap);
+		// get last BitChar separately because it could contain 4 bytes even if we only need 1 byte
+		if (page == pageIndex) {
+			mapBitCharToChar(*a, byteRemap);
 			fwrite(byteRemap, 1, BITCHAR_SIZE - (bitsFilled / 8), f); // omit trailing 0xFF chars
 		}
 	}
+	delete[] byteRemap;
+	fclose(f);
 	
 	deleteBits(bitsFilled); // restore previous state
-	fclose(f);
 }
 
-void BitstreamOleg::toCString( const BitChar &byte, char* &out ) {
+inline void BitstreamOleg::mapBitCharToChar( const BitChar &in, char* &out ) {
+	// this bitshift hack is possible because a char will copy only the 8 least significant bits
 	switch (BITCHAR_SIZE) {
-		case 4: out[0] = byte>>24; out[1] = byte>>16;  out[2] = byte>>8;  out[3] = byte; break;
-		case 2: out[0] = byte>>8;  out[1] = byte; break;
-		case 1: out[0] = byte; break;
+		case 8: out[0]=in>>56; out[1]=in>>48; out[2]=in>>40; out[3]=in>>32;
+			    out[4]=in>>24; out[5]=in>>16; out[6]=in>>8;  out[7]=in; break;
+		case 4: out[0]=in>>24; out[1]=in>>16; out[2]=in>>8;  out[3]=in; break;
+		case 2: out[0]=in>>8;  out[1]=in; break;
+		case 1: out[0]=in; break;
 	}
-	// this hack is possible because a char will copy only the 8 least significant bits
+	// not readable, but compact and efficient
 }
 
