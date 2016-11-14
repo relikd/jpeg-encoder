@@ -12,14 +12,13 @@
 void BitStream::add(bool bit){
 	
 	if(bitIndex == -1) {
-		bitIndex = 31;
+		bitIndex = MAX_BIT_INDEX;
 		++bufferIndex;
 	}
 	
 	if(bufferIndex == bufferSize) {
 		bufferIndex = 0;
-		blocks.push_back(new uint32_t[bufferSize]);
-		++blockIndex;
+		addBlock();
 	}
 	
 	if(bit)
@@ -29,10 +28,10 @@ void BitStream::add(bool bit){
 }
 
 bool BitStream::read(size_t index){
-	auto given_intIndex = index / 32;
+	auto given_intIndex = index / (MAX_BIT_INDEX + 1);
 	auto given_blockIndex = given_intIndex / bufferSize;
 	auto given_bufferIndex = given_intIndex - bufferSize * given_blockIndex;
-	auto given_bitIndex = 31 - index % 32;
+	auto given_bitIndex = MAX_BIT_INDEX - index % (MAX_BIT_INDEX + 1);
 	
 	std::cout << given_blockIndex << " " << given_bufferIndex << " " << given_bitIndex << std::endl;
 	return (blocks[given_blockIndex][given_bufferIndex] >> given_bitIndex) & 1;
@@ -43,10 +42,15 @@ void BitStream::print(){
 	for (size_t i = 0; i <= blockIndex; ++i) {
 		for (int k = 0;  k <= bufferSize; ++k) {
 			std::cout << i << " " << k << " " << std::endl;
-			std::cout << std::bitset<32>(blocks[i][k]) << std::endl;
+			std::cout << std::bitset<MAX_BIT_INDEX + 1>(blocks[i][k]) << std::endl;
 			
-			if (i == blockIndex && k >= bufferIndex && bitIndex <= 31)
+			if (i == blockIndex && k >= bufferIndex && bitIndex <= MAX_BIT_INDEX)
 				break;
 		}
 	}
+}
+
+void BitStream::addBlock() {
+	blocks.push_back(new uint32_t[bufferSize]);
+	++blockIndex;
 }

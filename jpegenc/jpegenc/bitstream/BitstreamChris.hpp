@@ -13,21 +13,27 @@
 #include <iostream>
 #include <vector>
 
+const int MAX_BIT_INDEX = 31;
+
 struct BitStream {
 	
 	int bitIndex = 31;
-	size_t blockIndex = 0;
+	size_t blockIndex;
 	size_t bufferIndex = 0;
 	size_t bufferSize;
 	std::vector<uint32_t*> blocks;
 	
 	BitStream(size_t bufferSizeInBytes = 10000) : bufferSize(bufferSizeInBytes / 4){
-		blocks.push_back(new uint32_t[bufferSize]);
+		addBlock();
+		++blockIndex;
 	}
 	
 	void add(bool bit);
 	bool read(size_t index);
 	void print();
+	
+private:
+	void addBlock();
 };
 
 #endif /* BitstreamChris_hpp */
