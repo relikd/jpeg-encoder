@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		540D8CAF1DD0BE4D00A4E4C9 /* PPMLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 540D8CAD1DD0BE4D00A4E4C9 /* PPMLoader.cpp */; };
-		540D8CB21DD135C200A4E4C9 /* gigantic.test.ppm in CopyFiles */ = {isa = PBXBuildFile; fileRef = 95FD0A111DD0E852005A89BB /* gigantic.test.ppm */; };
 		542102FD1DB6A83C004A1246 /* very_small.ppm in CopyFiles */ = {isa = PBXBuildFile; fileRef = 542102FA1DB6A7D9004A1246 /* very_small.ppm */; };
 		545A4D491DB6471500B5E365 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 545A4D481DB6471500B5E365 /* main.cpp */; };
 		546A42FA1DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F01DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp */; };
@@ -32,7 +31,6 @@
 			files = (
 				95FA179A1DC0CCFB0042DA1B /* singapore4k.test.ppm in CopyFiles */,
 				542102FD1DB6A83C004A1246 /* very_small.ppm in CopyFiles */,
-				540D8CB21DD135C200A4E4C9 /* gigantic.test.ppm in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -64,7 +62,6 @@
 		9572F5271DC0CA7D00FC7CE2 /* singapore4k.test.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = singapore4k.test.ppm; sourceTree = "<group>"; };
 		957B72891DD4CA070067F6D0 /* BitstreamChris.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BitstreamChris.hpp; sourceTree = "<group>"; };
 		957B728A1DD4CA070067F6D0 /* BitstreamChris.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BitstreamChris.cpp; sourceTree = "<group>"; };
-		95FD0A111DD0E852005A89BB /* gigantic.test.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = gigantic.test.ppm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -90,7 +87,6 @@
 		542102F91DB6A7D9004A1246 /* data */ = {
 			isa = PBXGroup;
 			children = (
-				95FD0A111DD0E852005A89BB /* gigantic.test.ppm */,
 				9572F5271DC0CA7D00FC7CE2 /* singapore4k.test.ppm */,
 				542102FA1DB6A7D9004A1246 /* very_small.ppm */,
 			);
