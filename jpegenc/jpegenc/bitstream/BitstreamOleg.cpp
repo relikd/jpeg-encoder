@@ -38,7 +38,7 @@ inline void BitstreamOleg::upCountBit() {
 inline void BitstreamOleg::upCountBits( const unsigned short amount ) {
 	bitIndex += amount;
 	if (bitIndex >= BITS_PER_BITCHAR) {
-		bitIndex %= BITS_PER_BITCHAR;
+		bitIndex &= MASK_BYTE; // MODULO: BITS_PER_BITCHAR
 		appendByte();
 	}
 }
@@ -111,7 +111,7 @@ unsigned short BitstreamOleg::fillup( const bool fillWithOnes ) {
 	if (bitIndex == 0)
 		return 0; // no need to fill
 	
-	short missingBits = BITS_PER_BITCHAR - bitIndex;
+	unsigned short missingBits = BITS_PER_BITCHAR - bitIndex;
 	
 	*currentChar <<= missingBits; // for the last underfull byte append x bits
 	if (fillWithOnes)
@@ -122,13 +122,13 @@ unsigned short BitstreamOleg::fillup( const bool fillWithOnes ) {
 }
 
 void BitstreamOleg::deleteBits( const size_t amount ) {
-	short bitIndexBefore = bitIndex;
+	unsigned short bitIndexBefore = bitIndex;
 	downCountBits(amount);
 	// we only care about the first char since the rest will be overwritten anyway
 	if (amount <= bitIndexBefore)
 		*currentChar >>= amount; // is actually the last char
 	else
-		*currentChar >>= (amount - bitIndexBefore) % BITS_PER_BITCHAR; // subtract current bit index and all multiples of BitChar size
+		*currentChar >>= (amount - bitIndexBefore) & MASK_BYTE; // subtract current bit index and all multiples of BitChar size
 }
 
 //  ---------------------------------------------------------------
@@ -138,14 +138,9 @@ void BitstreamOleg::deleteBits( const size_t amount ) {
 //  ---------------------------------------------------------------
 
 void BitstreamOleg::print( const bool onlyCurrentPage ) {
-	size_t bytesOnLastPage = byteIndex;
-	if (bitIndex % BITS_PER_BITCHAR)
-		++bytesOnLastPage;
-	// else: last byte is exactly 8 bit filled
-	
-	for (size_t page = 0; page <= pageIndex; page++) {
-		if (page == pageIndex)
-			printPage(page, bytesOnLastPage); // print the current page
+	for (unsigned short page = 0; page <= pageIndex; page++) {
+		if (page == pageIndex) // print the current page
+			printPage(page, byteIndex + (bitIndex ? 1 : 0)); // omit last byte if no bit set (bitIndex==0)
 		
 		else if (onlyCurrentPage == false)
 			printPage(page); // print all completely filled blocks
@@ -170,7 +165,7 @@ void BitstreamOleg::printByte( const BitChar &byte ) {
 	unsigned short idx = BITS_PER_BITCHAR;
 	while (idx--) {
 		printf("%d", (bool)((byte >> idx) & 1)); // print bit at index 'idx'
-		if (idx % 8 == 0)
+		if ((idx & 0x7) == 0) // MODULO: 8
 			printf(" "); // space after 8bit / one byte
 	}
 }

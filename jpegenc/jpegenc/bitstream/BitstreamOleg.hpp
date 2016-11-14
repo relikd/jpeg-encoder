@@ -23,7 +23,7 @@ const unsigned short BITCHAR_SIZE      = sizeof(BitChar);
 const unsigned short BITS_PER_BITCHAR  = BITCHAR_SIZE * 8;
 const unsigned short MAX_BITCHAR_INDEX = BITS_PER_BITCHAR - 1; // == MASK_BYTE
 
-const unsigned short SHIFT_BLOCK = 3 + (BITCHAR_SIZE / 2);          // 3 = 8bit, 4 = 16bit, 5 = 32bit
+const unsigned short SHIFT_BLOCK = 6; // 3 = 8bit, 4 = 16bit, 5 = 32bit, 6 = 64bit
 const unsigned short SHIFT_PAGE  = SHIFT_BLOCK + BITS_FOR_PAGE;     // bitshift amount to get a page
 const size_t MASK_BYTE   = BITS_MASK[SHIFT_BLOCK];                  // bitmask defining a byte    = 0..00111
 const size_t MASK_BLOCK  = BITS_MASK[BITS_FOR_PAGE] << SHIFT_BLOCK; // = (2^19 -1)<<3  = 1..11000
@@ -62,7 +62,7 @@ private:
 	void deleteBits( const size_t amount );
 	void printPage( const size_t page, size_t truncate = BLOCK_SIZE );
 	void printByte( const BitChar &byte );
-	void mapBitCharToChar( const BitChar &in, char* &out );
+	inline void mapBitCharToChar( const BitChar &in, char* &out );
 	
 	// handle indexing
 	size_t bitIndex = 0;
