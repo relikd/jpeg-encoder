@@ -24,7 +24,7 @@ void testImage() {
 	std::cout << "Loading image ..." << std::endl;
 	Test::performance([]{
 		PPMLoader loader;
-		auto image = loader.load("data/gigantic.test.ppm");
+		auto image = loader.load("data/singapore4k.test.ppm");
 		
 //		RGBToYCbCrConverter converter1;
 //		converter1.convert(image);
