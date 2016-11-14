@@ -62,6 +62,22 @@ void testChris() {
 			bitstream.add(numberOfElements % 2);
 		}
 	});
+	
+	char* test = new char[40000000];
+	for (int i = 0; i < 40000000; ++i) {
+		test[i] = i;
+	}
+	
+	std::cout << "Write bytes: ";
+	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [test](size_t numberOfElements){
+		BitStream bitstream;
+		bitstream.add(test, 40000000);
+	});
+	
+	
+	uint32_t* test2 = (uint32_t*) test;
+	
+	std::cout << test2[0] << std::endl;
 }
 
 void testMarcel() {
@@ -279,11 +295,11 @@ void testPerformance()
 
 int main(int argc, const char *argv[]) {
 //	testImage();
-//	testChris();
+	testChris();
 //	testMarcel();
 //	testMarv();
 //	testOleg(true);
-    testPerformance();
+//    testPerformance();
 	
 	return 0;
 }
