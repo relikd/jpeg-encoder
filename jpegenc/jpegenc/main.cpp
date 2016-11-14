@@ -212,6 +212,36 @@ void testOleg(bool testSingleBit = false, bool testByteBit = false, bool testRea
 	}
 }
 
+void testPerformance()
+{
+    size_t numberOfRounds = 100;
+    size_t numberOfSingleBits = 10000000;
+    
+    // Chris
+    // shout out
+    // start time
+    // test rounds
+    // stop time
+    
+    // Marcel
+    // shout out
+    // start time
+    // test rounds
+    // stop time
+    
+    // Marv
+    // shout out
+    // start time
+    // test rounds
+    // stop time
+    
+    // Oleg
+    // shout out
+    // start time
+    // test rounds
+    // stop time
+}
+
 // ################################################################
 // #
 // #  Main
