@@ -216,31 +216,59 @@ void testPerformance()
 {
 	size_t numberOfRounds = 100;
     size_t numberOfSingleBits = 10000000;
+    clock_t timeStamp;
+    
 	std::cout << "Starting performance test." << std::endl;
 
-	// Chris
-	// shout out
-	// start time
-	// test rounds
-	// stop time
+    std::cout << "Testing Chris:\t";
+    BitStream bitStreamChris;
+    timeStamp = clock();
 
-	// Marcel
-	// shout out
-	// start time
-	// test rounds
-	// stop time
+    for (size_t round = 0; round < numberOfRounds; ++round) {
+        for (size_t bit = 0; bit < numberOfSingleBits; ++bit) {
+            // bitStreamChris.add(bit % 10 != 0);
+        }
+    }
+    timeStamp = clock() - timeStamp;
+    std::cout << timeStamp << std::endl;
 
-	// Marv
-	// shout out
-	// start time
-	// test rounds
-	// stop time
+    std::cout << "Testing Marcel:\t";
+    BitstreamMarcel bitStreamMarcel;
+    timeStamp = clock();
+    
+    for (size_t round = 0; round < numberOfRounds; ++round) {
+        for (size_t bit = 0; bit < numberOfSingleBits; ++bit) {
+            bitStreamMarcel.add(bit % 10 != 0);
+        }
+    }
+    timeStamp = clock() - timeStamp;
+    std::cout << timeStamp << std::endl;
+    
+    std::cout << "Testing Marv:\t";
+    BitStreamMarv bitStreamMarv;
+    timeStamp = clock();
+    
+    for (size_t round = 0; round < numberOfRounds; ++round) {
+        for (size_t bit = 0; bit < numberOfSingleBits; ++bit) {
+            bitStreamMarv.add(bit % 10 != 0);
+        }
+    }
+    timeStamp = clock() - timeStamp;
+    std::cout << timeStamp << std::endl;
+    
+    std::cout << "Testing Oleg:\t";
+    BitstreamOleg bitStreamOleg;
+    timeStamp = clock();
+    
+    for (size_t round = 0; round < numberOfRounds; ++round) {
+        for (size_t bit = 0; bit < numberOfSingleBits; ++bit) {
+            bitStreamOleg.add(bit % 10 != 0);
+        }
+    }
+    timeStamp = clock() - timeStamp;
+    std::cout << timeStamp << std::endl;
+    
 
-	// Oleg
-	// shout out
-	// start time
-	// test rounds
-	// stop time
 }
 
 // ################################################################

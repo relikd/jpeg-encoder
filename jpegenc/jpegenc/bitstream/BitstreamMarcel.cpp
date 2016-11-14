@@ -6,7 +6,7 @@ void BitstreamMarcel::add( bool bit ) {
 
 	allocNewByteIfNeeded();
 	allocNewBlockIfNeeded();
-	cout << "block " << block_index << " byte " << byte_index << " bit " << bit_index << endl;
+	// cout << "block " << block_index << " byte " << byte_index << " bit " << bit_index << endl;
 
 	if (bit) {
 		blocks[block_index][byte_index] ^= 1 << (7-bit_index);
