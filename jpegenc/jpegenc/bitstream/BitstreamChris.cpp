@@ -9,23 +9,46 @@
 #include <bitset>
 #include "BitstreamChris.hpp"
 
+unsigned int Endian_DWord_Conversion(unsigned long int dword)
+{
+	return ((dword>>24)&0x000000FF) | ((dword>>8)&0x0000FF00) | ((dword<<8)&0x00FF0000) | ((dword<<24)&0xFF000000);
+
+}
+
 void BitStream::add(bool bit){
 	
 	if(bitIndex == -1) {
 		bitIndex = MAX_BIT_INDEX;
 		++bufferIndex;
+		
+		if(bufferIndex == bufferSize) {
+			bufferIndex = 0;
+			addBlock();
+		}
 	}
 	
-	if(bufferIndex == bufferSize) {
-		bufferIndex = 0;
-		addBlock();
-	}
-	
+
 	if(bit)
 		blocks[blockIndex][bufferIndex] ^= bit << bitIndex ;
 	
 	--bitIndex;
 }
+
+void BitStream::add(char* bits, size_t length) {
+	auto castesBits = (uint32_t*) bits;
+	for(size_t i = 0; i < length / 4; ++i) {
+		blocks[blockIndex][bufferIndex] = Endian_DWord_Conversion( castesBits[i]);
+		++bufferIndex;
+		
+		if(bufferIndex == bufferSize) {
+			bufferIndex = 0;
+			addBlock();
+		}
+	}
+	
+	bitIndex = -1;
+}
+
 
 bool BitStream::read(size_t index){
 	auto given_intIndex = index / (MAX_BIT_INDEX + 1);
@@ -54,3 +77,6 @@ void BitStream::addBlock() {
 	blocks.push_back(new uint32_t[bufferSize]);
 	++blockIndex;
 }
+
+
+
