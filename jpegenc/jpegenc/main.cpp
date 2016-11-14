@@ -114,7 +114,7 @@ void testMarv() {
 	delete[] bits;
 	
 	// Test saving
-	bitStreamMarv.saveToFile("/home/marv/Projects/jpeg-encoder/bitstream.txt");
+	bitStreamMarv.saveToFile("data/bitstream.txt");
 	
 	
 	std::cout << "Testing, Marv" << std::endl;
@@ -214,32 +214,33 @@ void testOleg(bool testSingleBit = false, bool testByteBit = false, bool testRea
 
 void testPerformance()
 {
-    size_t numberOfRounds = 100;
+	size_t numberOfRounds = 100;
     size_t numberOfSingleBits = 10000000;
-    
-    // Chris
-    // shout out
-    // start time
-    // test rounds
-    // stop time
-    
-    // Marcel
-    // shout out
-    // start time
-    // test rounds
-    // stop time
-    
-    // Marv
-    // shout out
-    // start time
-    // test rounds
-    // stop time
-    
-    // Oleg
-    // shout out
-    // start time
-    // test rounds
-    // stop time
+	std::cout << "Starting performance test." << std::endl;
+
+	// Chris
+	// shout out
+	// start time
+	// test rounds
+	// stop time
+
+	// Marcel
+	// shout out
+	// start time
+	// test rounds
+	// stop time
+
+	// Marv
+	// shout out
+	// start time
+	// test rounds
+	// stop time
+
+	// Oleg
+	// shout out
+	// start time
+	// test rounds
+	// stop time
 }
 
 // ################################################################
@@ -254,6 +255,7 @@ int main(int argc, const char *argv[]) {
 //	testMarcel();
 //	testMarv();
 //	testOleg(true);
+    testPerformance();
 	
 	return 0;
 }
