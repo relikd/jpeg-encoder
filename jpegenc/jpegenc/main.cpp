@@ -71,7 +71,7 @@ void testChris() {
 	std::cout << "Write bytes: ";
 	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [test](size_t numberOfElements){
 		BitStream bitstream;
-		bitstream.add(test, 10000000);
+		bitstream.add(test, 40000000);
 	});
 	
 	
@@ -267,7 +267,7 @@ void testPerformance()
 
 int main(int argc, const char *argv[]) {
 //	testImage();
-//	testChris();
+	testChris();
 //	testMarcel();
 //	testMarv();
 //	testOleg(true);
