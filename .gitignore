@@ -59,6 +59,9 @@ xcuserdata/
 ## CLion Projekt Information
 .idea/
 
+## DS Store
+.DS_Store
+
 ## Images
 images/
 *.test.*
