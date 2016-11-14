@@ -17,18 +17,19 @@ const int MAX_BIT_INDEX = 31;
 
 struct BitStream {
 	
-	int bitIndex = 31;
+	int bitIndex = MAX_BIT_INDEX;
 	size_t blockIndex;
 	size_t bufferIndex = 0;
 	size_t bufferSize;
-	std::vector<uint32_t*> blocks;
+	std::vector<uint32_t *> blocks;
 	
 	BitStream(size_t bufferSizeInBytes = 10000) : bufferSize(bufferSizeInBytes / 4){
 		addBlock();
-		++blockIndex;
+		blockIndex = 0;
 	}
 	
 	void add(bool bit);
+	void add(char* bytes, size_t length);
 	bool read(size_t index);
 	void print();
 	
