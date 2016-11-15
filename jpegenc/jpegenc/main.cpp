@@ -230,7 +230,7 @@ void testOleg(bool testSingleBit = false, bool testByteBit = false, bool testRea
 
 void testPerformance()
 {
-	size_t numberOfRounds = 100;
+	size_t numberOfRounds = 10;
     size_t numberOfSingleBits = 10000000;
     clock_t timeStamp;
     
@@ -283,8 +283,6 @@ void testPerformance()
     }
     timeStamp = clock() - timeStamp;
     std::cout << timeStamp << std::endl;
-    
-
 }
 
 // ################################################################
