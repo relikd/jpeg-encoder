@@ -5,10 +5,7 @@
 #include "converter/YCbCrToRGBConverter.hpp"
 #include "helper/Test.hpp"
 
-#include "bitstream/BitstreamChris.hpp"
-#include "bitstream/BitstreamMarcel.hpp"
-#include "bitstream/BitstreamMarv.hpp"
-#include "bitstream/BitstreamOleg.hpp"
+#include "bitstream/Bitstream.hpp"
 
 
 #define TEST_ITERATIONS 10000000
@@ -54,107 +51,16 @@ void testImage() {
 //  ---------------------------------------------------------------
 
 void testChris() {
-	std::cout << "Testing, Chris" << std::endl;
-	std::cout << "Write single bit: ";
-	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
-		BitStream bitstream;
-		while (numberOfElements--) {
-			bitstream.add(numberOfElements % 2);
-		}
-	});
-	
-	char* test = new char[40000000];
-	for (int i = 0; i < 40000000; ++i) {
-		test[i] = i;
-	}
-	
-	std::cout << "Write bytes: ";
-	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [test](size_t numberOfElements){
-		BitStream bitstream;
-		bitstream.add(test, 40000000);
-	});
-	
-	
-	uint32_t* test2 = (uint32_t*) test;
-	
-	std::cout << test2[0] << std::endl;
 }
 
 void testMarcel() {
-	BitstreamMarcel bitstream;
-	
-	for (int i = 0; i < 16; ++i) {
-		bitstream.add(true);
-	}
-	
-	bitstream.print();
-	
-	cout << bitstream.read(30) << endl;
 }
 
 void testMarv() {
-	
-	BitStreamMarv bitStreamMarv;
-	
-	// Test adding bits
-	bitStreamMarv.add(true);
-	bitStreamMarv.add(true);
-	bitStreamMarv.add(false);
-	bitStreamMarv.add(true);
-	bitStreamMarv.add(false);
-	bitStreamMarv.add(false);
-	bitStreamMarv.add(true);
-	bitStreamMarv.add(false);
-	
-	// Test adding bytes
-	char byte = (char) 0xd2;   // 11010010
-	bitStreamMarv.add( byte );
-	
-	// Test printing
-	bitStreamMarv.print();
-	
-	// Test reading bits
-	for (size_t i = 0; i < bitStreamMarv.size(); ++i) {
-		std::cout << bitStreamMarv.read(i);
-	}
-	std::cout << std::endl;
-	
-	// Test reading multiple bits
-	size_t firstIndex = 0;
-	size_t lastIndex = bitStreamMarv.size() - 1;
-	bool *bits = bitStreamMarv.read(firstIndex, lastIndex);
-	for (size_t i = 0; i < bitStreamMarv.size(); ++i) {
-	std:cout << bits[i];
-	}
-	std::cout << std::endl;
-	delete[] bits;
-	
-	// Test saving
-	bitStreamMarv.saveToFile("data/bitstream.txt");
-	
-	
-	std::cout << "Testing, Marv" << std::endl;
-	// Test performance adding bits (0.022s)
-	std::cout << "Write single bit: "; // (0.074520 seconds)
-	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
-		BitStreamMarv bitStream(numberOfElements);
-		while (numberOfElements--) {
-			bitStream.add(true);
-		}
-	});
-	
-	// Test performance adding bytes (0.154s)
-	std::cout << "Write byte bits: "; // (0.126076 seconds)
-	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
-		BitStreamMarv bitStream(numberOfElements);
-		while (numberOfElements--) {
-			bitStream.add((char) 0xd2); // 11010010
-		}
-	});
 }
 
 void testOleg(bool testSingleBit = false, bool testByteBit = false, bool testRead = false, bool testWriteFile = false) {
-	BitstreamOleg bitstream;
+	Bitstream bitstream;
 //	bitstream.add(true);
 //	bitstream.add(false);
 //	bitstream.add(false);
@@ -182,7 +88,7 @@ void testOleg(bool testSingleBit = false, bool testByteBit = false, bool testRea
 	if (testSingleBit) {
 		std::cout << "Write single bit: ";
 		Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
-			BitstreamOleg bitstream;
+			Bitstream bitstream;
 			while (numberOfElements--) {
 				bitstream.add(numberOfElements % 2);
 			}
@@ -192,7 +98,7 @@ void testOleg(bool testSingleBit = false, bool testByteBit = false, bool testRea
 	if (testByteBit) {
 		std::cout << "Write byte bits: ";
 		Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
-			BitstreamOleg bitstream;
+			Bitstream bitstream;
 			// bitstream.add(1);
 			while (numberOfElements--) {
 				bitstream.add(0xd2, 8);
@@ -201,7 +107,7 @@ void testOleg(bool testSingleBit = false, bool testByteBit = false, bool testRea
 	}
 	
 	// create random bitstream for reading
-	BitstreamOleg testStream;
+	Bitstream testStream;
 	size_t fillRandom = TEST_ITERATIONS;
 	while (fillRandom--)
 		testStream.add( arc4random() % 2 );
@@ -228,63 +134,6 @@ void testOleg(bool testSingleBit = false, bool testByteBit = false, bool testRea
 	}
 }
 
-void testPerformance()
-{
-	size_t numberOfRounds = 10;
-    size_t numberOfSingleBits = 10000000;
-    clock_t timeStamp;
-    
-	std::cout << "Starting performance test." << std::endl;
-
-    std::cout << "Testing Chris:\t";
-    BitStream bitStreamChris;
-    timeStamp = clock();
-
-    for (size_t round = 0; round < numberOfRounds; ++round) {
-        for (size_t bit = 0; bit < numberOfSingleBits; ++bit) {
-            bitStreamChris.add(bit % 10 != 0);
-        }
-    }
-    timeStamp = clock() - timeStamp;
-    std::cout << timeStamp << std::endl;
-
-    std::cout << "Testing Marcel:\t";
-    BitstreamMarcel bitStreamMarcel;
-    timeStamp = clock();
-    
-    for (size_t round = 0; round < numberOfRounds; ++round) {
-        for (size_t bit = 0; bit < numberOfSingleBits; ++bit) {
-            bitStreamMarcel.add(bit % 10 != 0);
-        }
-    }
-    timeStamp = clock() - timeStamp;
-    std::cout << timeStamp << std::endl;
-    
-    std::cout << "Testing Marv:\t";
-    BitStreamMarv bitStreamMarv;
-    timeStamp = clock();
-    
-    for (size_t round = 0; round < numberOfRounds; ++round) {
-        for (size_t bit = 0; bit < numberOfSingleBits; ++bit) {
-            bitStreamMarv.add(bit % 10 != 0);
-        }
-    }
-    timeStamp = clock() - timeStamp;
-    std::cout << timeStamp << std::endl;
-    
-    std::cout << "Testing Oleg:\t";
-    BitstreamOleg bitStreamOleg;
-    timeStamp = clock();
-    
-    for (size_t round = 0; round < numberOfRounds; ++round) {
-        for (size_t bit = 0; bit < numberOfSingleBits; ++bit) {
-            bitStreamOleg.add(bit % 10 != 0);
-        }
-    }
-    timeStamp = clock() - timeStamp;
-    std::cout << timeStamp << std::endl;
-}
-
 // ################################################################
 // #
 // #  Main
@@ -296,8 +145,7 @@ int main(int argc, const char *argv[]) {
 //	testChris();
 //	testMarcel();
 //	testMarv();
-//	testOleg(true);
-    testPerformance();
+	testOleg(true);
 	
 	return 0;
 }
