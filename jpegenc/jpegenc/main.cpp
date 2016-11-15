@@ -242,7 +242,7 @@ void testPerformance()
 
     for (size_t round = 0; round < numberOfRounds; ++round) {
         for (size_t bit = 0; bit < numberOfSingleBits; ++bit) {
-            // bitStreamChris.add(bit % 10 != 0);
+            bitStreamChris.add(bit % 10 != 0);
         }
     }
     timeStamp = clock() - timeStamp;
@@ -295,11 +295,11 @@ void testPerformance()
 
 int main(int argc, const char *argv[]) {
 //	testImage();
-	testChris();
+//	testChris();
 //	testMarcel();
 //	testMarv();
 //	testOleg(true);
-//    testPerformance();
+    testPerformance();
 	
 	return 0;
 }
