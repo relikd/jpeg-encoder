@@ -32,14 +32,14 @@ const size_t BLOCK_SIZE         = BITS_MASK[BITS_FOR_PAGE] + 1;            // = 
 // 2^(BITS_FOR_PAGE) * sizeof(BitChar) = 524288 bytes per page
 
 
-class BitstreamOleg {
+class Bitstream {
 	
 	size_t allocatedPages = 0;
 	std::vector<BitChar *> blocks;
 	BitChar *currentChar;
 	
 public:
-	BitstreamOleg( size_t preAllocPages = 1 ) : allocatedPages(preAllocPages) {
+	Bitstream( size_t preAllocPages = 1 ) : allocatedPages(preAllocPages) {
 		while (preAllocPages--) // dont be stupid and call the constructor with 0
 			blocks.push_back(new BitChar[BLOCK_SIZE]);
 		currentChar = &blocks[0][0];

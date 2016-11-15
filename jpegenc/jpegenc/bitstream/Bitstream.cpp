@@ -1,6 +1,6 @@
 //#include <iostream>
 //#include <fstream>
-#include "BitstreamOleg.hpp"
+#include "Bitstream.hpp"
 
 
 //  ---------------------------------------------------------------
@@ -9,7 +9,7 @@
 // |
 //  ---------------------------------------------------------------
 
-inline void BitstreamOleg::appendPage() {
+inline void Bitstream::appendPage() {
 	++pageIndex;
 	if (allocatedPages <= pageIndex) {
 		// create new page
@@ -18,7 +18,7 @@ inline void BitstreamOleg::appendPage() {
 	}
 }
 
-inline void BitstreamOleg::appendBitChar() {
+inline void Bitstream::appendBitChar() {
 	if (++bitCharIndex >= BLOCK_SIZE) {
 		bitCharIndex = 0;
 		appendPage();
@@ -28,14 +28,14 @@ inline void BitstreamOleg::appendBitChar() {
 	}
 }
 
-inline void BitstreamOleg::upCountBit() {
+inline void Bitstream::upCountBit() {
 	if (++bitIndex >= BITS_PER_BITCHAR) {
 		bitIndex = 0;
 		appendBitChar();
 	}
 }
 
-inline void BitstreamOleg::upCountBits( const unsigned short amount ) {
+inline void Bitstream::upCountBits( const unsigned short amount ) {
 	bitIndex += amount;
 	if (bitIndex >= BITS_PER_BITCHAR) {
 		bitIndex &= MASK_BIT_INDEX; // MODULO: BITS_PER_BITCHAR
@@ -43,7 +43,7 @@ inline void BitstreamOleg::upCountBits( const unsigned short amount ) {
 	}
 }
 
-inline void BitstreamOleg::downCountBits( const size_t amount ) {
+inline void Bitstream::downCountBits( const size_t amount ) {
 	if (amount <= bitIndex) {
 		bitIndex -= amount;
 		return; // pointer stays on the current BitChar
@@ -71,7 +71,7 @@ inline void BitstreamOleg::downCountBits( const size_t amount ) {
 // |
 //  ---------------------------------------------------------------
 
-bool BitstreamOleg::read( const size_t idx ){
+bool Bitstream::read( const size_t idx ){
 	BitChar* a = &blocks[ idx >> SHIFT_PAGE ][ (idx & MASK_BITCHAR_INDEX) >> SHIFT_BLOCK ];
 	unsigned short selectedBit = idx & MASK_BIT_INDEX;
 	return (*a >> (MAX_BITCHAR_INDEX - selectedBit)) & 1; // shift selected bit to lowest position
@@ -83,12 +83,12 @@ bool BitstreamOleg::read( const size_t idx ){
 // |
 //  ---------------------------------------------------------------
 
-void BitstreamOleg::add( const bool bit ) {
+void Bitstream::add( const bool bit ) {
 	*currentChar = (*currentChar << 1) | bit;
 	upCountBit();
 }
 
-void BitstreamOleg::add( const BitChar input, unsigned short amount ) {
+void Bitstream::add( const BitChar input, unsigned short amount ) {
 	// calculate if we have to split the char in two
 	short overflow = bitIndex + amount - BITS_PER_BITCHAR;
 	
@@ -107,7 +107,7 @@ void BitstreamOleg::add( const BitChar input, unsigned short amount ) {
 	}
 }
 
-unsigned short BitstreamOleg::fillup( const bool fillWithOnes ) {
+unsigned short Bitstream::fillup( const bool fillWithOnes ) {
 	if (bitIndex == 0)
 		return 0; // no need to fill
 	
@@ -121,7 +121,7 @@ unsigned short BitstreamOleg::fillup( const bool fillWithOnes ) {
 	return missingBits;
 }
 
-void BitstreamOleg::deleteBits( const size_t amount ) {
+void Bitstream::deleteBits( const size_t amount ) {
 	unsigned short bitIndexBefore = bitIndex;
 	downCountBits(amount);
 	// we only care about the first char since the rest will be overwritten anyway
@@ -137,7 +137,7 @@ void BitstreamOleg::deleteBits( const size_t amount ) {
 // |
 //  ---------------------------------------------------------------
 
-void BitstreamOleg::print( const bool onlyCurrentPage ) {
+void Bitstream::print( const bool onlyCurrentPage ) {
 	for (unsigned short page = 0; page <= pageIndex; page++) {
 		if (page == pageIndex) // print the current page
 			printPage(page, bitCharIndex + (bitIndex ? 1 : 0)); // omit last byte if no bit set (bitIndex==0)
@@ -150,7 +150,7 @@ void BitstreamOleg::print( const bool onlyCurrentPage ) {
 // new line after 8 bytes (64bit)
 const unsigned short breakByteAfter = 8 / BITCHAR_SIZE;
 
-void BitstreamOleg::printPage( const size_t page, size_t truncate ) {
+void Bitstream::printPage( const size_t page, size_t truncate ) {
 	printf("Page [%d]\n", (int)page);
 	BitChar *a = &blocks[page][0];
 	while (truncate--) {
@@ -161,7 +161,7 @@ void BitstreamOleg::printPage( const size_t page, size_t truncate ) {
 	printf("\n");
 }
 
-void BitstreamOleg::printBitChar( const BitChar &byte ) {
+void Bitstream::printBitChar( const BitChar &byte ) {
 	unsigned short idx = BITS_PER_BITCHAR;
 	while (idx--) {
 		printf("%d", (bool)((byte >> idx) & 1)); // print bit at index 'idx'
@@ -176,7 +176,7 @@ void BitstreamOleg::printBitChar( const BitChar &byte ) {
 // |
 //  ---------------------------------------------------------------
 
-void BitstreamOleg::saveToFile( const char *pathToFile ) {
+void Bitstream::saveToFile( const char *pathToFile ) {
 	FILE *f = fopen(pathToFile, "w");
 	char *byteRemap = new char[BITCHAR_SIZE]; // needed to correct the byte order for int
 	
@@ -212,7 +212,7 @@ void BitstreamOleg::saveToFile( const char *pathToFile ) {
 	deleteBits(bitsFilled); // restore previous state
 }
 
-inline void BitstreamOleg::mapBitCharToChar( const BitChar &in, char* &out ) {
+inline void Bitstream::mapBitCharToChar( const BitChar &in, char* &out ) {
 	// this bitshift hack is possible because a char will copy only the 8 least significant bits
 	switch (BITCHAR_SIZE) {
 		case 8: out[0]=in>>56; out[1]=in>>48; out[2]=in>>40; out[3]=in>>32;
