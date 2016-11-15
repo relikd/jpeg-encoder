@@ -21,13 +21,13 @@ const unsigned long BITS_MASK[] { // 0000, 0001, 0011, 0111, 1111, ...
 #define BITS_FOR_PAGE 17
 const unsigned short BITCHAR_SIZE      = sizeof(BitChar);
 const unsigned short BITS_PER_BITCHAR  = BITCHAR_SIZE * 8;
-const unsigned short MAX_BITCHAR_INDEX = BITS_PER_BITCHAR - 1; // == MASK_BYTE
+const unsigned short MAX_BITCHAR_INDEX = BITS_PER_BITCHAR - 1; // == MASK_BIT_INDEX
 
 const unsigned short SHIFT_BLOCK = 6; // 3 = 8bit, 4 = 16bit, 5 = 32bit, 6 = 64bit
 const unsigned short SHIFT_PAGE  = SHIFT_BLOCK + BITS_FOR_PAGE;     // bitshift amount to get a page
-const size_t MASK_BYTE   = BITS_MASK[SHIFT_BLOCK];                  // bitmask defining a byte    = 0..00111
-const size_t MASK_BLOCK  = BITS_MASK[BITS_FOR_PAGE] << SHIFT_BLOCK; // = (2^19 -1)<<3  = 1..11000
-const size_t BLOCK_SIZE  = BITS_MASK[BITS_FOR_PAGE] + 1;            // = 2^19 = 524288
+const size_t MASK_BIT_INDEX     = BITS_MASK[SHIFT_BLOCK];                  // bitmask defining a byte    = 0..00111
+const size_t MASK_BITCHAR_INDEX	= BITS_MASK[BITS_FOR_PAGE] << SHIFT_BLOCK; // = (2^17 -1)<<6  = 1..11000000
+const size_t BLOCK_SIZE         = BITS_MASK[BITS_FOR_PAGE] + 1;            // = 2^17
 
 // 2^(BITS_FOR_PAGE) * sizeof(BitChar) = 524288 bytes per page
 
@@ -40,18 +40,18 @@ class BitstreamOleg {
 	
 public:
 	BitstreamOleg( size_t preAllocPages = 1 ) : allocatedPages(preAllocPages) {
-		while (preAllocPages--) // dont be stupud and call the constructor with 0
+		while (preAllocPages--) // dont be stupid and call the constructor with 0
 			blocks.push_back(new BitChar[BLOCK_SIZE]);
 		currentChar = &blocks[0][0];
 	}
 	
 	size_t numberOfBits() {
-		return (pageIndex << SHIFT_PAGE) + (byteIndex << SHIFT_BLOCK) + bitIndex;
+		return (pageIndex << SHIFT_PAGE) + (bitCharIndex << SHIFT_BLOCK) + bitIndex;
 	}
 	
 	// public access
 	void add( const bool bit );
-	void add( const BitChar byte, unsigned short amount );
+	void add( const BitChar input, unsigned short amount );
 	bool read( const size_t idx ); // returns the bit
 	void print( const bool onlyCurrentPage = false );
 	void saveToFile( const char *pathToFile );
@@ -61,15 +61,15 @@ private:
 	unsigned short fillup( const bool fillWithOnes = true ); // returns how many bits were filled
 	void deleteBits( const size_t amount );
 	void printPage( const size_t page, size_t truncate = BLOCK_SIZE );
-	void printByte( const BitChar &byte );
+	void printBitChar( const BitChar &input );
 	inline void mapBitCharToChar( const BitChar &in, char* &out );
 	
 	// handle indexing
 	size_t bitIndex = 0;
-	size_t byteIndex = 0;
+	size_t bitCharIndex = 0;
 	size_t pageIndex = 0;
 	inline void appendPage();
-	inline void appendByte();
+	inline void appendBitChar();
 	inline void upCountBit();
 	inline void upCountBits( const unsigned short amount );
 	inline void downCountBits( const size_t amount );

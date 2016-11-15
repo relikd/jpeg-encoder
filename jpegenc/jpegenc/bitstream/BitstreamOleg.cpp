@@ -18,9 +18,9 @@ inline void BitstreamOleg::appendPage() {
 	}
 }
 
-inline void BitstreamOleg::appendByte() {
-	if (++byteIndex >= BLOCK_SIZE) {
-		byteIndex = 0;
+inline void BitstreamOleg::appendBitChar() {
+	if (++bitCharIndex >= BLOCK_SIZE) {
+		bitCharIndex = 0;
 		appendPage();
 		currentChar = &blocks[pageIndex][0];
 	} else {
@@ -31,15 +31,15 @@ inline void BitstreamOleg::appendByte() {
 inline void BitstreamOleg::upCountBit() {
 	if (++bitIndex >= BITS_PER_BITCHAR) {
 		bitIndex = 0;
-		appendByte();
+		appendBitChar();
 	}
 }
 
 inline void BitstreamOleg::upCountBits( const unsigned short amount ) {
 	bitIndex += amount;
 	if (bitIndex >= BITS_PER_BITCHAR) {
-		bitIndex &= MASK_BYTE; // MODULO: BITS_PER_BITCHAR
-		appendByte();
+		bitIndex &= MASK_BIT_INDEX; // MODULO: BITS_PER_BITCHAR
+		appendBitChar();
 	}
 }
 
@@ -58,11 +58,11 @@ inline void BitstreamOleg::downCountBits( const size_t amount ) {
 	
 	// then split the index into three again
 	pageIndex = (singleIndex >> SHIFT_PAGE);
-	byteIndex = (singleIndex & MASK_BLOCK) >> SHIFT_BLOCK;
-	bitIndex  = (singleIndex & MASK_BYTE);
+	bitCharIndex = (singleIndex & MASK_BITCHAR_INDEX) >> SHIFT_BLOCK;
+	bitIndex  = (singleIndex & MASK_BIT_INDEX);
 	
 	// move char to new position
-	currentChar = &blocks[ pageIndex ][ byteIndex ];
+	currentChar = &blocks[ pageIndex ][ bitCharIndex ];
 }
 
 //  ---------------------------------------------------------------
@@ -72,8 +72,8 @@ inline void BitstreamOleg::downCountBits( const size_t amount ) {
 //  ---------------------------------------------------------------
 
 bool BitstreamOleg::read( const size_t idx ){
-	BitChar* a = &blocks[ idx >> SHIFT_PAGE ][ (idx & MASK_BLOCK) >> SHIFT_BLOCK ];
-	unsigned short selectedBit = idx & MASK_BYTE;
+	BitChar* a = &blocks[ idx >> SHIFT_PAGE ][ (idx & MASK_BITCHAR_INDEX) >> SHIFT_BLOCK ];
+	unsigned short selectedBit = idx & MASK_BIT_INDEX;
 	return (*a >> (MAX_BITCHAR_INDEX - selectedBit)) & 1; // shift selected bit to lowest position
 }
 
@@ -88,21 +88,21 @@ void BitstreamOleg::add( const bool bit ) {
 	upCountBit();
 }
 
-void BitstreamOleg::add( const BitChar byte, unsigned short amount ) {
+void BitstreamOleg::add( const BitChar input, unsigned short amount ) {
 	// calculate if we have to split the char in two
 	short overflow = bitIndex + amount - BITS_PER_BITCHAR;
 	
 	if (overflow > 0) {
 		// write current BitChar
 		amount -= overflow;
-		*currentChar = (*currentChar << amount) | ((byte >> overflow) & BITS_MASK[amount]);
+		*currentChar = (*currentChar << amount) | ((input >> overflow) & BITS_MASK[amount]);
 		upCountBits(amount);
 		// and append to the next one
-		*currentChar = (byte & BITS_MASK[overflow]);
+		*currentChar = (input & BITS_MASK[overflow]);
 		upCountBits(overflow);
 	} else {
 		// everything fits into the current BitChar
-		*currentChar = (*currentChar << amount) | (byte & BITS_MASK[amount]);
+		*currentChar = (*currentChar << amount) | (input & BITS_MASK[amount]);
 		upCountBits(amount);
 	}
 }
@@ -128,7 +128,7 @@ void BitstreamOleg::deleteBits( const size_t amount ) {
 	if (amount <= bitIndexBefore)
 		*currentChar >>= amount; // is actually the last char
 	else
-		*currentChar >>= (amount - bitIndexBefore) & MASK_BYTE; // subtract current bit index and all multiples of BitChar size
+		*currentChar >>= (amount - bitIndexBefore) & MASK_BIT_INDEX; // subtract current bit index and all multiples of BitChar size
 }
 
 //  ---------------------------------------------------------------
@@ -140,7 +140,7 @@ void BitstreamOleg::deleteBits( const size_t amount ) {
 void BitstreamOleg::print( const bool onlyCurrentPage ) {
 	for (unsigned short page = 0; page <= pageIndex; page++) {
 		if (page == pageIndex) // print the current page
-			printPage(page, byteIndex + (bitIndex ? 1 : 0)); // omit last byte if no bit set (bitIndex==0)
+			printPage(page, bitCharIndex + (bitIndex ? 1 : 0)); // omit last byte if no bit set (bitIndex==0)
 		
 		else if (onlyCurrentPage == false)
 			printPage(page); // print all completely filled blocks
@@ -154,14 +154,14 @@ void BitstreamOleg::printPage( const size_t page, size_t truncate ) {
 	printf("Page [%d]\n", (int)page);
 	BitChar *a = &blocks[page][0];
 	while (truncate--) {
-		printByte(*(a++)); // move char pointer to the next char
+		printBitChar(*(a++)); // move char pointer to the next char
 		if (truncate % breakByteAfter == 0)
 			printf("\n");
 	}
 	printf("\n");
 }
 
-void BitstreamOleg::printByte( const BitChar &byte ) {
+void BitstreamOleg::printBitChar( const BitChar &byte ) {
 	unsigned short idx = BITS_PER_BITCHAR;
 	while (idx--) {
 		printf("%d", (bool)((byte >> idx) & 1)); // print bit at index 'idx'
@@ -182,20 +182,20 @@ void BitstreamOleg::saveToFile( const char *pathToFile ) {
 	
 	int bitsFilled = fillup(1); // complete the last byte
 	
-	size_t bytesOnLastPage = byteIndex;
-	if (bytesOnLastPage > 0)
-		bytesOnLastPage -= 1;// -1 = process last BitChar separately
+	size_t bitCharsOnLastPage = bitCharIndex;
+	if (bitCharsOnLastPage > 0)
+		bitCharsOnLastPage -= 1;// -1 = process last BitChar separately
 	
 	
 	for (size_t page = 0; page <= pageIndex; page++) {
-		size_t bytesOnPage = BLOCK_SIZE;
+		size_t bitCharsOnPage = BLOCK_SIZE;
 		if (page == pageIndex)
-			bytesOnPage = bytesOnLastPage; // save last page only partly
+			bitCharsOnPage = bitCharsOnLastPage; // save last page only partly
 		
 		BitChar *a = &blocks[page][0];
 		
 		// save values to binary file
-		while (bytesOnPage--) {
+		while (bitCharsOnPage--) {
 			mapBitCharToChar(*(a++), byteRemap);
 			fwrite(byteRemap, 1, BITCHAR_SIZE, f); // move char pointer to the next char
 		}
