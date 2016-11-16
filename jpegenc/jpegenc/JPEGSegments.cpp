@@ -25,7 +25,6 @@ void APP0::addToStream(Bitstream &stream) {
 	stream.add(Y_DENSITY, 16);
 	stream.add(PREVIEW_WIDTH, 8);
 	stream.add(PREVIEW_HEIGHT, 8);
-	std::cout << "Hallo ich bin ein APP0" << std::endl;
 }
 
 void StartOfFrame0::addToStream(Bitstream &stream) {
@@ -36,5 +35,14 @@ void StartOfFrame0::addToStream(Bitstream &stream) {
 	stream.add(width, 16);
 	stream.add(numberOfComponents, 8);
 	
-	std::cout << "Hallo ich bin ein StartOfFrame0" << std::endl;
+	addChannel1ToStream(stream);
+}
+
+void StartOfFrame0::addChannel1ToStream(Bitstream &stream) {
+	auto numberOfPixel = image->imageSize.pixelCount;
+	for(int i = 0; i < numberOfPixel; ++i) {
+		stream.add(1, 8);
+		stream.add(0x22, 8);
+		stream.add(image->channel1->getValue(i, image->imageSize), 8);
+	}
 }

@@ -54,13 +54,16 @@ void testImage() {
 //  ---------------------------------------------------------------
 
 void testChris() {
-	StartOfFrame0* sof0 = new StartOfFrame0(18, 18, 18);
+	PPMLoader loader;
+	auto image = loader.load("data/very_small.ppm");
+
+	StartOfFrame0* sof0 = new StartOfFrame0(1, image);
 	APP0* app0 = new APP0();
 	
 	std::vector<JpegSegment*> segments;
 	
-	segments.push_back(sof0);
 	segments.push_back(app0);
+	segments.push_back(sof0);
 	
 	Bitstream stream;
 	for (int i = 0; i < segments.size(); ++i) {
