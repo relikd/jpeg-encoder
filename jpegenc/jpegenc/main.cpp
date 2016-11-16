@@ -7,6 +7,9 @@
 
 #include "bitstream/Bitstream.hpp"
 
+#include "JPEGSegments.hpp"
+
+using namespace JPEGSegments;
 
 #define TEST_ITERATIONS 10000000
 #define TEST_REPEAT 10
@@ -51,6 +54,20 @@ void testImage() {
 //  ---------------------------------------------------------------
 
 void testChris() {
+	StartOfFrame0* sof0 = new StartOfFrame0(18, 18, 18);
+	APP0* app0 = new APP0();
+	
+	std::vector<JpegSegment*> segments;
+	
+	segments.push_back(sof0);
+	segments.push_back(app0);
+	
+	Bitstream stream;
+	for (int i = 0; i < segments.size(); ++i) {
+		segments[i]->addToStream(stream);
+	}
+	
+	stream.saveToFile("Test.jpg");
 }
 
 void testMarcel() {
@@ -142,10 +159,10 @@ void testOleg(bool testSingleBit = false, bool testByteBit = false, bool testRea
 
 int main(int argc, const char *argv[]) {
 //	testImage();
-//	testChris();
+	testChris();
 //	testMarcel();
 //	testMarv();
-	testOleg(true);
+//	testOleg(true);
 	
 	return 0;
 }
