@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "bitstream/Bitstream.hpp"
+#include "model/Image.hpp"
 
 namespace JPEGSegments {
 	enum class SegmentType : uint16_t {
@@ -58,20 +59,24 @@ namespace JPEGSegments {
 		unsigned char numberOfComponents;
 		uint16_t height;
 		uint16_t width;
+		std::shared_ptr<Image> image;
 		
 		StartOfFrame0(unsigned char numberOfComponents,
-					  uint16_t width,
-					  uint16_t height,
+					  std::shared_ptr<Image> image,
 					  unsigned char precision = 8)
 		: JpegSegment(0xFFC0) {
 			this->numberOfComponents = numberOfComponents;
-			this->width = width;
-			this->height = height;
+			this->image = image;
+			this->width = image->imageSize.width;
+			this->height = image->imageSize.height;
 			this->precision = precision;
 			this->length = numberOfComponents * 3 + 8;
 		}
 		
 		virtual void addToStream(Bitstream &stream);
+		
+	private:
+		void addChannel1ToStream(Bitstream &stream);
 	};
 	
 	
