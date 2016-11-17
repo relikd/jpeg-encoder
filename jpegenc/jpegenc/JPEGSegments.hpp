@@ -79,7 +79,15 @@ namespace JPEGSegments {
 		void addChannel1ToStream(Bitstream &stream);
 	};
 	
-	
+    struct JPEGWriter {
+        std::vector<JpegSegment*> segments;
+        Bitstream stream;
+        
+        JPEGWriter() {
+        }
+        
+        void writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile);
+    };
 }
 
 
