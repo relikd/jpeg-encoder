@@ -77,6 +77,11 @@ void testMarcel() {
 }
 
 void testMarv() {
+    PPMLoader loader;
+    auto image = loader.load("data/very_small.ppm");
+    
+    JPEGWriter writer;
+    writer.writeJPEGImage(image, "/Users/mat/Projects/jpeg-encoder/Test.test.jpg");
 }
 
 void testOleg(bool testSingleBit = false, bool testByteBit = false, bool testRead = false, bool testWriteFile = false) {
@@ -162,7 +167,7 @@ void testOleg(bool testSingleBit = false, bool testByteBit = false, bool testRea
 
 int main(int argc, const char *argv[]) {
 //	testImage();
-	testChris();
+//	testChris();
 //	testMarcel();
 //	testMarv();
 //	testOleg(true);
