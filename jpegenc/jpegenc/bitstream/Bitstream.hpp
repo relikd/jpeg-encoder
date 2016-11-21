@@ -55,10 +55,12 @@ public:
 	bool read( const size_t idx ); // returns the bit
 	void print( const bool onlyCurrentPage = false );
 	void saveToFile( const char *pathToFile );
-	
+
+    // public for testing purposes
+    unsigned short fillup( const bool fillWithOnes = true ); // returns how many bits were filled
+
 private:
 	// bitstream logic
-	unsigned short fillup( const bool fillWithOnes = true ); // returns how many bits were filled
 	void deleteBits( const size_t amount );
 	void printPage( const size_t page, size_t truncate = BLOCK_SIZE );
 	void printBitChar( const BitChar &input );
