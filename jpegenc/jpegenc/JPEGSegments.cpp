@@ -47,13 +47,27 @@ void StartOfFrame0::addChannel1ToStream(Bitstream &stream) {
 	}
 }
 
+void StartOfImage::addToStream(Bitstream &stream) {
+    stream.add(type, 16);
+}
+
+void EndOfImage::addToStream(Bitstream &stream) {
+    stream.add(type, 16);
+}
+
 void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile) {
 
+    StartOfImage* soi = new StartOfImage();
+    segments.push_back(soi);
+    
+    APP0* app0 = new APP0();
+    segments.push_back(app0);
+    
     StartOfFrame0* sof0 = new StartOfFrame0(1, image);
     segments.push_back(sof0);
 
-    APP0* app0 = new APP0();
-    segments.push_back(app0);
+    EndOfImage* eoi = new EndOfImage();
+    segments.push_back(eoi);
     
     for (int i = 0; i < segments.size(); ++i) {
         segments[i]->addToStream(stream);

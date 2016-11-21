@@ -169,7 +169,7 @@ int main(int argc, const char *argv[]) {
 //	testImage();
 //	testChris();
 //	testMarcel();
-//	testMarv();
+	testMarv();
 //	testOleg(true);
 	
 	return 0;
