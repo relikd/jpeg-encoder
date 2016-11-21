@@ -81,7 +81,7 @@ void testMarv() {
     auto image = loader.load("data/very_small.ppm");
     
     JPEGWriter writer;
-    writer.writeJPEGImage(image, "/Users/mat/Projects/jpeg-encoder/Test.test.jpg");
+    writer.writeJPEGImage(image, "Test.test.jpg");
 }
 
 void testOleg(bool testSingleBit = false, bool testByteBit = false, bool testRead = false, bool testWriteFile = false) {

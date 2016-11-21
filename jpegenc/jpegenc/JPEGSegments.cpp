@@ -34,17 +34,9 @@ void StartOfFrame0::addToStream(Bitstream &stream) {
 	stream.add(height, 16);
 	stream.add(width, 16);
 	stream.add(numberOfComponents, 8);
-	
-	addChannel1ToStream(stream);
-}
-
-void StartOfFrame0::addChannel1ToStream(Bitstream &stream) {
-	auto numberOfPixel = image->imageSize.pixelCount;
-	for(int i = 0; i < numberOfPixel; ++i) {
-		stream.add(1, 8);
-		stream.add(0x22, 8);
-		stream.add(image->channel1->getValue(i, image->imageSize), 8);
-	}
+    stream.add(0x01, 8);    // ID (Y)
+    stream.add(0x22, 8);    // Subsampling
+    stream.add(0x00, 8);    // Quantisierungstabelle
 }
 
 void StartOfImage::addToStream(Bitstream &stream) {
@@ -63,7 +55,7 @@ void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathTo
     APP0* app0 = new APP0();
     segments.push_back(app0);
     
-    StartOfFrame0* sof0 = new StartOfFrame0(1, image);
+    StartOfFrame0* sof0 = new StartOfFrame0(1, image);  // 1 = numberOfComponents
     segments.push_back(sof0);
 
     EndOfImage* eoi = new EndOfImage();
