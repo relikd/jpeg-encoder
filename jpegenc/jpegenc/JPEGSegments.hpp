@@ -78,6 +78,20 @@ namespace JPEGSegments {
 	private:
 		void addChannel1ToStream(Bitstream &stream);
 	};
+    
+    struct StartOfImage : JpegSegment {
+    
+        StartOfImage() : JpegSegment(0xFFD8) {
+        }
+        virtual void addToStream(Bitstream &stream);
+    };
+    
+    struct EndOfImage : JpegSegment {
+    
+        EndOfImage() : JpegSegment(0xFFD9) {
+        }
+        virtual void addToStream(Bitstream &stream);
+    };
 	
     struct JPEGWriter {
         std::vector<JpegSegment*> segments;
