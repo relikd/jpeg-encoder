@@ -11,8 +11,8 @@
 
 #include <stdio.h>
 #include <stdint.h>
-#include "bitstream/Bitstream.hpp"
-#include "model/Image.hpp"
+#include "../bitstream/Bitstream.hpp"
+#include "../model/Image.hpp"
 
 namespace JPEGSegments {
 	
