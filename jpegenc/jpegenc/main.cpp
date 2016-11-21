@@ -7,7 +7,7 @@
 
 #include "bitstream/Bitstream.hpp"
 
-#include "JPEGSegments.hpp"
+#include "segments/JPEGSegments.hpp"
 
 using namespace JPEGSegments;
 
@@ -62,7 +62,7 @@ void testJPEGWriter() {
     bitStream.add(1);
     bitStream.add(0);
     bitStream.print();
-    bitStream.fillup(true);
+    bitStream.fillup(1);
     bitStream.print();
     
     PPMLoader loader;
