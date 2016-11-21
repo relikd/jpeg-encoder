@@ -15,16 +15,6 @@
 #include "model/Image.hpp"
 
 namespace JPEGSegments {
-	enum class SegmentType : uint16_t {
-		StartOfImage = 0xFFD8, // SOI
-		EndOfImage = 0xFFD9, // EOI
-		APP0 = 0xFFE0,
-		StartOfFrame0 = 0xFFC0, // SOF0
-		DefineHuffmannTable = 0xFFC4, // DHT
-		DefineQuantizationTable = 0xFFDB, // DQT
-		StartOfScan = 0xFFDA, // SOS
-	};
-	
 	
 	struct JpegSegment {
 		const uint16_t type;
