@@ -115,8 +115,8 @@ unsigned short Bitstream::fillup( const bool fillWithOnes ) {
 	
 	*currentChar <<= missingBits; // for the last underfull byte append x bits
 	if (fillWithOnes)
-		*currentChar |= (1 << missingBits) - 1;
-	
+        *currentChar |= BITS_MASK[missingBits];
+        
 	upCountBits(missingBits);
 	return missingBits;
 }

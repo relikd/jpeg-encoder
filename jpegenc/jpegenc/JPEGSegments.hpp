@@ -64,10 +64,7 @@ namespace JPEGSegments {
 		}
 		
 		virtual void addToStream(Bitstream &stream);
-		
-	private:
-		void addChannel1ToStream(Bitstream &stream);
-	};
+    };
     
     struct StartOfImage : JpegSegment {
     
