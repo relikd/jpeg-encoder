@@ -3,7 +3,7 @@
 
 #include <vector>
 
-typedef unsigned long BitChar;
+typedef unsigned long Word;
 
 const unsigned long BITS_MASK[] { // 0000, 0001, 0011, 0111, 1111, ...
 	0x0, 0x1, 0x3, 0x7, 0xF, 0x1F, 0x3F, 0x7F, 0xFF, 0x1FF, 0x3FF, 0x7FF, 0xFFF, 0x1FFF,
@@ -19,39 +19,39 @@ const unsigned long BITS_MASK[] { // 0000, 0001, 0011, 0111, 1111, ...
 
 // Constants
 #define BITS_FOR_PAGE 17
-const unsigned short BITCHAR_SIZE      = sizeof(BitChar);
-const unsigned short BITS_PER_BITCHAR  = BITCHAR_SIZE * 8;
-const unsigned short MAX_BITCHAR_INDEX = BITS_PER_BITCHAR - 1; // == MASK_BIT_INDEX
+const unsigned short WORD_SIZE      = sizeof(Word);
+const unsigned short BITS_PER_WORD  = WORD_SIZE * 8;
+const unsigned short MAX_INDEX_WORD = BITS_PER_WORD - 1; // == MASK_BIT_INDEX
 
-const unsigned short SHIFT_BLOCK = 6; // 3 = 8bit, 4 = 16bit, 5 = 32bit, 6 = 64bit
-const unsigned short SHIFT_PAGE  = SHIFT_BLOCK + BITS_FOR_PAGE;     // bitshift amount to get a page
-const size_t MASK_BIT_INDEX     = BITS_MASK[SHIFT_BLOCK];                  // bitmask defining a byte    = 0..00111
-const size_t MASK_BITCHAR_INDEX	= BITS_MASK[BITS_FOR_PAGE] << SHIFT_BLOCK; // = (2^17 -1)<<6  = 1..11000000
-const size_t BLOCK_SIZE         = BITS_MASK[BITS_FOR_PAGE] + 1;            // = 2^17
+const unsigned short SHIFT_WORD = 6; // 3 = 8bit, 4 = 16bit, 5 = 32bit, 6 = 64bit
+const unsigned short SHIFT_PAGE = SHIFT_WORD + BITS_FOR_PAGE;     // bitshift amount to get a page
+const size_t MASK_BIT_INDEX  = BITS_MASK[SHIFT_WORD];                  // bitmask defining a byte    = 0..00111
+const size_t MASK_WORD_INDEX = BITS_MASK[BITS_FOR_PAGE] << SHIFT_WORD; // = (2^17 -1)<<6  = 1..11000000
+const size_t PAGE_SIZE       = BITS_MASK[BITS_FOR_PAGE] + 1;            // = 2^17
 
-// 2^(BITS_FOR_PAGE) * sizeof(BitChar) = 524288 bytes per page
+// 2^(BITS_FOR_PAGE) * sizeof(Word) = 524288 bytes per page
 
 
 class Bitstream {
 	
 	size_t allocatedPages = 0;
-	std::vector<BitChar *> blocks;
-	BitChar *currentChar;
+	std::vector<Word *> book;
+	Word *currentWord;
 	
 public:
 	Bitstream( size_t preAllocPages = 1 ) : allocatedPages(preAllocPages) {
 		while (preAllocPages--) // dont be stupid and call the constructor with 0
-			blocks.push_back(new BitChar[BLOCK_SIZE]);
-		currentChar = &blocks[0][0];
+			book.push_back(new Word[PAGE_SIZE]);
+		currentWord = &book[0][0];
 	}
 	
 	size_t numberOfBits() {
-		return (pageIndex << SHIFT_PAGE) + (bitCharIndex << SHIFT_BLOCK) + bitIndex;
+		return (pageIndex << SHIFT_PAGE) + (WordIndex << SHIFT_WORD) + bitIndex;
 	}
 	
 	// public access
 	void add( const bool bit );
-	void add( const BitChar input, unsigned short amount );
+	void add( const Word input, unsigned short amount );
 	bool read( const size_t idx ); // returns the bit
 	void print( const bool onlyCurrentPage = false );
 	void saveToFile( const char *pathToFile );
@@ -62,16 +62,16 @@ public:
 private:
 	// bitstream logic
 	void deleteBits( const size_t amount );
-	void printPage( const size_t page, size_t truncate = BLOCK_SIZE );
-	void printBitChar( const BitChar &input );
-	inline void mapBitCharToChar( const BitChar &in, char* &out );
+	void printPage( const size_t page, size_t truncate = PAGE_SIZE );
+	void printWord( const Word &input );
+	inline void mapWordToChar( const Word &in, char* &out );
 	
 	// handle indexing
 	size_t bitIndex = 0;
-	size_t bitCharIndex = 0;
+	size_t WordIndex = 0;
 	size_t pageIndex = 0;
 	inline void appendPage();
-	inline void appendBitChar();
+	inline void appendWord();
 	inline void upCountBit();
 	inline void upCountBits( const unsigned short amount );
 	inline void downCountBits( const size_t amount );
