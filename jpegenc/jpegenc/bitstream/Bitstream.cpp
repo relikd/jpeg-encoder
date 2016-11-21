@@ -5,7 +5,7 @@
 
 //  ---------------------------------------------------------------
 // |
-// |  Indexing and BitChar Pointer Management
+// |  Indexing and Word Pointer Management
 // |
 //  ---------------------------------------------------------------
 
@@ -13,40 +13,40 @@ inline void Bitstream::appendPage() {
 	++pageIndex;
 	if (allocatedPages <= pageIndex) {
 		// create new page
-		blocks.push_back( new BitChar[BLOCK_SIZE] );
+		book.push_back( new Word[PAGE_SIZE] );
 		++allocatedPages;
 	}
 }
 
-inline void Bitstream::appendBitChar() {
-	if (++bitCharIndex >= BLOCK_SIZE) {
-		bitCharIndex = 0;
+inline void Bitstream::appendWord() {
+	if (++WordIndex >= PAGE_SIZE) {
+		WordIndex = 0;
 		appendPage();
-		currentChar = &blocks[pageIndex][0];
+		currentWord = &book[pageIndex][0];
 	} else {
-		currentChar++;
+		currentWord++;
 	}
 }
 
 inline void Bitstream::upCountBit() {
-	if (++bitIndex >= BITS_PER_BITCHAR) {
+	if (++bitIndex >= BITS_PER_WORD) {
 		bitIndex = 0;
-		appendBitChar();
+		appendWord();
 	}
 }
 
 inline void Bitstream::upCountBits( const unsigned short amount ) {
 	bitIndex += amount;
-	if (bitIndex >= BITS_PER_BITCHAR) {
-		bitIndex &= MASK_BIT_INDEX; // MODULO: BITS_PER_BITCHAR
-		appendBitChar();
+	if (bitIndex >= BITS_PER_WORD) {
+		bitIndex &= MASK_BIT_INDEX; // MODULO: BITS_PER_WORD
+		appendWord();
 	}
 }
 
 inline void Bitstream::downCountBits( const size_t amount ) {
 	if (amount <= bitIndex) {
 		bitIndex -= amount;
-		return; // pointer stays on the current BitChar
+		return; // pointer stays on the current Word
 	}
 	
 	// combine all three indices to a single one and subtract the amount
@@ -58,11 +58,11 @@ inline void Bitstream::downCountBits( const size_t amount ) {
 	
 	// then split the index into three again
 	pageIndex = (singleIndex >> SHIFT_PAGE);
-	bitCharIndex = (singleIndex & MASK_BITCHAR_INDEX) >> SHIFT_BLOCK;
+	WordIndex = (singleIndex & MASK_WORD_INDEX) >> SHIFT_WORD;
 	bitIndex  = (singleIndex & MASK_BIT_INDEX);
 	
 	// move char to new position
-	currentChar = &blocks[ pageIndex ][ bitCharIndex ];
+	currentWord = &book[ pageIndex ][ WordIndex ];
 }
 
 //  ---------------------------------------------------------------
@@ -72,9 +72,9 @@ inline void Bitstream::downCountBits( const size_t amount ) {
 //  ---------------------------------------------------------------
 
 bool Bitstream::read( const size_t idx ){
-	BitChar* a = &blocks[ idx >> SHIFT_PAGE ][ (idx & MASK_BITCHAR_INDEX) >> SHIFT_BLOCK ];
+	Word* a = &book[ idx >> SHIFT_PAGE ][ (idx & MASK_WORD_INDEX) >> SHIFT_WORD ];
 	unsigned short selectedBit = idx & MASK_BIT_INDEX;
-	return (*a >> (MAX_BITCHAR_INDEX - selectedBit)) & 1; // shift selected bit to lowest position
+	return (*a >> (MAX_INDEX_WORD - selectedBit)) & 1; // shift selected bit to lowest position
 }
 
 //  ---------------------------------------------------------------
@@ -84,25 +84,25 @@ bool Bitstream::read( const size_t idx ){
 //  ---------------------------------------------------------------
 
 void Bitstream::add( const bool bit ) {
-	*currentChar = (*currentChar << 1) | bit;
+	*currentWord = (*currentWord << 1) | bit;
 	upCountBit();
 }
 
-void Bitstream::add( const BitChar input, unsigned short amount ) {
+void Bitstream::add( const Word input, unsigned short amount ) {
 	// calculate if we have to split the char in two
-	short overflow = bitIndex + amount - BITS_PER_BITCHAR;
+	short overflow = bitIndex + amount - BITS_PER_WORD;
 	
 	if (overflow > 0) {
-		// write current BitChar
+		// write current Word
 		amount -= overflow;
-		*currentChar = (*currentChar << amount) | ((input >> overflow) & BITS_MASK[amount]);
+		*currentWord = (*currentWord << amount) | ((input >> overflow) & BITS_MASK[amount]);
 		upCountBits(amount);
 		// and append to the next one
-		*currentChar = (input & BITS_MASK[overflow]);
+		*currentWord = (input & BITS_MASK[overflow]);
 		upCountBits(overflow);
 	} else {
-		// everything fits into the current BitChar
-		*currentChar = (*currentChar << amount) | (input & BITS_MASK[amount]);
+		// everything fits into the current Word
+		*currentWord = (*currentWord << amount) | (input & BITS_MASK[amount]);
 		upCountBits(amount);
 	}
 }
@@ -111,11 +111,11 @@ unsigned short Bitstream::fillup( const bool fillWithOnes ) {
 	if (bitIndex == 0)
 		return 0; // no need to fill
 	
-	unsigned short missingBits = BITS_PER_BITCHAR - bitIndex;
+	unsigned short missingBits = BITS_PER_WORD - bitIndex;
 	
-	*currentChar <<= missingBits; // for the last underfull byte append x bits
+	*currentWord <<= missingBits; // for the last underfull byte append x bits
 	if (fillWithOnes)
-        *currentChar |= BITS_MASK[missingBits];
+        *currentWord |= BITS_MASK[missingBits];
         
 	upCountBits(missingBits);
 	return missingBits;
@@ -126,9 +126,9 @@ void Bitstream::deleteBits( const size_t amount ) {
 	downCountBits(amount);
 	// we only care about the first char since the rest will be overwritten anyway
 	if (amount <= bitIndexBefore)
-		*currentChar >>= amount; // is actually the last char
+		*currentWord >>= amount; // is actually the last char
 	else
-		*currentChar >>= (amount - bitIndexBefore) & MASK_BIT_INDEX; // subtract current bit index and all multiples of BitChar size
+		*currentWord >>= (amount - bitIndexBefore) & MASK_BIT_INDEX; // subtract current bit index and all multiples of Word size
 }
 
 //  ---------------------------------------------------------------
@@ -140,29 +140,29 @@ void Bitstream::deleteBits( const size_t amount ) {
 void Bitstream::print( const bool onlyCurrentPage ) {
 	for (unsigned short page = 0; page <= pageIndex; page++) {
 		if (page == pageIndex) // print the current page
-			printPage(page, bitCharIndex + (bitIndex ? 1 : 0)); // omit last byte if no bit set (bitIndex==0)
+			printPage(page, WordIndex + (bitIndex ? 1 : 0)); // omit last byte if no bit set (bitIndex==0)
 		
 		else if (onlyCurrentPage == false)
-			printPage(page); // print all completely filled blocks
+			printPage(page); // print all completely filled book
 	}
 }
 
 // new line after 8 bytes (64bit)
-const unsigned short breakByteAfter = 8 / BITCHAR_SIZE;
+const unsigned short breakByteAfter = 8 / WORD_SIZE;
 
 void Bitstream::printPage( const size_t page, size_t truncate ) {
 	printf("Page [%d]\n", (int)page);
-	BitChar *a = &blocks[page][0];
+	Word *a = &book[page][0];
 	while (truncate--) {
-		printBitChar(*(a++)); // move char pointer to the next char
+		printWord(*(a++)); // move char pointer to the next char
 		if (truncate % breakByteAfter == 0)
 			printf("\n");
 	}
 	printf("\n");
 }
 
-void Bitstream::printBitChar( const BitChar &byte ) {
-	unsigned short idx = BITS_PER_BITCHAR;
+void Bitstream::printWord( const Word &byte ) {
+	unsigned short idx = BITS_PER_WORD;
 	while (idx--) {
 		printf("%d", (bool)((byte >> idx) & 1)); // print bit at index 'idx'
 		if ((idx & 0x7) == 0) // MODULO: 8
@@ -178,32 +178,32 @@ void Bitstream::printBitChar( const BitChar &byte ) {
 
 void Bitstream::saveToFile( const char *pathToFile ) {
 	FILE *f = fopen(pathToFile, "w");
-	char *byteRemap = new char[BITCHAR_SIZE]; // needed to correct the byte order for int
+	char *byteRemap = new char[WORD_SIZE]; // needed to correct the byte order for int
 	
 	int bitsFilled = fillup(1); // complete the last byte
 	
-	size_t bitCharsOnLastPage = bitCharIndex;
-	if (bitCharsOnLastPage > 0)
-		bitCharsOnLastPage -= 1;// -1 = process last BitChar separately
+	size_t WordsOnLastPage = WordIndex;
+	if (WordsOnLastPage > 0)
+		WordsOnLastPage -= 1;// -1 = process last Word separately
 	
 	
 	for (size_t page = 0; page <= pageIndex; page++) {
-		size_t bitCharsOnPage = BLOCK_SIZE;
+		size_t WordsOnPage = PAGE_SIZE;
 		if (page == pageIndex)
-			bitCharsOnPage = bitCharsOnLastPage; // save last page only partly
+			WordsOnPage = WordsOnLastPage; // save last page only partly
 		
-		BitChar *a = &blocks[page][0];
+		Word *a = &book[page][0];
 		
 		// save values to binary file
-		while (bitCharsOnPage--) {
-			mapBitCharToChar(*(a++), byteRemap);
-			fwrite(byteRemap, 1, BITCHAR_SIZE, f); // move char pointer to the next char
+		while (WordsOnPage--) {
+			mapWordToChar(*(a++), byteRemap);
+			fwrite(byteRemap, 1, WORD_SIZE, f); // move char pointer to the next char
 		}
 		
-		// get last BitChar separately because it could contain 4 bytes even if we only need 1 byte
+		// get last Word separately because it could contain 4 bytes even if we only need 1 byte
 		if (page == pageIndex) {
-			mapBitCharToChar(*a, byteRemap);
-			fwrite(byteRemap, 1, BITCHAR_SIZE - (bitsFilled / 8), f); // omit trailing 0xFF chars
+			mapWordToChar(*a, byteRemap);
+			fwrite(byteRemap, 1, WORD_SIZE - (bitsFilled / 8), f); // omit trailing 0xFF chars
 		}
 	}
 	delete[] byteRemap;
@@ -212,9 +212,9 @@ void Bitstream::saveToFile( const char *pathToFile ) {
 	deleteBits(bitsFilled); // restore previous state
 }
 
-inline void Bitstream::mapBitCharToChar( const BitChar &in, char* &out ) {
+inline void Bitstream::mapWordToChar( const Word &in, char* &out ) {
 	// this bitshift hack is possible because a char will copy only the 8 least significant bits
-	switch (BITCHAR_SIZE) {
+	switch (WORD_SIZE) {
 		case 8: out[0]=in>>56; out[1]=in>>48; out[2]=in>>40; out[3]=in>>32;
 			    out[4]=in>>24; out[5]=in>>16; out[6]=in>>8;  out[7]=in; break;
 		case 4: out[0]=in>>24; out[1]=in>>16; out[2]=in>>8;  out[3]=in; break;
