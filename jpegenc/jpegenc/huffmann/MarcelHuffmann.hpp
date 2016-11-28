@@ -17,7 +17,7 @@ struct InputWord {
     int word;
     int amount;
     
-    InputWord(int word) : word(word), amount(0) {}
+    InputWord(int word) : word(word), amount(1) {}
     
     void increase();
     
