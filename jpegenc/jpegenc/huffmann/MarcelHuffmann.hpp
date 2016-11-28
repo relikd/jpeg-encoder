@@ -10,14 +10,19 @@
 #define MarcelHuffmann_hpp
 
 #include <stdio.h>
+#include <map>
 #include <vector>
 #include <algorithm>
+#include "../bitstream/Bitstream.hpp"
+
+typedef int Symbol;
 
 struct InputWord {
-    int word;
+    Symbol symbol = -1;
     int amount;
     
-    InputWord(int word) : word(word), amount(1) {}
+    InputWord(int amount, Symbol symbol) : amount(amount), symbol(symbol) {}
+    InputWord(Symbol symbol) : symbol(symbol), amount(1) {}
     
     void increase();
     
@@ -30,17 +35,35 @@ struct InputWord {
     }
 };
 
+struct Node {
+    
+    Node* left = nullptr; //0
+    Node* right = nullptr; //1
+    InputWord* value = nullptr;
+    
+    Node(){}
+    Node(InputWord* inputWord) : value(inputWord) {}
+    
+    void calculateValue();
+    
+};
+
+
 class MarcelHuffmann {
-    std::vector<InputWord> words;
+    std::vector<InputWord> words; //tree generation works only if words are in mem.
+	
     
 public:
     MarcelHuffmann() {}
     
-    void addToWords(std::vector<int>);
-    
+    void addToWords(std::vector<Symbol>);
+    Node* generateTree();
+	std::map<Symbol, Word>* generateEncodingTable(Node* node);
+	std::vector<Symbol> decode(Bitstream* bitstream, Node* rootNode);
+	
 private:
-
     void sortByAppearance();
+	void climbTree(Word word, Node* node, std::map<Symbol, Word>* map);
 };
 
 

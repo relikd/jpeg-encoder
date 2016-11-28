@@ -74,6 +74,15 @@ void testJPEGWriter() {
     writer.writeJPEGImage(image, "Test.test.jpg");
 }
 
+std::vector<Symbol> getWord() {
+	std::vector<Symbol> input;
+	input.push_back(2);
+	input.push_back(4);
+	input.push_back(7);
+
+	return input;
+}
+
 void testhuffmann() {
     std::vector<int> input;
     input.push_back(2);
@@ -86,13 +95,24 @@ void testhuffmann() {
     input.push_back(5);
     input.push_back(5);
     input.push_back(6);
+	input.push_back(6);
     input.push_back(7);
     input.push_back(7);
     
     MarcelHuffmann huffman;
     huffman.addToWords(input);
-    
-    huffman.addToWords(input);
+	Node* rootTree = huffman.generateTree();
+	
+	std::map<Symbol, Word>* encodingTable = huffman.generateEncodingTable(rootTree);
+	
+	Bitstream bitsteam;
+	std::vector<Symbol> word = getWord();
+	for (int i = 0; i < word.size(); ++i) {
+		Word word = encodingTable->at(2);
+		bitsteam.add(word);
+		
+	}
+	
 }
 
 // ################################################################
