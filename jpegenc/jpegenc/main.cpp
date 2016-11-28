@@ -4,6 +4,7 @@
 #include "converter/RGBToYCbCrConverter.hpp"
 #include "converter/YCbCrToRGBConverter.hpp"
 #include "helper/Test.hpp"
+#include "MarcelHuffmann.hpp"
 
 #include "bitstream/Bitstream.hpp"
 
@@ -64,12 +65,31 @@ void testJPEGWriter() {
     bitStream.print();
     bitStream.fillup(1);
     bitStream.print();
+    bitStream.saveToFile("out.txt");
     
     PPMLoader loader;
     auto image = loader.load("data/very_small.ppm");
     
     JPEGWriter writer;
     writer.writeJPEGImage(image, "Test.test.jpg");
+}
+
+void testhuffmann() {
+    std::vector<int> input;
+    input.push_back(2);
+    input.push_back(2);
+    input.push_back(2);
+    input.push_back(3);
+    input.push_back(4);
+    input.push_back(5);
+    input.push_back(6);
+    input.push_back(7);
+    input.push_back(7);
+    
+    MarcelHuffmann huffman;
+    huffman.addToWords(input);
+    
+    huffman.addToWords(input);
 }
 
 // ################################################################
@@ -79,7 +99,8 @@ void testJPEGWriter() {
 // ################################################################
 
 int main(int argc, const char *argv[]) {
-	testJPEGWriter();
+	//testJPEGWriter();
+    testhuffmann();
 	
 	return 0;
 }
