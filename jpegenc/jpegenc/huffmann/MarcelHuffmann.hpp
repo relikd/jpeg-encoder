@@ -18,58 +18,58 @@
 typedef int Symbol;
 
 struct InputWord {
-    Symbol symbol = -1;
-    int amount;
-    
-    InputWord(int amount, Symbol symbol) : amount(amount), symbol(symbol) {}
-    InputWord(Symbol symbol) : symbol(symbol), amount(1) {}
-    
-    void increase();
-    
-    bool operator < (const InputWord& input) const {
-        return (amount < input.amount);
-    }
-    
-    bool operator == (const InputWord& input) const {
-        return (amount == input.amount);
-    }
+	Symbol symbol = -1;
+	int amount;
+	
+	InputWord(int amount, Symbol symbol) : amount(amount), symbol(symbol) {}
+	InputWord(Symbol symbol) : symbol(symbol), amount(1) {}
+	
+	void increase();
+	
+	bool operator < (const InputWord& input) const {
+		return (amount < input.amount);
+	}
+	
+	bool operator == (const InputWord& input) const {
+		return (amount == input.amount);
+	}
 };
 
 struct Node {
-    
-    Node* left = nullptr; //0
-    Node* right = nullptr; //1
-    InputWord* value = nullptr;
-    
-    Node(){}
-    Node(InputWord* inputWord) : value(inputWord) {}
-    
-    void calculateValue();
-    
+	Node* left = nullptr; //0
+	Node* right = nullptr; //1
+	InputWord* value = nullptr;
+	unsigned short depth = 0;
+	
+	Node(){}
+	Node(InputWord* inputWord) : value(inputWord) {}
+	
+	void calculateValue();
+	void print();
+};
+
+struct SymbolBits {
+	Word bits = 0;
+	unsigned short numberOfBits = 0;
 };
 
 
 class MarcelHuffmann {
-    std::vector<InputWord> words; //tree generation works only if words are in mem.
+	std::vector<InputWord> words; //tree generation works only if words are in mem.
 	
-    
+	
 public:
-    MarcelHuffmann() {}
-    
-    void addToWords(std::vector<Symbol>);
-    Node* generateTree();
-	std::map<Symbol, Word>* generateEncodingTable(Node* node);
+	MarcelHuffmann() {}
+	
+	void addToWords(std::vector<Symbol>);
+	Node* generateTree();
+	std::map<Symbol, SymbolBits>* generateEncodingTable(Node* node);
 	std::vector<Symbol> decode(Bitstream* bitstream, Node* rootNode);
 	
 private:
-    void sortByAppearance();
-	void climbTree(Word word, Node* node, std::map<Symbol, Word>* map);
+	void sortByAppearance();
+	void climbTree(SymbolBits bitsForSymbol, Node* node, std::map<Symbol, SymbolBits>* map);
 };
-
-
-
-
-
 
 
 #endif /* MarcelHuffmann_hpp */

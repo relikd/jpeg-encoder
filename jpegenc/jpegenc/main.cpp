@@ -103,15 +103,15 @@ void testhuffmann() {
     huffman.addToWords(input);
 	Node* rootTree = huffman.generateTree();
 	
-	std::map<Symbol, Word>* encodingTable = huffman.generateEncodingTable(rootTree);
+	std::map<Symbol, SymbolBits>* encodingTable = huffman.generateEncodingTable(rootTree);
 	
 	Bitstream bitsteam;
 	std::vector<Symbol> word = getWord();
 	for (int i = 0; i < word.size(); ++i) {
-		Word word = encodingTable->at(2);
-		bitsteam.add(word);
-		
+		SymbolBits bitsOfSymbol = encodingTable->at(word[i]);
+		bitsteam.add(bitsOfSymbol.bits, bitsOfSymbol.numberOfBits);
 	}
+	bitsteam.print();
 	
 }
 

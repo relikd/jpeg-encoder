@@ -14,6 +14,7 @@ void InputWord::increase() {
 
 
 
+
 void MarcelHuffmann::addToWords(std::vector<int> input) {
 	for (int i = 0; i < input.size(); ++i) {
 		bool notFount = true;
@@ -44,6 +45,7 @@ Node* MarcelHuffmann::generateTree() {
 	for (int i = 2; i < words.size(); ++i) {
 		currentWord = &words[i];
 		newNode = new Node();
+		newNode->depth = node->depth + 1;
 		if (currentWord->amount > node->value->amount) {
 			newNode->right = new Node(currentWord);
 			newNode->left = node;
@@ -58,25 +60,26 @@ Node* MarcelHuffmann::generateTree() {
 	return node;
 }
 
-std::map<Symbol, Word>* MarcelHuffmann::generateEncodingTable(Node* node) {
-	Word word = 0;
-	std::map<Symbol, Word>* map = new std::map<Symbol, Word>();
-	climbTree(word, node, map);
+std::map<Symbol, SymbolBits>* MarcelHuffmann::generateEncodingTable(Node* node) {
+	SymbolBits bitsForSymbol;
+	std::map<Symbol, SymbolBits>* map = new std::map<Symbol, SymbolBits>();
+	climbTree(bitsForSymbol, node, map);
 	
 	return map;
 }
 
-void MarcelHuffmann::climbTree(Word word, Node* node, std::map<Symbol, Word>* map) {
+void MarcelHuffmann::climbTree(SymbolBits bitsForSymbol, Node* node, std::map<Symbol, SymbolBits>* map) {
 	Node* left = node->left;
 	Node* right = node->right;
 	
 	if (left == nullptr && right == nullptr) {
-		map->insert(std::make_pair(node->value->symbol, word));
+		map->insert(std::make_pair(node->value->symbol, bitsForSymbol));
 	} else{
-		word <<= 1;
-		climbTree(word, left, map);
-		word |= 1;
-		climbTree(word, right, map);
+		++bitsForSymbol.numberOfBits;
+		bitsForSymbol.bits <<= 1;
+		climbTree(bitsForSymbol, left, map);
+		bitsForSymbol.bits |= 1;
+		climbTree(bitsForSymbol, right, map);
 	}
 }
 
@@ -108,6 +111,9 @@ void MarcelHuffmann::sortByAppearance() {
 	std::sort(words.begin(), words.end());
 }
 
+
+
+
 void Node::calculateValue() {
 	Node* left = this->left;
 	Node* right = this->right;
@@ -118,3 +124,6 @@ void Node::calculateValue() {
 	
 }
 
+void Node::print() {
+	
+}
