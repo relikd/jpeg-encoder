@@ -82,6 +82,9 @@ void testhuffmann() {
     input.push_back(3);
     input.push_back(4);
     input.push_back(5);
+    input.push_back(5);
+    input.push_back(5);
+    input.push_back(5);
     input.push_back(6);
     input.push_back(7);
     input.push_back(7);
