@@ -46,6 +46,8 @@ struct Node {
 	
 	void calculateValue();
 	void print();
+private:
+	void printWithDepth(std::vector<Node*> arr, int level);
 };
 
 struct SymbolBits {
