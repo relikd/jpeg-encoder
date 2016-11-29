@@ -27,24 +27,24 @@ void testImage() {
 		PPMLoader loader;
 		auto image = loader.load("data/singapore4k.test.ppm");
 		
-//		RGBToYCbCrConverter converter1;
-//		converter1.convert(image);
-//
-//		image->print();
-//
-//		image->channel2->reduceBySubSampling( image->imageSize.width, image->imageSize.height );
-//		image->channel3->reduceBySubSampling( image->imageSize.width, image->imageSize.height );
-//
-//		YCbCrToRGBConverter converter2;
-//		converter2.convert(image);
-//
-//		image->reduceBySubSample(2, 2);
-//		image->reduceByAverage(2, 2);
-//		image->print();
-
-//		Test::performance([&loader, &image]{
-//			loader.write("data/output.test.ppm", image);
-//		});
+		//		RGBToYCbCrConverter converter1;
+		//		converter1.convert(image);
+		//
+		//		image->print();
+		//
+		//		image->channel2->reduceBySubSampling( image->imageSize.width, image->imageSize.height );
+		//		image->channel3->reduceBySubSampling( image->imageSize.width, image->imageSize.height );
+		//
+		//		YCbCrToRGBConverter converter2;
+		//		converter2.convert(image);
+		//
+		//		image->reduceBySubSample(2, 2);
+		//		image->reduceByAverage(2, 2);
+		//		image->print();
+		
+		//		Test::performance([&loader, &image]{
+		//			loader.write("data/output.test.ppm", image);
+		//		});
 	});
 }
 
@@ -55,23 +55,46 @@ void testImage() {
 //  ---------------------------------------------------------------
 
 void testJPEGWriter() {
-    
-    Bitstream bitStream;
-    bitStream.add(1);
-    bitStream.add(0);
-    bitStream.add(1);
-    bitStream.add(1);
-    bitStream.add(0);
-    bitStream.print();
-    bitStream.fillup(1);
-    bitStream.print();
-    bitStream.saveToFile("out.txt");
-    
-    PPMLoader loader;
-    auto image = loader.load("data/very_small.ppm");
-    
-    JPEGWriter writer;
-    writer.writeJPEGImage(image, "Test.test.jpg");
+	
+	Bitstream bitStream;
+	bitStream.add(1);
+	bitStream.add(0);
+	bitStream.add(1);
+	bitStream.add(1);
+	bitStream.add(0);
+	bitStream.print();
+	bitStream.fillup(1);
+	bitStream.print();
+	bitStream.saveToFile("out.txt");
+	
+	
+	std::cout << "Testing, Bitstream" << std::endl;
+	
+	std::cout << "Write single bit: ";
+	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
+		Bitstream bitstream;
+		while (numberOfElements--) {
+			bitstream.add(numberOfElements % 2);
+		}
+	});
+	
+	
+	std::cout << "Write byte bits: ";
+	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
+		Bitstream bitstream;
+		// bitstream.add(1);
+		while (numberOfElements--) {
+			bitstream.add(0xd2, 8);
+		}
+	});
+	
+	
+	
+	PPMLoader loader;
+	auto image = loader.load("data/very_small.ppm");
+	
+	JPEGWriter writer;
+	writer.writeJPEGImage(image, "Test.test.jpg");
 }
 
 std::vector<Symbol> getWord() {
@@ -79,28 +102,28 @@ std::vector<Symbol> getWord() {
 	input.push_back(2);
 	input.push_back(4);
 	input.push_back(7);
-
+	
 	return input;
 }
 
 void testhuffmann() {
-    std::vector<int> input;
-    input.push_back(2);
-    input.push_back(2);
-    input.push_back(2);
-    input.push_back(3);
-    input.push_back(4);
-    input.push_back(5);
-    input.push_back(5);
-    input.push_back(5);
-    input.push_back(5);
-    input.push_back(6);
+	std::vector<int> input;
+	input.push_back(2);
+	input.push_back(2);
+	input.push_back(2);
+	input.push_back(3);
+	input.push_back(4);
+	input.push_back(5);
+	input.push_back(5);
+	input.push_back(5);
+	input.push_back(5);
 	input.push_back(6);
-    input.push_back(7);
-    input.push_back(7);
-    
-    MarcelHuffmann huffman;
-    huffman.addToWords(input);
+	input.push_back(6);
+	input.push_back(7);
+	input.push_back(7);
+	
+	MarcelHuffmann huffman;
+	huffman.addToWords(input);
 	Node* rootTree = huffman.generateTree();
 	
 	std::map<Symbol, SymbolBits>* encodingTable = huffman.generateEncodingTable(rootTree);
@@ -122,8 +145,9 @@ void testhuffmann() {
 // ################################################################
 
 int main(int argc, const char *argv[]) {
-	//testJPEGWriter();
-    testhuffmann();
+	
+	//    testhuffmann();
+	testJPEGWriter();
 	
 	return 0;
 }
