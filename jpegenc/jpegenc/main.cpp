@@ -89,6 +89,31 @@ void testJPEGWriter() {
 	});
 	
 	
+	// create random bitstream for reading
+	Bitstream testStream;
+	size_t fillRandom = TEST_ITERATIONS;
+	while (fillRandom--)
+		testStream.add( arc4random() % 2 );
+	
+	
+	std::cout << "Read single bit: ";
+	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [&testStream](size_t numberOfElements){
+		size_t maxRead = testStream.numberOfBits() - 2;
+		size_t idx = 0;
+		while (numberOfElements--) {
+			testStream.read(idx++);
+			if (idx > maxRead)
+				idx = 0;
+		}
+	});
+	
+	
+	std::cout << "Write file: ";
+	Test::performance([&testStream] {
+		testStream.saveToFile("data/writeOleg.txt");
+	});
+	
+	
 	
 	PPMLoader loader;
 	auto image = loader.load("data/very_small.ppm");
