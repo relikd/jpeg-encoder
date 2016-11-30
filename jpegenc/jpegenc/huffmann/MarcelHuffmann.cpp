@@ -61,6 +61,62 @@ Node* MarcelHuffmann::generateTree() {
 	return node;
 }
 
+
+std::vector<Node> MarcelHuffmann::generateNodeList() {
+	std::vector<Node> nodeList;
+	for (int i = 0; i < words.size(); ++i) {
+		nodeList.push_back(*new Node(&words[i]));
+	}
+	return nodeList;
+}
+
+bool sortNode(const Node &node1, const Node &node2) {
+	if (node1.value->amount == node2.value->amount) {
+		return node1.depth < node2.depth;
+	}
+	return node1.value->amount < node2.value->amount;
+}
+
+/*Node* MarcelHuffmann::generateRightAlignedTree(std::vector<Node> input){
+	std::sort(input.begin(), input.end(), sortNode);
+	
+	
+	if (input.size() <= 1) {
+		return &input[0];
+	} else {
+		Node* root = new Node();
+		root->left = &input[0];
+		root->right = &input[1];
+		root->depth = root->right->depth + 1;
+		root->calculateValue();
+		
+		input.push_back(*root);
+		input.erase(input.begin(), input.begin() + 2);
+		
+		return generateRightAlignedTree(input);
+
+	}
+}
+*/
+
+Node* MarcelHuffmann::generateRightAlignedTree(std::vector<Node> input){
+	while (input.size() > 1) {
+		std::sort(input.begin(), input.end(), sortNode);
+		Node* root = new Node();
+		root->left = &input[0];
+		root->right = &input[1];
+		root->depth = root->right->depth + 1;
+		root->calculateValue();
+		
+		input.push_back(*root);
+		input.erase(input.begin(), input.begin() + 2);
+	}
+	
+	return &input[0];
+}
+
+
+
 std::map<Symbol, SymbolBits>* MarcelHuffmann::generateEncodingTable(Node* node) {
 	SymbolBits bitsForSymbol;
 	std::map<Symbol, SymbolBits>* map = new std::map<Symbol, SymbolBits>();

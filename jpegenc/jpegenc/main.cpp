@@ -133,7 +133,7 @@ std::vector<Symbol> getWord() {
 
 void testhuffmann() {
 	std::vector<int> input;
-	input.push_back(2);
+	input.push_back(7);
 	input.push_back(2);
 	input.push_back(2);
 	input.push_back(3);
@@ -145,11 +145,17 @@ void testhuffmann() {
 	input.push_back(6);
 	input.push_back(6);
 	input.push_back(7);
-	input.push_back(7);
+	input.push_back(2);
 	
 	MarcelHuffmann huffman;
 	huffman.addToWords(input);
-	Node* rootTree = huffman.generateTree();
+	//Node* rootTree = huffman.generateTree();
+	
+	
+	std::vector<Node> nodeList = huffman.generateNodeList();
+	Node* rootTree = huffman.generateRightAlignedTree(nodeList);
+	
+	rootTree->print();
 	
 	std::map<Symbol, SymbolBits>* encodingTable = huffman.generateEncodingTable(rootTree);
 	
@@ -171,8 +177,8 @@ void testhuffmann() {
 
 int main(int argc, const char *argv[]) {
 	
-	//    testhuffmann();
-	testJPEGWriter();
+	    testhuffmann();
+	//testJPEGWriter();
 	
 	return 0;
 }

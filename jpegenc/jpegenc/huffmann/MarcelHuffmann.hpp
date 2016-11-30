@@ -46,6 +46,7 @@ struct Node {
 	
 	void calculateValue();
 	void print();
+	
 private:
 	void printWithDepth(std::vector<Node*> arr, int level);
 };
@@ -54,6 +55,7 @@ struct SymbolBits {
 	Word bits = 0;
 	unsigned short numberOfBits = 0;
 };
+
 
 
 class MarcelHuffmann {
@@ -65,6 +67,8 @@ public:
 	
 	void addToWords(std::vector<Symbol>);
 	Node* generateTree();
+	std::vector<Node> generateNodeList();
+	Node* generateRightAlignedTree(std::vector<Node> input);
 	std::map<Symbol, SymbolBits>* generateEncodingTable(Node* node);
 	std::vector<Symbol> decode(Bitstream* bitstream, Node* rootNode);
 	
