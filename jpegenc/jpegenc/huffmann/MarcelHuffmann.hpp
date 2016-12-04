@@ -43,6 +43,17 @@ struct Node {
 	
 	Node(){}
 	Node(InputWord* inputWord) : value(inputWord) {}
+	Node(Node* _left, Node* _right) {
+		if (_left->depth > _right->depth) {
+			left = _right;
+			right = _left;
+		} else {
+			left = _left;
+			right = _right;
+		}
+		depth = right->depth + 1;
+		calculateValue();
+	}
 	
 	void calculateValue();
 	void print();
@@ -72,9 +83,18 @@ public:
 	std::map<Symbol, SymbolBits>* generateEncodingTable(Node* node);
 	std::vector<Symbol> decode(Bitstream* bitstream, Node* rootNode);
 	
+	// A fast algorithm for optimal length-limited Huffman codes
+	Node* lengthLimitedHuffmanAlgorithm(unsigned short limit);
+	
 private:
 	void sortByAppearance();
 	void climbTree(SymbolBits bitsForSymbol, Node* node, std::map<Symbol, SymbolBits>* map);
+	
+	// A fast algorithm for optimal length-limited Huffman codes
+	std::vector<Node> lengthLimitedHuffmanPackage(std::vector<Node> input);
+	std::vector<Node> lengthLimitedHuffmanMerge(std::vector<Node> originalList, std::vector<Node> packagedList);
+	void recursivelyCountSymbolMapping(std::map<Symbol, int> &map, Node *node);
+	Node* lengthLimitedHuffmanGenerateTree(std::vector<int> &levelList, std::vector<Node> &nodeList);
 };
 
 

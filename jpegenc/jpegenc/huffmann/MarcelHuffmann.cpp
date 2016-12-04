@@ -115,6 +115,84 @@ Node* MarcelHuffmann::generateRightAlignedTree(std::vector<Node> input){
 	return &input[0];
 }
 
+// A fast algorithm for optimal length-limited Huffman codes
+Node* MarcelHuffmann::lengthLimitedHuffmanAlgorithm(unsigned short limit) {
+	std::vector<Node> origList = generateNodeList();
+	std::sort(origList.begin(), origList.end(), sortNode);
+	
+	std::vector<Node> packages;
+	std::vector<Node> evolutionalList = origList;
+	for (int i = limit; i > 0; --i) {
+		packages = lengthLimitedHuffmanPackage(evolutionalList);
+		// TODO: Merge kann hier mit 3 Code Zeilen implementiert werden
+		evolutionalList = lengthLimitedHuffmanMerge(origList, packages);
+	}
+	// TODO: Logic for tree evaluation can be implemented in HuffmanPackage directly
+	std::map<Symbol, int> treeCreationMap;
+	std::vector<int> levelList;
+	for (Node n : origList)
+		treeCreationMap[n.value->symbol] = 0;
+	for (Node n : evolutionalList)
+		recursivelyCountSymbolMapping(treeCreationMap, &n);
+	for (int i = 0; i < origList.size(); ++i)
+		levelList.push_back( treeCreationMap[origList[i].value->symbol] );
+	
+	return lengthLimitedHuffmanGenerateTree(levelList, origList);
+}
+
+void MarcelHuffmann::recursivelyCountSymbolMapping(std::map<Symbol, int> &map, Node *node) {
+	if (node->left != nullptr)
+		recursivelyCountSymbolMapping(map, node->left);
+	if (node->right != nullptr)
+		recursivelyCountSymbolMapping(map, node->right);
+	if (node->left == nullptr && node->right == nullptr)
+		map[node->value->symbol] += 1;
+}
+
+std::vector<Node> MarcelHuffmann::lengthLimitedHuffmanPackage(std::vector<Node> input) {
+	std::vector<Node> newList;
+	size_t count = input.size();
+	for (int i = 0; i < count; i += 2) {
+		if (i + 1 < count) {
+			// TODO: generate list of Symbol count here?
+			newList.push_back( Node(&input[i+1], &input[i]) );
+		}
+	}
+	return newList;
+}
+
+std::vector<Node> MarcelHuffmann::lengthLimitedHuffmanMerge(std::vector<Node> originalList, std::vector<Node> packagedList) {
+	std::vector<Node> newList;
+	for (Node n : originalList)
+		newList.push_back(n);
+	for (Node n : packagedList)
+		newList.push_back(n);
+	std::sort(newList.begin(), newList.end(), sortNode);
+	return newList;
+}
+
+Node* MarcelHuffmann::lengthLimitedHuffmanGenerateTree(std::vector<int> &levelList, std::vector<Node> &nodeList) {
+	size_t count = levelList.size();
+	if (count != nodeList.size())
+		fputs("Something is wrong. LevelList and NodeList should always be in sync", stderr);
+	
+	if (count == 1)
+		return &nodeList[0]; // tree generation done
+	
+	std::vector<int> newLevelList;
+	std::vector<Node> newNodeList;
+	for (int i = 0; i < count; ++i) {
+		if (i+1 < count && levelList[i] == levelList[i+1]) {
+			newLevelList.push_back(levelList[i] - 1);
+			newNodeList.push_back( Node(&nodeList[i], &nodeList[i+1]) );
+			++i;
+		} else { // dont merge anything, just copy
+			newLevelList.push_back(levelList[i]);
+			newNodeList.push_back(nodeList[i]);
+		}
+	}
+	return lengthLimitedHuffmanGenerateTree(newLevelList, newNodeList);
+}
 
 
 std::map<Symbol, SymbolBits>* MarcelHuffmann::generateEncodingTable(Node* node) {
