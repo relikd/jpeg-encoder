@@ -15,6 +15,7 @@ struct InputWord {
 	void increase();
 	
 	bool operator  < (const InputWord& input) const { return (amount  < input.amount); }
+	bool operator  > (const InputWord& input) const { return (amount  > input.amount); }
 	bool operator == (const InputWord& input) const { return (amount == input.amount); }
 };
 
@@ -25,6 +26,7 @@ struct Node {
 	InputWord value = NULL;
 	unsigned short depth = 0;
 	
+	Node() {}
 	Node(InputWord a) : value(a) {}
 	Node(InputWord a, InputWord b) : left(new Node(a)), right(new Node(b)), depth(1), value(InputWord(a.amount + b.amount)) {}
 	Node(Node* left, Node* right, bool swapLeftRight = false);

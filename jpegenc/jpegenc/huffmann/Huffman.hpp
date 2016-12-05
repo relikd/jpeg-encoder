@@ -10,6 +10,9 @@
 struct SymbolBits {
 	Word bits = 0;
 	unsigned short numberOfBits = 0;
+	
+	bool operator  < (const SymbolBits& input) const { return (numberOfBits  < input.numberOfBits); }
+	bool operator  > (const SymbolBits& input) const { return (numberOfBits  > input.numberOfBits); }
 };
 
 class Huffman {
@@ -29,7 +32,9 @@ public:
 	void generateNodeList();
 	
 	Node* generateTree();
+	Node* generateCorrectTree();
 	Node* generateRightAlignedTree();
+	Node* generateCorrectRightAlignedTree();
 	Node* lengthLimitedHuffmanAlgorithm(unsigned short limit);
 	
 	std::map<Symbol, SymbolBits>* generateEncodingTable(Node* node);
