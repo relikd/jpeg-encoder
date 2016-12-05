@@ -13,28 +13,34 @@ struct SymbolBits {
 };
 
 class Huffman {
-	std::vector<InputWord> words; //tree generation works only if words are in mem.
-	
+	std::vector<InputWord> words;
+	std::vector<Node*> singleLeafNodes; // sorted: least significant ones first
 	
 public:
 	Huffman() {}
+	Huffman(std::vector<Symbol> symbols) {
+		addSymbols(symbols);
+		generateNodeList();
+	}
 	
-	void addToWords(std::vector<Symbol>);
+	void addSymbol(Symbol);
+	void addSymbols(std::vector<Symbol>);
+	
+	void generateNodeList();
+	
 	Node* generateTree();
-	std::vector<Node*> generateNodeList();
-	Node* generateRightAlignedTree(std::vector<Node*> input);
+	Node* generateRightAlignedTree();
+	Node* lengthLimitedHuffmanAlgorithm(unsigned short limit);
+	
 	std::map<Symbol, SymbolBits>* generateEncodingTable(Node* node);
 	std::vector<Symbol> decode(Bitstream* bitstream, Node* rootNode);
-	
-	// A fast algorithm for optimal length-limited Huffman codes
-	Node* lengthLimitedHuffmanAlgorithm(unsigned short limit);
 	
 private:
 	void climbTree(SymbolBits bitsForSymbol, Node* node, std::map<Symbol, SymbolBits>* map);
 	
 	// A fast algorithm for optimal length-limited Huffman codes
 	std::vector<Node*> lengthLimitedHuffmanPackage(std::vector<Node*> input);
-	std::vector<Node*> lengthLimitedHuffmanMerge(std::vector<Node*> originalList, std::vector<Node*> packagedList);
+	std::vector<Node*> lengthLimitedHuffmanMerge(std::vector<Node*> packagedList);
 	void recursivelyCountSymbolMapping(std::map<Symbol, int>& map, Node* node);
 	Node* lengthLimitedHuffmanGenerateTree(std::vector<int>& levelList, std::vector<Node*> nodeList);
 };

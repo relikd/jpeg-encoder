@@ -4,7 +4,20 @@ void InputWord::increase() {
 	++amount;
 }
 
-void Node::calculateValue() {
+
+Node::Node(Node* l, Node* r, bool swapLeftRight) {
+	if (swapLeftRight) {
+		left = r;
+		right = l;
+	} else {
+		left = l;
+		right = r;
+	}
+	depth = std::max(r->depth, l->depth) + 1;
+	calculateValue();
+}
+
+inline void Node::calculateValue() {
 	if ((left != nullptr) && (right != nullptr)) {
 		value = InputWord(left->value.amount + right->value.amount);
 	}
@@ -49,4 +62,12 @@ void Node::printWithDepth(std::vector<Node*> arr, int level) {
 	printf("\n");
 	if (level > 0)
 		printWithDepth(newArr, level-1);
+}
+
+
+bool sortNode(const Node* node1, const Node* node2) {
+	if (node1->value.amount == node2->value.amount) {
+		return node1->depth < node2->depth;
+	}
+	return node1->value.amount < node2->value.amount;
 }

@@ -1,53 +1,55 @@
 #include "Huffman.hpp"
 
-void Huffman::addToWords(std::vector<int> input) {
-	for (int i = 0; i < input.size(); ++i) {
-		bool notFount = true;
-		for (int j = 0; j < words.size(); ++j) {
-			if (input[i] == words[j].symbol) {
-				words[j].increase();
-				notFount = false;
-				break;
-			}
-		}
-		if (notFount) {
-			words.push_back(InputWord(1, input[i]));
+//  ---------------------------------------------------------------
+// |
+// |  Step I: Setup
+// |
+//  ---------------------------------------------------------------
+void Huffman::addSymbol(Symbol input) {
+	bool found = false;
+	for (size_t i = words.size(); 0 < i--;) {
+		if (input == words[i].symbol) {
+			words[i].increase();
+			return;
 		}
 	}
+	if (found == false)
+		words.push_back(InputWord(1, input));
+}
+
+void Huffman::addSymbols(std::vector<int> input) {
+	size_t count = input.size();
+	for (int i = 0; i < count; ++i)
+		addSymbol(input[i]);
 	std::sort(words.begin(), words.end());
 }
 
+void Huffman::generateNodeList() {
+	singleLeafNodes.clear();
+	size_t count = words.size();
+	for (int i = 0; i < count; ++i)
+		singleLeafNodes.push_back( new Node(words[i]) );
+}
+
+
+//  ---------------------------------------------------------------
+// |
+// |  Step II: Generate Optimal Tree
+// |
+//  ---------------------------------------------------------------
 Node* Huffman::generateTree() {
 	Node* node = new Node( words[0], words[1] );
-	
-	Node* newNode;
 	for (int i = 2; i < words.size(); ++i) {
 		InputWord currentWord = words[i];
 		bool shouldSwapLeftRight = (currentWord.amount > node->value.amount);
-		newNode = new Node( new Node(currentWord), node, shouldSwapLeftRight );
-		node = newNode;
+		node = new Node( new Node(currentWord), node, shouldSwapLeftRight );
 	}
-	
 	return node;
 }
 
 
-std::vector<Node*> Huffman::generateNodeList() {
-	std::vector<Node*> nodeList;
-	for (int i = 0; i < words.size(); ++i) {
-		nodeList.push_back( new Node(words[i]) );
-	}
-	return nodeList;
-}
-
-bool sortNode(const Node* node1, const Node* node2) {
-	if (node1->value.amount == node2->value.amount) {
-		return node1->depth < node2->depth;
-	}
-	return node1->value.amount < node2->value.amount;
-}
-
-Node* Huffman::generateRightAlignedTree(std::vector<Node*> input){
+Node* Huffman::generateRightAlignedTree(){
+	std::vector<Node*> input = singleLeafNodes;
 	while (input.size() > 1) {
 		std::sort(input.begin(), input.end(), sortNode);
 		input.push_back( new Node(input[0], input[1], input[0]->depth > input[1]->depth) );
@@ -58,27 +60,24 @@ Node* Huffman::generateRightAlignedTree(std::vector<Node*> input){
 
 // A fast algorithm for optimal length-limited Huffman codes
 Node* Huffman::lengthLimitedHuffmanAlgorithm(unsigned short limit) {
-	std::vector<Node*> origList = generateNodeList();
-	std::sort(origList.begin(), origList.end(), sortNode);
-	
 	std::vector<Node*> packages;
-	std::vector<Node*> evolutionalList = origList;
+	std::vector<Node*> evolutionalList = singleLeafNodes;
 	for (int i = limit; i > 0; --i) {
 		packages = lengthLimitedHuffmanPackage(evolutionalList);
 		// TODO: Merge kann hier mit 3 Code Zeilen implementiert werden
-		evolutionalList = lengthLimitedHuffmanMerge(origList, packages);
+		evolutionalList = lengthLimitedHuffmanMerge(packages);
 	}
 	// TODO: Logic for tree evaluation can be implemented in HuffmanPackage directly
 	std::map<Symbol, int> treeCreationMap;
 	std::vector<int> levelList;
-	for (Node *n : origList)
+	for (Node *n : singleLeafNodes)
 		treeCreationMap[n->value.symbol] = 0;
 	for (Node *n : evolutionalList)
 		recursivelyCountSymbolMapping(treeCreationMap, n);
-	for (int i = 0; i < origList.size(); ++i)
-		levelList.push_back( treeCreationMap[origList[i]->value.symbol] );
+	for (int i = 0; i < singleLeafNodes.size(); ++i)
+		levelList.push_back( treeCreationMap[singleLeafNodes[i]->value.symbol] );
 	
-	return lengthLimitedHuffmanGenerateTree(levelList, origList);
+	return lengthLimitedHuffmanGenerateTree(levelList, singleLeafNodes);
 }
 
 void Huffman::recursivelyCountSymbolMapping(std::map<Symbol, int>& map, Node* node) {
@@ -102,9 +101,9 @@ std::vector<Node*> Huffman::lengthLimitedHuffmanPackage(std::vector<Node*> input
 	return newList;
 }
 
-std::vector<Node*> Huffman::lengthLimitedHuffmanMerge(std::vector<Node*> originalList, std::vector<Node*> packagedList) {
+std::vector<Node*> Huffman::lengthLimitedHuffmanMerge(std::vector<Node*> packagedList) {
 	std::vector<Node*> newList;
-	for (Node *n : originalList)
+	for (Node *n : singleLeafNodes)
 		newList.push_back(n);
 	for (Node *n : packagedList)
 		newList.push_back(n);
@@ -114,10 +113,12 @@ std::vector<Node*> Huffman::lengthLimitedHuffmanMerge(std::vector<Node*> origina
 
 Node* Huffman::lengthLimitedHuffmanGenerateTree(std::vector<int>& levelList, std::vector<Node*> nodeList) {
 	size_t count = levelList.size();
-	if (count != nodeList.size())
-		fputs("Something is wrong. LevelList and NodeList should always be in sync", stderr);
+	if (count != nodeList.size()) {
+		fputs("Something is wrong. LevelList and NodeList should always be in sync\n", stderr);
+		return nullptr;
+	}
 	
-	if (count == 1)
+	if (count <= 1)
 		return nodeList[0]; // tree generation done
 	
 	std::vector<int> newLevelList;
@@ -132,10 +133,21 @@ Node* Huffman::lengthLimitedHuffmanGenerateTree(std::vector<int>& levelList, std
 			newNodeList.push_back(nodeList[i]);
 		}
 	}
+	
+	if (levelList == newLevelList) {
+		fputs("Something went wrong. TODO: prevent a too shallow depth limit here\n", stderr);
+		return nullptr;
+	}
+	
 	return lengthLimitedHuffmanGenerateTree(newLevelList, newNodeList);
 }
 
 
+//  ---------------------------------------------------------------
+// |
+// |  Step III: Generate Encoding Table
+// |
+//  ---------------------------------------------------------------
 std::map<Symbol, SymbolBits>* Huffman::generateEncodingTable(Node* node) {
 	SymbolBits bitsForSymbol;
 	std::map<Symbol, SymbolBits>* map = new std::map<Symbol, SymbolBits>();
@@ -159,6 +171,12 @@ void Huffman::climbTree(SymbolBits bitsForSymbol, Node* node, std::map<Symbol, S
 	}
 }
 
+
+//  ---------------------------------------------------------------
+// |
+// |  Step IV: Decode With Given Tree
+// |
+//  ---------------------------------------------------------------
 std::vector<Symbol> Huffman::decode(Bitstream* bitstream, Node* rootNode) {
 	std::vector<Symbol> symbols;
 	size_t numberOfBits = bitstream->numberOfBits();

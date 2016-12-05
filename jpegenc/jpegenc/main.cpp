@@ -147,14 +147,10 @@ void testhuffmann() {
 	input.push_back(7);
 	input.push_back(2);
 	
-	Huffman huffman;
-	huffman.addToWords(input);
-	//Node* rootTree = huffman.generateTree();
-	
-	
-	std::vector<Node*> nodeList = huffman.generateNodeList();
-//	Node* rootTree = huffman.generateRightAlignedTree(nodeList);
-	Node* rootTree = huffman.lengthLimitedHuffmanAlgorithm(5);
+	Huffman huffman = Huffman(input);
+//	Node* rootTree = huffman.generateTree();
+//	Node* rootTree = huffman.generateRightAlignedTree();
+	Node* rootTree = huffman.lengthLimitedHuffmanAlgorithm(3);
 	
 	rootTree->print();
 	
