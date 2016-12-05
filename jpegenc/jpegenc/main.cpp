@@ -131,38 +131,113 @@ std::vector<Symbol> getWord() {
 	return input;
 }
 
-void testhuffmann() {
-	std::vector<int> input;
-	input.push_back(7);
+std::vector<int> generateTestHuffman() {
+	std::vector<int>input;
+	// 6 x 1
+	input.push_back(1);
+	input.push_back(1);
+	input.push_back(1);
+	input.push_back(1);
+	input.push_back(1);
+	input.push_back(1);
+	
+	// 6 x 2
 	input.push_back(2);
 	input.push_back(2);
+	input.push_back(2);
+	input.push_back(2);
+	input.push_back(2);
+	input.push_back(2);
+	
+	// 8 x 3
 	input.push_back(3);
+	input.push_back(3);
+	input.push_back(3);
+	input.push_back(3);
+	input.push_back(3);
+	input.push_back(3);
+	input.push_back(3);
+	input.push_back(3);
+	
+	// 8 x 4
 	input.push_back(4);
+	input.push_back(4);
+	input.push_back(4);
+	input.push_back(4);
+	input.push_back(4);
+	input.push_back(4);
+	input.push_back(4);
+	input.push_back(4);
+	
+	// 12 x 5
 	input.push_back(5);
 	input.push_back(5);
 	input.push_back(5);
 	input.push_back(5);
+	input.push_back(5);
+	input.push_back(5);
+	input.push_back(5);
+	input.push_back(5);
+	input.push_back(5);
+	input.push_back(5);
+	input.push_back(5);
+	input.push_back(5);
+	
+	// 13 x 6
 	input.push_back(6);
 	input.push_back(6);
-	input.push_back(7);
-	input.push_back(2);
+	input.push_back(6);
+	input.push_back(6);
+	input.push_back(6);
+	input.push_back(6);
+	input.push_back(6);
+	input.push_back(6);
+	input.push_back(6);
+	input.push_back(6);
+	input.push_back(6);
+	input.push_back(6);
+	input.push_back(6);
+	
+	return input;
+}
+
+void testhuffmann() {
+//	std::vector<int> input;
+//	input.push_back(7);
+//	input.push_back(2);
+//	input.push_back(2);
+//	input.push_back(3);
+//	input.push_back(4);
+//	input.push_back(5);
+//	input.push_back(5);
+//	input.push_back(5);
+//	input.push_back(5);
+//	input.push_back(6);
+//	input.push_back(6);
+//	input.push_back(7);
+//	input.push_back(2);
+	
+	auto input = generateTestHuffman();
+	
+	
+	
 	
 	Huffman huffman = Huffman(input);
 //	Node* rootTree = huffman.generateTree();
 //	Node* rootTree = huffman.generateRightAlignedTree();
-	Node* rootTree = huffman.lengthLimitedHuffmanAlgorithm(3);
+	Node* rootTree = huffman.generateCorrectRightAlignedTree();
 	
 	rootTree->print();
 	
-	std::map<Symbol, SymbolBits>* encodingTable = huffman.generateEncodingTable(rootTree);
+	//std::map<Symbol, SymbolBits>* encodingTable = huffman.generateEncodingTable(rootTree);
 	
-	Bitstream bitsteam;
-	std::vector<Symbol> word = getWord();
-	for (int i = 0; i < word.size(); ++i) {
-		SymbolBits bitsOfSymbol = encodingTable->at(word[i]);
-		bitsteam.add(bitsOfSymbol.bits, bitsOfSymbol.numberOfBits);
-	}
-	bitsteam.print();
+//	Bitstream bitsteam;
+//	std::vector<Symbol> word = getWord();
+//	for (int i = 0; i < word.size(); ++i) {
+//		SymbolBits bitsOfSymbol = encodingTable->at(word[i]);
+//		bitsteam.add(bitsOfSymbol.bits, bitsOfSymbol.numberOfBits);
+//	}
+//	bitsteam.print();
 	
 }
 
@@ -174,7 +249,7 @@ void testhuffmann() {
 
 int main(int argc, const char *argv[]) {
 	
-	    testhuffmann();
+	testhuffmann();
 	//testJPEGWriter();
 	
 	return 0;

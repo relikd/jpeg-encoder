@@ -1,4 +1,5 @@
 #include "Huffman.hpp"
+#include <iostream>
 
 //  ---------------------------------------------------------------
 // |
@@ -47,6 +48,15 @@ Node* Huffman::generateTree() {
 	return node;
 }
 
+Node* Huffman::generateCorrectTree() {
+	std::vector<Node*> input = singleLeafNodes;
+	while (input.size() > 1) {
+		std::sort(input.begin(), input.end(), sortNode);
+		input.push_back( new Node(input[0], input[1], input[0]->value > input[1]->value) );
+		input.erase(input.begin(), input.begin() + 2);
+	}
+	return input[0];
+}
 
 Node* Huffman::generateRightAlignedTree(){
 	std::vector<Node*> input = singleLeafNodes;
@@ -56,6 +66,74 @@ Node* Huffman::generateRightAlignedTree(){
 		input.erase(input.begin(), input.begin() + 2);
 	}
 	return input[0];
+}
+
+Node* Huffman::generateCorrectRightAlignedTree() {
+	Node* huffmanTree = generateCorrectTree();
+	auto encodingTableHuffmanTree = generateEncodingTable(huffmanTree);
+	std::vector<SymbolBits> symbolBits;
+	for(std::map<Symbol,SymbolBits>::iterator it = encodingTableHuffmanTree->begin(); it != encodingTableHuffmanTree->end(); ++it) {
+		it->second.bits = it->first;
+		symbolBits.push_back(it->second);
+	}
+	std::sort(symbolBits.begin(), symbolBits.end(), std::greater<SymbolBits>());
+	
+	for (auto &symbol : symbolBits) {
+		std::cout << symbol.bits << " " << symbol.numberOfBits << std::endl;
+	}
+	
+//	auto set = std::bitset<16>(2);
+//	std::cout << set[2] << std::endl;
+	int maxDepth = symbolBits[0].numberOfBits;
+	auto root = new Node();
+	root->depth = maxDepth;
+	int iteration = 1;
+	while (symbolBits.size() > 0) {
+		auto currentNode = root;
+		auto bitset = std::bitset<8>((1 << symbolBits[0].numberOfBits) - iteration);
+		std::cout << "Begin: " << bitset << std::endl;
+		
+//		std::cout << bitset << std::endl;
+		
+		for (int i = symbolBits[0].numberOfBits - 1; i >= 0; --i) {
+			if(bitset[i]) {
+				if (currentNode->right != nullptr && i == 0) {
+					++iteration;
+					break;
+				} else if (currentNode->right == nullptr) {
+					currentNode->right = new Node();
+					currentNode->right->depth =  symbolBits[0].numberOfBits - (symbolBits[0].numberOfBits - i);
+				}
+				
+				currentNode = currentNode->right;
+				
+				if (i == 0) {
+					currentNode->value = InputWord(symbolBits[0].numberOfBits, symbolBits[0].bits);
+					iteration = 1;
+					symbolBits.erase(symbolBits.begin(), symbolBits.begin() + 1);
+					std::cout << bitset << std::endl;
+				}
+			} else {
+				if (currentNode->left != nullptr && i == 0) {
+					++iteration;
+					break;
+				} else if (currentNode->left == nullptr) {
+					currentNode->left = new Node();
+					currentNode->left->depth = symbolBits[0].numberOfBits - (symbolBits[0].numberOfBits - i);
+				}
+				currentNode = currentNode->left;
+				
+				if (i == 0) {
+					currentNode->value = InputWord(symbolBits[0].numberOfBits, symbolBits[0].bits);
+					iteration = 1;
+					symbolBits.erase(symbolBits.begin(), symbolBits.begin() + 1);
+					std::cout << bitset << std::endl;
+				}
+			}
+		}
+	}
+	
+	return root;
 }
 
 // A fast algorithm for optimal length-limited Huffman codes
