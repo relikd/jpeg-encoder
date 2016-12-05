@@ -91,7 +91,7 @@ Node* Huffman::generateCorrectRightAlignedTree() {
 	while (symbolBits.size() > 0) {
 		auto currentNode = root;
 		auto bitset = std::bitset<8>((1 << symbolBits[0].numberOfBits) - iteration);
-		std::cout << "Begin: " << bitset << std::endl;
+//		std::cout << "Begin: " << bitset << std::endl;
 		
 //		std::cout << bitset << std::endl;
 		

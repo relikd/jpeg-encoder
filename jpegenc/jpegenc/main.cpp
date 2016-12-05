@@ -131,72 +131,31 @@ std::vector<Symbol> getWord() {
 	return input;
 }
 
+void addTestSymbol(int amount, int symbol, std::vector<int> &input) {
+	for (int i = 0; i < amount; ++i) {
+		input.push_back(symbol);
+	}
+}
+
 std::vector<int> generateTestHuffman() {
 	std::vector<int>input;
 	// 6 x 1
-	input.push_back(1);
-	input.push_back(1);
-	input.push_back(1);
-	input.push_back(1);
-	input.push_back(1);
-	input.push_back(1);
+	addTestSymbol(6, 1, input);
 	
 	// 6 x 2
-	input.push_back(2);
-	input.push_back(2);
-	input.push_back(2);
-	input.push_back(2);
-	input.push_back(2);
-	input.push_back(2);
+	addTestSymbol(6, 2, input);
 	
 	// 8 x 3
-	input.push_back(3);
-	input.push_back(3);
-	input.push_back(3);
-	input.push_back(3);
-	input.push_back(3);
-	input.push_back(3);
-	input.push_back(3);
-	input.push_back(3);
+	addTestSymbol(8, 3, input);
 	
 	// 8 x 4
-	input.push_back(4);
-	input.push_back(4);
-	input.push_back(4);
-	input.push_back(4);
-	input.push_back(4);
-	input.push_back(4);
-	input.push_back(4);
-	input.push_back(4);
+	addTestSymbol(8, 4, input);
 	
 	// 12 x 5
-	input.push_back(5);
-	input.push_back(5);
-	input.push_back(5);
-	input.push_back(5);
-	input.push_back(5);
-	input.push_back(5);
-	input.push_back(5);
-	input.push_back(5);
-	input.push_back(5);
-	input.push_back(5);
-	input.push_back(5);
-	input.push_back(5);
+	addTestSymbol(12, 5, input);
 	
 	// 13 x 6
-	input.push_back(6);
-	input.push_back(6);
-	input.push_back(6);
-	input.push_back(6);
-	input.push_back(6);
-	input.push_back(6);
-	input.push_back(6);
-	input.push_back(6);
-	input.push_back(6);
-	input.push_back(6);
-	input.push_back(6);
-	input.push_back(6);
-	input.push_back(6);
+	addTestSymbol(13, 6, input);
 	
 	return input;
 }
