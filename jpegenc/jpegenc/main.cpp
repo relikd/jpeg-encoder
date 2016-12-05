@@ -4,7 +4,7 @@
 #include "converter/RGBToYCbCrConverter.hpp"
 #include "converter/YCbCrToRGBConverter.hpp"
 #include "helper/Test.hpp"
-#include "MarcelHuffmann.hpp"
+#include "Huffman.hpp"
 
 #include "bitstream/Bitstream.hpp"
 
@@ -147,13 +147,14 @@ void testhuffmann() {
 	input.push_back(7);
 	input.push_back(2);
 	
-	MarcelHuffmann huffman;
+	Huffman huffman;
 	huffman.addToWords(input);
 	//Node* rootTree = huffman.generateTree();
 	
 	
-	std::vector<Node> nodeList = huffman.generateNodeList();
-	Node* rootTree = huffman.generateRightAlignedTree(nodeList);
+	std::vector<Node*> nodeList = huffman.generateNodeList();
+//	Node* rootTree = huffman.generateRightAlignedTree(nodeList);
+	Node* rootTree = huffman.lengthLimitedHuffmanAlgorithm(5);
 	
 	rootTree->print();
 	
