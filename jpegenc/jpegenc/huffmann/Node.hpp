@@ -18,6 +18,7 @@ struct InputWord {
 	bool operator == (const InputWord& input) const { return (amount == input.amount); }
 };
 
+
 struct Node {
 	Node* left = nullptr; //0
 	Node* right = nullptr; //1
@@ -26,24 +27,16 @@ struct Node {
 	
 	Node(InputWord a) : value(a) {}
 	Node(InputWord a, InputWord b) : left(new Node(a)), right(new Node(b)), depth(1), value(InputWord(a.amount + b.amount)) {}
-	Node(Node* _left, Node* _right, bool swapLeftRight = false) {
-		if (swapLeftRight) {
-			left = _right;
-			right = _left;
-		} else {
-			left = _left;
-			right = _right;
-		}
-		depth = std::max(right->depth, left->depth) + 1;
-		calculateValue();
-	}
+	Node(Node* left, Node* right, bool swapLeftRight = false);
 	
-	void calculateValue();
 	void print();
 	
 private:
+	inline void calculateValue();
 	void printWithDepth(std::vector<Node*> arr, int level);
 };
 
+
+bool sortNode(const Node* node1, const Node* node2);
 
 #endif /* Node_hpp */
