@@ -6,30 +6,24 @@
 // |  Step I: Setup
 // |
 //  ---------------------------------------------------------------
+
 void Huffman::addSymbol(Symbol input) {
-	bool found = false;
-	for (size_t i = words.size(); 0 < i--;) {
-		if (input == words[i].symbol) {
-			words[i].increase();
-			return;
-		}
-	}
-	if (found == false)
-		words.push_back(InputWord(1, input));
+//	symbolBook.insert(input, 0); // no need to since vector is initialized with 0
+	symbolBook[input] += 1;
 }
 
 void Huffman::addSymbols(std::vector<int> input) {
 	size_t count = input.size();
 	for (int i = 0; i < count; ++i)
 		addSymbol(input[i]);
-	std::sort(words.begin(), words.end());
 }
 
 void Huffman::generateNodeList() {
 	singleLeafNodes.clear();
-	size_t count = words.size();
-	for (int i = 0; i < count; ++i)
-		singleLeafNodes.push_back( new Node(words[i]) );
+	for (std::pair<Symbol, unsigned int> entry : symbolBook) {
+		singleLeafNodes.push_back( new Node(entry.first, entry.second) );
+	}
+	std::sort(singleLeafNodes.begin(), singleLeafNodes.end(), sortNode);
 }
 
 
@@ -38,38 +32,19 @@ void Huffman::generateNodeList() {
 // |  Step II: Generate Optimal Tree
 // |
 //  ---------------------------------------------------------------
-Node* Huffman::generateTree() {
-	Node* node = new Node( words[0], words[1] );
-	for (int i = 2; i < words.size(); ++i) {
-		InputWord currentWord = words[i];
-		bool shouldSwapLeftRight = (currentWord.amount > node->value.amount);
-		node = new Node( new Node(currentWord), node, shouldSwapLeftRight );
-	}
-	return node;
-}
 
-Node* Huffman::generateCorrectTree() {
+Node* Huffman::standardTree() {
 	std::vector<Node*> input = singleLeafNodes;
 	while (input.size() > 1) {
 		std::sort(input.begin(), input.end(), sortNode);
-		input.push_back( new Node(input[0], input[1], input[0]->value > input[1]->value) );
+		input.push_back( new Node(input[0], input[1], input[0]->frequency > input[1]->frequency) );
 		input.erase(input.begin(), input.begin() + 2);
 	}
 	return input[0];
 }
 
-Node* Huffman::generateRightAlignedTree(){
-	std::vector<Node*> input = singleLeafNodes;
-	while (input.size() > 1) {
-		std::sort(input.begin(), input.end(), sortNode);
-		input.push_back( new Node(input[0], input[1], input[0]->depth > input[1]->depth) );
-		input.erase(input.begin(), input.begin() + 2);
-	}
-	return input[0];
-}
-
-Node* Huffman::generateCorrectRightAlignedTree() {
-	Node* huffmanTree = generateCorrectTree();
+Node* Huffman::canonicalTree() {
+	Node* huffmanTree = standardTree();
 	auto encodingTableHuffmanTree = generateEncodingTable(huffmanTree);
 	std::vector<SymbolBits> symbolBits;
 	for(std::map<Symbol,SymbolBits>::iterator it = encodingTableHuffmanTree->begin(); it != encodingTableHuffmanTree->end(); ++it) {
@@ -108,7 +83,9 @@ Node* Huffman::generateCorrectRightAlignedTree() {
 				currentNode = currentNode->right;
 				
 				if (i == 0) {
-					currentNode->value = InputWord(symbolBits[0].numberOfBits, symbolBits[0].bits);
+					currentNode->symbol = symbolBits[0].bits;
+					currentNode->frequency = symbolBits[0].numberOfBits;
+					
 					iteration = 1;
 					symbolBits.erase(symbolBits.begin(), symbolBits.begin() + 1);
 					std::cout << bitset << std::endl;
@@ -124,7 +101,9 @@ Node* Huffman::generateCorrectRightAlignedTree() {
 				currentNode = currentNode->left;
 				
 				if (i == 0) {
-					currentNode->value = InputWord(symbolBits[0].numberOfBits, symbolBits[0].bits);
+					currentNode->symbol = symbolBits[0].bits;
+					currentNode->frequency = symbolBits[0].numberOfBits;
+					
 					iteration = 1;
 					symbolBits.erase(symbolBits.begin(), symbolBits.begin() + 1);
 					std::cout << bitset << std::endl;
@@ -137,7 +116,7 @@ Node* Huffman::generateCorrectRightAlignedTree() {
 }
 
 // A fast algorithm for optimal length-limited Huffman codes
-Node* Huffman::lengthLimitedHuffmanAlgorithm(unsigned short limit) {
+Node* Huffman::lengthLimitedTree(unsigned short limit) {
 	std::vector<Node*> packages;
 	std::vector<Node*> evolutionalList = singleLeafNodes;
 	for (int i = limit; i > 0; --i) {
@@ -149,11 +128,11 @@ Node* Huffman::lengthLimitedHuffmanAlgorithm(unsigned short limit) {
 	std::map<Symbol, int> treeCreationMap;
 	std::vector<int> levelList;
 	for (Node *n : singleLeafNodes)
-		treeCreationMap[n->value.symbol] = 0;
+		treeCreationMap[n->symbol] = 0;
 	for (Node *n : evolutionalList)
 		recursivelyCountSymbolMapping(treeCreationMap, n);
 	for (int i = 0; i < singleLeafNodes.size(); ++i)
-		levelList.push_back( treeCreationMap[singleLeafNodes[i]->value.symbol] );
+		levelList.push_back( treeCreationMap[singleLeafNodes[i]->symbol] );
 	
 	return lengthLimitedHuffmanGenerateTree(levelList, singleLeafNodes);
 }
@@ -164,7 +143,7 @@ void Huffman::recursivelyCountSymbolMapping(std::map<Symbol, int>& map, Node* no
 	if (node->right != nullptr)
 		recursivelyCountSymbolMapping(map, node->right);
 	if (node->left == nullptr && node->right == nullptr)
-		map[node->value.symbol] += 1;
+		map[node->symbol] += 1;
 }
 
 std::vector<Node*> Huffman::lengthLimitedHuffmanPackage(std::vector<Node*> input) {
@@ -239,7 +218,7 @@ void Huffman::climbTree(SymbolBits bitsForSymbol, Node* node, std::map<Symbol, S
 	Node* right = node->right;
 	
 	if (left == nullptr && right == nullptr) {
-		map->insert(std::make_pair(node->value.symbol, bitsForSymbol));
+		map->insert(std::make_pair(node->symbol, bitsForSymbol));
 	} else{
 		++bitsForSymbol.numberOfBits;
 		bitsForSymbol.bits <<= 1;
@@ -263,7 +242,7 @@ std::vector<Symbol> Huffman::decode(Bitstream* bitstream, Node* rootNode) {
 	for (int i = 0; i < numberOfBits; ++i) {
 	
 		if (node->left == nullptr && node->right == nullptr) {
-			symbols.push_back(node->value.symbol);
+			symbols.push_back(node->symbol);
 			node = rootNode;
 		}
 		

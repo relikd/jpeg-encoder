@@ -183,8 +183,8 @@ void testhuffmann() {
 	
 	Huffman huffman = Huffman(input);
 //	Node* rootTree = huffman.generateTree();
-//	Node* rootTree = huffman.generateRightAlignedTree();
-	Node* rootTree = huffman.generateCorrectRightAlignedTree();
+	Node* rootTree = huffman.canonicalTree();
+//	Node* rootTree = huffman.lengthLimitedTree(3);
 	
 	rootTree->print();
 	
