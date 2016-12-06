@@ -139,52 +139,37 @@ void addTestSymbol(int amount, int symbol, std::vector<int> &input) {
 
 std::vector<int> generateTestHuffman() {
 	std::vector<int>input;
-	// 6 x 1
 	addTestSymbol(6, 1, input);
-	
-	// 6 x 2
 	addTestSymbol(6, 2, input);
-	
-	// 8 x 3
 	addTestSymbol(8, 3, input);
-	
-	// 8 x 4
 	addTestSymbol(8, 4, input);
-	
-	// 12 x 5
 	addTestSymbol(12, 5, input);
-	
-	// 13 x 6
 	addTestSymbol(13, 6, input);
-	
+	return input;
+}
+
+std::vector<int> generateTestHuffman2() {
+	std::vector<int>input;
+	addTestSymbol(5, 1, input);
+	addTestSymbol(5, 2, input);
+	addTestSymbol(6, 3, input);
+	addTestSymbol(11, 4, input);
+	addTestSymbol(12, 5, input);
+	addTestSymbol(12, 6, input);
+	addTestSymbol(26, 7, input);
 	return input;
 }
 
 void testhuffmann() {
-//	std::vector<int> input;
-//	input.push_back(7);
-//	input.push_back(2);
-//	input.push_back(2);
-//	input.push_back(3);
-//	input.push_back(4);
-//	input.push_back(5);
-//	input.push_back(5);
-//	input.push_back(5);
-//	input.push_back(5);
-//	input.push_back(6);
-//	input.push_back(6);
-//	input.push_back(7);
-//	input.push_back(2);
+	std::vector<Symbol> testData;
 	
 	auto input = generateTestHuffman();
 	
 	
-	
-	
 	Huffman huffman = Huffman(input);
 //	Node* rootTree = huffman.generateTree();
-	Node* rootTree = huffman.canonicalTree();
-//	Node* rootTree = huffman.lengthLimitedTree(3);
+//	Node* rootTree = huffman.canonicalTree();
+	Node* rootTree = huffman.lengthLimitedTree(16);
 	
 	rootTree->print();
 	
