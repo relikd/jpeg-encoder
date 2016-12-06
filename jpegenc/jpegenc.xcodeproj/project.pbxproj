@@ -17,6 +17,7 @@
 		546A42FB1DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F21DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp */; };
 		546A42FD1DBA7A8D006C2629 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F81DBA7A8D006C2629 /* Image.cpp */; };
 		5496ABDD1DCFA97100FED0CF /* Channel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5496ABDB1DCFA97100FED0CF /* Channel.cpp */; };
+		54B9AA021DF62F9700BB8D0D /* BitMath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54B9AA001DF62F9700BB8D0D /* BitMath.cpp */; };
 		54F366541DD45335004D4AA7 /* Test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54F366521DD45335004D4AA7 /* Test.cpp */; };
 		950478DA1DDB56AE007C1053 /* Bitstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 950478D91DDB56AE007C1053 /* Bitstream.cpp */; };
 		95FA179A1DC0CCFB0042DA1B /* singapore4k.test.ppm in CopyFiles */ = {isa = PBXBuildFile; fileRef = 9572F5271DC0CA7D00FC7CE2 /* singapore4k.test.ppm */; };
@@ -57,6 +58,8 @@
 		5496ABDB1DCFA97100FED0CF /* Channel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Channel.cpp; sourceTree = "<group>"; };
 		5496ABDC1DCFA97100FED0CF /* Channel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Channel.hpp; sourceTree = "<group>"; };
 		54A027DD1DB6CFFB0053733A /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = CMakeLists.txt; path = ../CMakeLists.txt; sourceTree = "<group>"; };
+		54B9AA001DF62F9700BB8D0D /* BitMath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BitMath.cpp; sourceTree = "<group>"; };
+		54B9AA011DF62F9700BB8D0D /* BitMath.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BitMath.hpp; sourceTree = "<group>"; };
 		54F366521DD45335004D4AA7 /* Test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Test.cpp; sourceTree = "<group>"; };
 		54F366531DD45335004D4AA7 /* Test.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Test.hpp; sourceTree = "<group>"; };
 		950478D81DDB56AE007C1053 /* Bitstream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Bitstream.hpp; sourceTree = "<group>"; };
@@ -182,6 +185,8 @@
 			children = (
 				54F366521DD45335004D4AA7 /* Test.cpp */,
 				54F366531DD45335004D4AA7 /* Test.hpp */,
+				54B9AA001DF62F9700BB8D0D /* BitMath.cpp */,
+				54B9AA011DF62F9700BB8D0D /* BitMath.hpp */,
 			);
 			path = helper;
 			sourceTree = "<group>";
@@ -252,6 +257,7 @@
 				546A42FB1DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp in Sources */,
 				546A42FA1DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp in Sources */,
 				546A42FD1DBA7A8D006C2629 /* Image.cpp in Sources */,
+				54B9AA021DF62F9700BB8D0D /* BitMath.cpp in Sources */,
 				5496ABDD1DCFA97100FED0CF /* Channel.cpp in Sources */,
 				54F366541DD45335004D4AA7 /* Test.cpp in Sources */,
 			);
