@@ -132,7 +132,7 @@ Node* Huffman::lengthLimitedTree(unsigned short limit) {
 	for (Node *n : evolutionalList)
 		recursivelyCountSymbolMapping(treeCreationMap, n);
 	for (int i = 0; i < singleLeafNodes.size(); ++i)
-		levelList.push_back( treeCreationMap[singleLeafNodes[i]->symbol] );
+		levelList.push_back( treeCreationMap[singleLeafNodes[i]->symbol] -1 );
 	
 	return lengthLimitedHuffmanGenerateTree(levelList, singleLeafNodes);
 }
@@ -180,8 +180,9 @@ Node* Huffman::lengthLimitedHuffmanGenerateTree(std::vector<int>& levelList, std
 	
 	std::vector<int> newLevelList;
 	std::vector<Node*> newNodeList;
+	unsigned int currentLevel = levelList[0];
 	for (int i = 0; i < count; ++i) {
-		if (i+1 < count && levelList[i] == levelList[i+1]) {
+		if (i+1 < count && levelList[i] == currentLevel && levelList[i+1] == currentLevel) {
 			newLevelList.push_back(levelList[i] - 1);
 			newNodeList.push_back( new Node(nodeList[i+1], nodeList[i]) );
 			++i;

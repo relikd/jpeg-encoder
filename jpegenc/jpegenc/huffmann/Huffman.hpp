@@ -34,8 +34,6 @@ public:
 	Node* standardTree();
 	Node* canonicalTree();
 	Node* lengthLimitedTree(unsigned short limit);
-//	Node* generateRightAlignedTree();
-//	Node* generateCorrectRightAlignedTree();
 	
 	std::map<Symbol, SymbolBits>* generateEncodingTable(Node* node);
 	std::vector<Symbol> decode(Bitstream* bitstream, Node* rootNode);
