@@ -16,7 +16,7 @@ struct SymbolBits {
 };
 
 class Huffman {
-	std::vector<InputWord> words;
+	std::map<Symbol, unsigned int> symbolBook;
 	std::vector<Node*> singleLeafNodes; // sorted: least significant ones first
 	
 public:
@@ -31,11 +31,11 @@ public:
 	
 	void generateNodeList();
 	
-	Node* generateTree();
-	Node* generateCorrectTree();
-	Node* generateRightAlignedTree();
-	Node* generateCorrectRightAlignedTree();
-	Node* lengthLimitedHuffmanAlgorithm(unsigned short limit);
+	Node* standardTree();
+	Node* canonicalTree();
+	Node* lengthLimitedTree(unsigned short limit);
+//	Node* generateRightAlignedTree();
+//	Node* generateCorrectRightAlignedTree();
 	
 	std::map<Symbol, SymbolBits>* generateEncodingTable(Node* node);
 	std::vector<Symbol> decode(Bitstream* bitstream, Node* rootNode);

@@ -1,10 +1,5 @@
 #include "Node.hpp"
 
-void InputWord::increase() {
-	++amount;
-}
-
-
 Node::Node(Node* l, Node* r, bool swapLeftRight) {
 	if (swapLeftRight) {
 		left = r;
@@ -14,13 +9,12 @@ Node::Node(Node* l, Node* r, bool swapLeftRight) {
 		right = r;
 	}
 	depth = std::max(r->depth, l->depth) + 1;
-	calculateValue();
+	accumulateFrequency();
 }
 
-inline void Node::calculateValue() {
-	if ((left != nullptr) && (right != nullptr)) {
-		value = InputWord(left->value.amount + right->value.amount);
-	}
+inline void Node::accumulateFrequency() {
+	if ((left != nullptr) && (right != nullptr))
+		frequency = left->frequency + right->frequency;
 }
 
 void Node::print() {
@@ -51,7 +45,7 @@ void Node::printWithDepth(std::vector<Node*> arr, int level) {
 			if (arr[i]->depth > 0)
 				printf(" * ");
 			else
-				printf("%03d", arr[i]->value.symbol);
+				printf("%03d", arr[i]->symbol);
 		}
 		
 		if (i < maxWidth-1) {
@@ -66,8 +60,8 @@ void Node::printWithDepth(std::vector<Node*> arr, int level) {
 
 
 bool sortNode(const Node* node1, const Node* node2) {
-	if (node1->value.amount == node2->value.amount) {
+	if (node1->frequency == node2->frequency) {
 		return node1->depth < node2->depth;
 	}
-	return node1->value.amount < node2->value.amount;
+	return node1->frequency < node2->frequency;
 }
