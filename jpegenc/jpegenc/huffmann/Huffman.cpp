@@ -26,6 +26,16 @@ void Huffman::generateNodeList() {
 	std::sort(singleLeafNodes.begin(), singleLeafNodes.end(), sortNode);
 }
 
+void Huffman::preventAllOnesPath(bool insertArtificialZeroFrequency) {
+	if (insertArtificialZeroFrequency) {
+		if (singleLeafNodes[0]->frequency != 0)
+			singleLeafNodes.insert(singleLeafNodes.begin(), new Node(DEFAULT_SYMBOL, 0));
+	} else {
+		if (singleLeafNodes[0]->frequency == 0)
+			singleLeafNodes.erase(singleLeafNodes.begin());
+	}
+}
+
 
 //  ---------------------------------------------------------------
 // |

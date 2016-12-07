@@ -30,6 +30,7 @@ public:
 	void addSymbols(std::vector<Symbol>);
 	
 	void generateNodeList();
+	void preventAllOnesPath(bool prevent = true);
 	
 	Node* standardTree();
 	Node* canonicalTree();

@@ -167,9 +167,10 @@ void testhuffmann() {
 	
 	
 	Huffman huffman = Huffman(input);
+	huffman.preventAllOnesPath(true);
 //	Node* rootTree = huffman.generateTree();
 //	Node* rootTree = huffman.canonicalTree();
-	Node* rootTree = huffman.lengthLimitedTree(16);
+	Node* rootTree = huffman.lengthLimitedTree(3);
 	
 	rootTree->print();
 	
