@@ -11,6 +11,9 @@ struct SymbolBits {
 	Word bits = 0;
 	unsigned short numberOfBits = 0;
 	
+	SymbolBits() {};
+	SymbolBits(Word bits, unsigned short numberOfBits) : bits(bits), numberOfBits(numberOfBits) {};
+	
 	bool operator  < (const SymbolBits& input) const { return (numberOfBits  < input.numberOfBits); }
 	bool operator  > (const SymbolBits& input) const { return (numberOfBits  > input.numberOfBits); }
 };
@@ -37,10 +40,16 @@ public:
 	Node* lengthLimitedTree(unsigned short limit);
 	
 	std::map<Symbol, SymbolBits>* generateEncodingTable(Node* node);
+	std::map<Symbol, SymbolBits>* generateCanonicalEncodingTable(Node* node);
 	std::vector<Symbol> decode(Bitstream* bitstream, Node* rootNode);
 	
 private:
+	
+	bool noAllOnesPath = false;
 	void climbTree(SymbolBits bitsForSymbol, Node* node, std::map<Symbol, SymbolBits>* map);
+	std::map<Symbol, int> generateLevelList(Node* node);
+	void generateLevelList(int level, Node* node, std::map<Symbol, int> &levelMap);
+	bool isLeadingBitsInVector(std::vector<SymbolBits> usedPaths, SymbolBits symbolBits);
 };
 
 
