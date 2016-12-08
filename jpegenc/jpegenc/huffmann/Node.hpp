@@ -6,6 +6,7 @@
 typedef int Symbol;
 typedef unsigned int Frequency;
 typedef unsigned short Level;
+
 static const Symbol DEFAULT_SYMBOL = -1;
 
 class Node {
@@ -21,9 +22,10 @@ public:
 	Node(Symbol symbol, Frequency frequency) : symbol(symbol), frequency(frequency) {}
 	Node(Node* left, Node* right, bool swapLeftRight = false);
 	
-	void print();
 	
 	inline bool isLeaf() { return (left == nullptr && right == nullptr); };
+	Node* deeper(bool rightNode);
+	void print();
 	
 private:
 	Level maxDepth(Node* root);
