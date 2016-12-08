@@ -4,6 +4,7 @@
 #include <vector>
 
 typedef int Symbol;
+typedef unsigned int Frequency;
 static const Symbol DEFAULT_SYMBOL = -1;
 
 struct Node {
@@ -13,10 +14,10 @@ struct Node {
 	unsigned short depth = 0;
 	// Leaf Vars
 	Symbol symbol = DEFAULT_SYMBOL;
-	unsigned int frequency = 0;
+	Frequency frequency = 0;
 	
 	Node() {};
-	Node(Symbol symbol, unsigned int frequency) : symbol(symbol), frequency(frequency) {}
+	Node(Symbol symbol, Frequency frequency) : symbol(symbol), frequency(frequency) {}
 	Node(Node* left, Node* right, bool swapLeftRight = false);
 	
 	void print();

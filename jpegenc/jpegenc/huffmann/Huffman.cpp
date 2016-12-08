@@ -1,5 +1,6 @@
 #include "Huffman.hpp"
 #include <iostream>
+#include "PackageMerge.hpp"
 
 //  ---------------------------------------------------------------
 // |
@@ -20,7 +21,7 @@ void Huffman::addSymbols(std::vector<int> input) {
 
 void Huffman::generateNodeList() {
 	singleLeafNodes.clear();
-	for (std::pair<Symbol, unsigned int> entry : symbolBook) {
+	for (std::pair<Symbol, Frequency> entry : symbolBook) {
 		singleLeafNodes.push_back( new Node(entry.first, entry.second) );
 	}
 	std::sort(singleLeafNodes.begin(), singleLeafNodes.end(), sortNode);
@@ -125,89 +126,8 @@ Node* Huffman::canonicalTree() {
 	return root;
 }
 
-// A fast algorithm for optimal length-limited Huffman codes
 Node* Huffman::lengthLimitedTree(unsigned short limit) {
-	std::vector<Node*> packages;
-	std::vector<Node*> evolutionalList = singleLeafNodes;
-	for (int i = limit; i > 0; --i) {
-		packages = lengthLimitedHuffmanPackage(evolutionalList);
-		// TODO: Merge kann hier mit 3 Code Zeilen implementiert werden
-		evolutionalList = lengthLimitedHuffmanMerge(packages);
-	}
-	// TODO: Logic for tree evaluation can be implemented in HuffmanPackage directly
-	std::map<Symbol, int> treeCreationMap;
-	std::vector<int> levelList;
-	for (Node *n : singleLeafNodes)
-		treeCreationMap[n->symbol] = 0;
-	for (Node *n : evolutionalList)
-		recursivelyCountSymbolMapping(treeCreationMap, n);
-	for (int i = 0; i < singleLeafNodes.size(); ++i)
-		levelList.push_back( treeCreationMap[singleLeafNodes[i]->symbol] -1 );
-	
-	return lengthLimitedHuffmanGenerateTree(levelList, singleLeafNodes);
-}
-
-void Huffman::recursivelyCountSymbolMapping(std::map<Symbol, int>& map, Node* node) {
-	if (node->left != nullptr)
-		recursivelyCountSymbolMapping(map, node->left);
-	if (node->right != nullptr)
-		recursivelyCountSymbolMapping(map, node->right);
-	if (node->left == nullptr && node->right == nullptr)
-		map[node->symbol] += 1;
-}
-
-std::vector<Node*> Huffman::lengthLimitedHuffmanPackage(std::vector<Node*> input) {
-	std::vector<Node*> newList;
-	size_t count = input.size();
-	for (int i = 0; i < count; i += 2) {
-		if ((i + 1) < count) {
-			// TODO: generate list of Symbol count here?
-			newList.push_back( new Node(input[i+1], input[i]) );
-		}
-	}
-	return newList;
-}
-
-std::vector<Node*> Huffman::lengthLimitedHuffmanMerge(std::vector<Node*> packagedList) {
-	std::vector<Node*> newList;
-	for (Node *n : singleLeafNodes)
-		newList.push_back(n);
-	for (Node *n : packagedList)
-		newList.push_back(n);
-	std::sort(newList.begin(), newList.end(), sortNode);
-	return newList;
-}
-
-Node* Huffman::lengthLimitedHuffmanGenerateTree(std::vector<int>& levelList, std::vector<Node*> nodeList) {
-	size_t count = levelList.size();
-	if (count != nodeList.size()) {
-		fputs("Something is wrong. LevelList and NodeList should always be in sync\n", stderr);
-		return nullptr;
-	}
-	
-	if (count <= 1)
-		return nodeList[0]; // tree generation done
-	
-	std::vector<int> newLevelList;
-	std::vector<Node*> newNodeList;
-	unsigned int currentLevel = levelList[0];
-	for (int i = 0; i < count; ++i) {
-		if (i+1 < count && levelList[i] == currentLevel && levelList[i+1] == currentLevel) {
-			newLevelList.push_back(levelList[i] - 1);
-			newNodeList.push_back( new Node(nodeList[i+1], nodeList[i]) );
-			++i;
-		} else { // dont merge anything, just copy
-			newLevelList.push_back(levelList[i]);
-			newNodeList.push_back(nodeList[i]);
-		}
-	}
-	
-	if (levelList == newLevelList) {
-		fputs("Something went wrong. TODO: prevent a too shallow depth limit here\n", stderr);
-		return nullptr;
-	}
-	
-	return lengthLimitedHuffmanGenerateTree(newLevelList, newNodeList);
+	return PackageMerge().generate(singleLeafNodes, limit);
 }
 
 

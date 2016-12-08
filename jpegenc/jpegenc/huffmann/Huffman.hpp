@@ -16,7 +16,7 @@ struct SymbolBits {
 };
 
 class Huffman {
-	std::map<Symbol, unsigned int> symbolBook;
+	std::map<Symbol, Frequency> symbolBook;
 	std::vector<Node*> singleLeafNodes; // sorted: least significant ones first
 	
 public:
@@ -41,12 +41,6 @@ public:
 	
 private:
 	void climbTree(SymbolBits bitsForSymbol, Node* node, std::map<Symbol, SymbolBits>* map);
-	
-	// A fast algorithm for optimal length-limited Huffman codes
-	std::vector<Node*> lengthLimitedHuffmanPackage(std::vector<Node*> input);
-	std::vector<Node*> lengthLimitedHuffmanMerge(std::vector<Node*> packagedList);
-	void recursivelyCountSymbolMapping(std::map<Symbol, int>& map, Node* node);
-	Node* lengthLimitedHuffmanGenerateTree(std::vector<int>& levelList, std::vector<Node*> nodeList);
 };
 
 
