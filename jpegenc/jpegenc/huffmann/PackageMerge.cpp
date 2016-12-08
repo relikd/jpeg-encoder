@@ -3,6 +3,10 @@
 
 Node* PackageMerge::generate(const std::vector<Node*> &input, unsigned short limit) {
 	nodesListOriginal.clear();
+	nodesListPackaged.clear();
+	nodesListOriginal.reserve(input.size());
+	nodesListPackaged.reserve(input.size()*2); // can never be larger than 2*input
+	
 	for (Node *n : input)
 		nodesListOriginal.push_back( PackageNode(n->symbol, n->frequency) );
 	
@@ -54,6 +58,7 @@ std::vector<unsigned short> PackageMerge::calculateLevelList() {
 			levelMap[s] += 1;
 	
 	std::vector<unsigned short> levelList;
+	levelList.reserve(nodesListOriginal.size());
 	for (PackageNode on : nodesListOriginal)
 		levelList.push_back( levelMap[on.symbols[0]] );
 	
