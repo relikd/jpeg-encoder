@@ -28,6 +28,7 @@ void Huffman::generateNodeList() {
 }
 
 void Huffman::preventAllOnesPath(bool insertArtificialZeroFrequency) {
+	noAllOnesPath = insertArtificialZeroFrequency;
 	if (insertArtificialZeroFrequency) {
 		if (singleLeafNodes[0]->frequency != 0)
 			singleLeafNodes.insert(singleLeafNodes.begin(), new Node(DEFAULT_SYMBOL, 0));
@@ -64,10 +65,6 @@ Node* Huffman::canonicalTree() {
 	}
 	std::sort(symbolBits.begin(), symbolBits.end(), std::greater<SymbolBits>());
 	
-	for (auto &symbol : symbolBits) {
-		std::cout << symbol.bits << " " << symbol.numberOfBits << std::endl;
-	}
-	
 //	auto set = std::bitset<16>(2);
 //	std::cout << set[2] << std::endl;
 	int maxDepth = symbolBits[0].numberOfBits;
@@ -99,7 +96,7 @@ Node* Huffman::canonicalTree() {
 					
 					iteration = 1;
 					symbolBits.erase(symbolBits.begin(), symbolBits.begin() + 1);
-					std::cout << bitset << std::endl;
+//					std::cout << bitset << std::endl;
 				}
 			} else {
 				if (currentNode->left != nullptr && i == 0) {
@@ -117,7 +114,7 @@ Node* Huffman::canonicalTree() {
 					
 					iteration = 1;
 					symbolBits.erase(symbolBits.begin(), symbolBits.begin() + 1);
-					std::cout << bitset << std::endl;
+//					std::cout << bitset << std::endl;
 				}
 			}
 		}
@@ -143,6 +140,47 @@ std::map<Symbol, SymbolBits>* Huffman::generateEncodingTable(Node* node) {
 	
 	return map;
 }
+
+std::map<Symbol, SymbolBits>* Huffman::generateCanonicalEncodingTable(Node* node) {
+	auto encodingTable = new std::map<Symbol, SymbolBits>();
+	std::vector<SymbolBits> usedPaths;
+	auto levelList = generateLevelList(node);
+	
+	auto oldLevel = -1;
+	int pathInTree = 0;
+	int startIndex = 0;
+	
+	if (noAllOnesPath) {
+		oldLevel = levelList[singleLeafNodes[1]->symbol];
+		pathInTree = (1 << oldLevel) - 2;
+		startIndex = 1;
+	}
+	
+	for (; startIndex < singleLeafNodes.size(); ++startIndex) {
+		auto singleLeafNode = singleLeafNodes[startIndex];
+		auto level = levelList[singleLeafNode->symbol];
+		
+		if (level != oldLevel) {
+			pathInTree = (1 << level) - 1;
+			oldLevel = level;
+		}
+		
+		for (; pathInTree >= 0; --pathInTree) {
+			SymbolBits symbolBits(pathInTree, level);
+			if (isLeadingBitsInVector(usedPaths, symbolBits)) {
+				continue;
+			} else {
+				encodingTable->insert(std::make_pair(singleLeafNode->symbol, symbolBits));
+				usedPaths.push_back(symbolBits);
+				--pathInTree;
+				break;
+			}
+		}
+	}
+	return encodingTable;
+}
+
+
 
 void Huffman::climbTree(SymbolBits bitsForSymbol, Node* node, std::map<Symbol, SymbolBits>* map) {
 	Node* left = node->left;
@@ -188,4 +226,42 @@ std::vector<Symbol> Huffman::decode(Bitstream* bitstream, Node* rootNode) {
 	return symbols;
 }
 
+std::map<Symbol, int> Huffman::generateLevelList(Node* node){
+	std::map<Symbol, int> levelList;
+	generateLevelList(0,node, levelList);
+	
+	return levelList;
+}
+
+void Huffman::generateLevelList(int level, Node* node, std::map<Symbol, int> &levelList){
+	if (node == nullptr) {
+		return;
+	}
+	
+	if (node->symbol != -1) {
+		levelList[node->symbol] = level;
+	}
+	++level;
+	generateLevelList(level, node->left, levelList);
+	generateLevelList(level, node->right, levelList);
+	
+	
+}
+
+bool Huffman::isLeadingBitsInVector(std::vector<SymbolBits> usedPaths, SymbolBits symbolBits) {
+	for (auto current: usedPaths) {
+		Word shiftedBits = 0;
+		if (current.numberOfBits > symbolBits.numberOfBits) {
+			shiftedBits = current.bits >> (current.numberOfBits - symbolBits.numberOfBits);
+		} else {
+			shiftedBits = current.bits >> (symbolBits.numberOfBits - current.numberOfBits);
+		}
+		
+		if (shiftedBits == symbolBits.bits) {
+			return true;
+		}
+	}
+	
+	return false;
+}
 
