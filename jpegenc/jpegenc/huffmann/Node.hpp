@@ -5,13 +5,14 @@
 
 typedef int Symbol;
 typedef unsigned int Frequency;
+typedef unsigned short Level;
 static const Symbol DEFAULT_SYMBOL = -1;
 
-struct Node {
+class Node {
+public:
 	// Node Vars
-	Node* left = nullptr; //0
-	Node* right = nullptr; //1
-	unsigned short depth = 0;
+	Node* left = nullptr;  // 0
+	Node* right = nullptr; // 1
 	// Leaf Vars
 	Symbol symbol = DEFAULT_SYMBOL;
 	Frequency frequency = 0;
@@ -22,9 +23,11 @@ struct Node {
 	
 	void print();
 	
+	inline bool isLeaf() { return (left == nullptr && right == nullptr); };
+	
 private:
-	inline void accumulateFrequency();
-	void printWithDepth(std::vector<Node*> arr, int level);
+	Level maxDepth(Node* root);
+	void printWithDepth(const std::vector<Node*> arr, Level level);
 };
 
 

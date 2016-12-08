@@ -1,24 +1,28 @@
 #include "Huffman.hpp"
 #include <iostream>
 #include "PackageMerge.hpp"
+#include "BitMath.hpp"
 
 //  ---------------------------------------------------------------
 // |
-// |  Step I: Setup
+// |  Step I: Setup & Preparation
 // |
 //  ---------------------------------------------------------------
 
+/** Add a single symbol to an internal map and increase it's frequency by 1 */
 void Huffman::addSymbol(Symbol input) {
 //	symbolBook.insert(input, 0); // no need to since vector is initialized with 0
 	symbolBook[input] += 1;
 }
 
-void Huffman::addSymbols(std::vector<int> input) {
+/** Each element in given array will call @b addSymbol() */
+void Huffman::addSymbols(std::vector<Symbol> input) {
 	size_t count = input.size();
 	for (int i = 0; i < count; ++i)
 		addSymbol(input[i]);
 }
 
+/** Prepare list with symbols and correlating frequencies */
 void Huffman::generateNodeList() {
 	singleLeafNodes.clear();
 	for (std::pair<Symbol, Frequency> entry : symbolBook) {
@@ -27,9 +31,12 @@ void Huffman::generateNodeList() {
 	std::sort(singleLeafNodes.begin(), singleLeafNodes.end(), sortNode);
 }
 
-void Huffman::preventAllOnesPath(bool insertArtificialZeroFrequency) {
-	noAllOnesPath = insertArtificialZeroFrequency;
-	if (insertArtificialZeroFrequency) {
+/**
+ This will prevent an encoding where every bit is 1. The rightmost leaf will be replaced by -1
+ * @param insertArtificialLeaf @b True: insert -1 @b False: remove previously inserted True
+ */
+void Huffman::preventAllOnesPath(bool insertArtificialLeaf) {
+	if (insertArtificialLeaf) {
 		if (singleLeafNodes[0]->frequency != 0)
 			singleLeafNodes.insert(singleLeafNodes.begin(), new Node(DEFAULT_SYMBOL, 0));
 	} else {
@@ -41,10 +48,41 @@ void Huffman::preventAllOnesPath(bool insertArtificialZeroFrequency) {
 
 //  ---------------------------------------------------------------
 // |
-// |  Step II: Generate Optimal Tree
+// |  Step II: Generate Encoding Table
 // |
 //  ---------------------------------------------------------------
 
+/** @return Map with Symbol as key and bit pattern as value. Based on a right-aligned tree */
+const EncodingTable Huffman::canonicalEncoding() {
+	Node* huffmanTree = standardTree();
+	
+	std::vector<Level> levelList;
+	recursivelyGenerateLevelList(levelList, huffmanTree);
+	sort(levelList.begin(), levelList.end(), std::greater<Level>());
+	
+	std::vector<Encoding> encList = generateEncodingList(levelList);
+	return generateEncodingTable(singleLeafNodes, encList);
+}
+
+/** @return Map with Symbol as key and bit pattern as value. Based on optimal length-limited tree */
+const EncodingTable Huffman::lengthLimitedEncoding(Level limit) {
+	if (singleLeafNodes.size() > (1 << limit)) {
+		limit = BitMath::log2(singleLeafNodes.size());
+		printf("Error: Can't create limited tree with given limit. Using limit %d instead.\n", limit);
+	}
+	std::vector<Level> levelList = PackageMerge().generate(singleLeafNodes, limit);
+	std::vector<Encoding> encList = generateEncodingList(levelList);
+	return generateEncodingTable(singleLeafNodes, encList);
+}
+
+
+//  ---------------------------------------------------------------
+// |
+// |  Step III: Trees
+// |
+//  ---------------------------------------------------------------
+
+/** Classical Huffman tree by combining the two least frequent nodes */
 Node* Huffman::standardTree() {
 	std::vector<Node*> input = singleLeafNodes;
 	while (input.size() > 1) {
@@ -55,146 +93,29 @@ Node* Huffman::standardTree() {
 	return input[0];
 }
 
-Node* Huffman::canonicalTree() {
-	Node* huffmanTree = standardTree();
-	auto encodingTableHuffmanTree = generateEncodingTable(huffmanTree);
-	std::vector<SymbolBits> symbolBits;
-	for(std::map<Symbol,SymbolBits>::iterator it = encodingTableHuffmanTree->begin(); it != encodingTableHuffmanTree->end(); ++it) {
-		it->second.bits = it->first;
-		symbolBits.push_back(it->second);
-	}
-	std::sort(symbolBits.begin(), symbolBits.end(), std::greater<SymbolBits>());
-	
-//	auto set = std::bitset<16>(2);
-//	std::cout << set[2] << std::endl;
-	int maxDepth = symbolBits[0].numberOfBits;
-	auto root = new Node();
-	root->depth = maxDepth;
-	int iteration = 1;
-	while (symbolBits.size() > 0) {
-		auto currentNode = root;
-		auto bitset = std::bitset<8>((1 << symbolBits[0].numberOfBits) - iteration);
-//		std::cout << "Begin: " << bitset << std::endl;
+/** Create Huffman Tree from an given encoding table */
+Node* Huffman::treeFromEncodingTable(const EncodingTable &encodingTable) {
+	Node* root = new Node();
+	for (std::pair<Symbol, Encoding> pair : encodingTable) {
+		Node* runningNode = root;
+		Level remainingLevel = pair.second.numberOfBits;
 		
-//		std::cout << bitset << std::endl;
-		
-		for (int i = symbolBits[0].numberOfBits - 1; i >= 0; --i) {
-			if(bitset[i]) {
-				if (currentNode->right != nullptr && i == 0) {
-					++iteration;
-					break;
-				} else if (currentNode->right == nullptr) {
-					currentNode->right = new Node();
-					currentNode->right->depth =  symbolBits[0].numberOfBits - (symbolBits[0].numberOfBits - i);
-				}
-				
-				currentNode = currentNode->right;
-				
-				if (i == 0) {
-					currentNode->symbol = symbolBits[0].bits;
-					currentNode->frequency = symbolBits[0].numberOfBits;
-					
-					iteration = 1;
-					symbolBits.erase(symbolBits.begin(), symbolBits.begin() + 1);
-//					std::cout << bitset << std::endl;
-				}
-			} else {
-				if (currentNode->left != nullptr && i == 0) {
-					++iteration;
-					break;
-				} else if (currentNode->left == nullptr) {
-					currentNode->left = new Node();
-					currentNode->left->depth = symbolBits[0].numberOfBits - (symbolBits[0].numberOfBits - i);
-				}
-				currentNode = currentNode->left;
-				
-				if (i == 0) {
-					currentNode->symbol = symbolBits[0].bits;
-					currentNode->frequency = symbolBits[0].numberOfBits;
-					
-					iteration = 1;
-					symbolBits.erase(symbolBits.begin(), symbolBits.begin() + 1);
-//					std::cout << bitset << std::endl;
-				}
-			}
+		while (remainingLevel--) {
+			// create any missing Nodes while going deeper
+			if (runningNode->left == nullptr)
+				runningNode->left = new Node();
+			if (runningNode->right == nullptr)
+				runningNode->right = new Node();
+			
+			// traverse though bit pattern
+			if ((pair.second.code >> remainingLevel) & 1)
+				runningNode = runningNode->right;
+			else
+				runningNode = runningNode->left;
 		}
+		runningNode->symbol = pair.first;
 	}
-	
 	return root;
-}
-
-Node* Huffman::lengthLimitedTree(unsigned short limit) {
-	return PackageMerge().generate(singleLeafNodes, limit);
-}
-
-
-//  ---------------------------------------------------------------
-// |
-// |  Step III: Generate Encoding Table
-// |
-//  ---------------------------------------------------------------
-std::map<Symbol, SymbolBits>* Huffman::generateEncodingTable(Node* node) {
-	SymbolBits bitsForSymbol;
-	std::map<Symbol, SymbolBits>* map = new std::map<Symbol, SymbolBits>();
-	climbTree(bitsForSymbol, node, map);
-	
-	return map;
-}
-
-std::map<Symbol, SymbolBits>* Huffman::generateCanonicalEncodingTable(Node* node) {
-	auto encodingTable = new std::map<Symbol, SymbolBits>();
-	std::vector<SymbolBits> usedPaths;
-	auto levelList = generateLevelList(node);
-	
-	auto oldLevel = -1;
-	int pathInTree = 0;
-	int firstNodeIndex = 0;
-	
-	if (noAllOnesPath) {
-		oldLevel = levelList[singleLeafNodes[1]->symbol];
-		pathInTree = (1 << oldLevel) - 2;
-		firstNodeIndex = 1;
-	}
-	
-	for (; firstNodeIndex < singleLeafNodes.size(); ++firstNodeIndex) {
-		auto singleLeafNode = singleLeafNodes[firstNodeIndex];
-		auto level = levelList[singleLeafNode->symbol];
-		
-		if (level != oldLevel) {
-			pathInTree = (1 << level) - 1;
-			oldLevel = level;
-		}
-		
-		for (; pathInTree >= 0; --pathInTree) {
-			SymbolBits symbolBits(pathInTree, level);
-			if (isLeadingBitsInVector(usedPaths, symbolBits)) {
-				continue;
-			} else {
-				encodingTable->insert(std::make_pair(singleLeafNode->symbol, symbolBits));
-				usedPaths.push_back(symbolBits);
-				--pathInTree;
-				break;
-			}
-		}
-	}
-	return encodingTable;
-}
-
-
-
-void Huffman::climbTree(SymbolBits bitsForSymbol, Node* node, std::map<Symbol, SymbolBits>* map) {
-	Node* left = node->left;
-	Node* right = node->right;
-	
-	if (left == nullptr && right == nullptr) {
-		map->insert(std::make_pair(node->symbol, bitsForSymbol));
-	} else{
-		++bitsForSymbol.numberOfBits;
-		bitsForSymbol.bits <<= 1;
-		climbTree(bitsForSymbol, left, map);
-		bitsForSymbol.bits |= 1;
-		climbTree(bitsForSymbol, right, map);
-	}
 }
 
 
@@ -203,65 +124,97 @@ void Huffman::climbTree(SymbolBits bitsForSymbol, Node* node, std::map<Symbol, S
 // |  Step IV: Decode With Given Tree
 // |
 //  ---------------------------------------------------------------
+
+/** Parse whole bitstream with given tree and return vector with all Symbols */
 std::vector<Symbol> Huffman::decode(Bitstream* bitstream, Node* rootNode) {
 	std::vector<Symbol> symbols;
 	size_t numberOfBits = bitstream->numberOfBits();
 	Node* node = rootNode;
 	bool bit;
 	for (int i = 0; i < numberOfBits; ++i) {
-	
-		if (node->left == nullptr && node->right == nullptr) {
+		if (!node) {
+			fputs("Error: Bitstream decode, unexpected symbol found.\n", stderr);
+			break;
+		}
+		if (node->isLeaf()) {
 			symbols.push_back(node->symbol);
 			node = rootNode;
 		}
-		
+		// TODO: sequencial read + read single symbol
 		bit = bitstream->read(i);
-		if (bit) {
+		if (bit)
 			node = node->right;
-		} else {
+		else
 			node = node->left;
-		}
 	}
 	
 	return symbols;
 }
 
-std::map<Symbol, int> Huffman::generateLevelList(Node* node){
-	std::map<Symbol, int> levelList;
-	generateLevelList(0,node, levelList);
-	
-	return levelList;
+
+//  ---------------------------------------------------------------
+// |
+// |  Internal
+// |
+//  ---------------------------------------------------------------
+
+/**
+ * Traverse the whole tree and save the level of each leaf node
+ * @param list Result will be saved here
+ * @param node Pass root node as a starting point
+ */
+void Huffman::recursivelyGenerateLevelList(std::vector<Level> &list, Node* node, Level level) {
+	if (node->isLeaf()) {
+		list.push_back(level);
+	} else if (node) {
+		recursivelyGenerateLevelList(list, node->left, level + 1);
+		recursivelyGenerateLevelList(list, node->right, level + 1);
+	}
 }
 
-void Huffman::generateLevelList(int level, Node* node, std::map<Symbol, int> &levelList){
-	if (node == nullptr) {
-		return;
-	}
+/**
+ * Transforms a level list to an encoding list
+ * @param levelList Must be sorted in @b descending order
+ * @return Sorted list of encoding bit codes. Same ordering as @a singleLeafNodes
+ */
+const std::vector<Encoding> Huffman::generateEncodingList(const std::vector<Level> &levelList) {
+	std::vector<Encoding> encodingList;
+	Level currentLevel = 255;
+	Word code = 0;
 	
-	if (node->symbol != -1) {
-		levelList[node->symbol] = level;
-	}
-	++level;
-	generateLevelList(level, node->left, levelList);
-	generateLevelList(level, node->right, levelList);
-	
-	
-}
-
-bool Huffman::isLeadingBitsInVector(std::vector<SymbolBits> usedPaths, SymbolBits symbolBits) {
-	for (auto current: usedPaths) {
-		Word shiftedBits = 0;
-		if (current.numberOfBits > symbolBits.numberOfBits) {
-			shiftedBits = current.bits >> (current.numberOfBits - symbolBits.numberOfBits);
-		} else {
-			shiftedBits = current.bits >> (symbolBits.numberOfBits - current.numberOfBits);
+	for (Level lvl : levelList) { // level == numberOfBits
+		if (lvl < currentLevel) { // if level stays the same we just decrease code
+			currentLevel = lvl;
+			code = (1 << lvl) - 1;
+			
+			for (Encoding prevCode : encodingList)
+				if (code == (prevCode.code >> (prevCode.numberOfBits - lvl)))
+					--code; // found, but not a leaf, so decreas and continue
 		}
+		encodingList.push_back( Encoding(code--, lvl) );
+	}
+	return encodingList;
+}
+
+/**
+ * Convert an encoding list to a map with @a Symbol as key
+ * @param symbolList Sorted list of symbols, least significant first
+ * @param codeList Sorted list of codes, longest sequence first
+ * @return The encoding map
+ */
+const EncodingTable Huffman::generateEncodingTable(const std::vector<Node*> &symbolList, const std::vector<Encoding> &codeList) {
+	EncodingTable encodingMap;
+	size_t count = symbolList.size();
+	
+	if (count == codeList.size()) {
+		while (count--)
+			encodingMap[ symbolList[count]->symbol ] = codeList[count];
 		
-		if (shiftedBits == symbolBits.bits) {
-			return true;
-		}
+		encodingMap.erase(DEFAULT_SYMBOL);
+	} else {
+		fputs("Error: generateEncodingTable() Both lists have to be same size().\n", stderr);
 	}
 	
-	return false;
+	return encodingMap;
 }
 

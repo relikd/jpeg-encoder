@@ -140,11 +140,11 @@ void addTestSymbol(int amount, int symbol, std::vector<int> &input) {
 std::vector<int> generateTestHuffman() {
 	std::vector<int>input;
 	addTestSymbol(5, 1, input);
+	addTestSymbol(12, 5, input);
+	addTestSymbol(13, 6, input);
 	addTestSymbol(6, 2, input);
 	addTestSymbol(8, 3, input);
 	addTestSymbol(8, 4, input);
-	addTestSymbol(12, 5, input);
-	addTestSymbol(13, 6, input);
 	return input;
 }
 
@@ -168,14 +168,14 @@ void testhuffmann() {
 	
 	Huffman huffman = Huffman(input);
 	huffman.preventAllOnesPath(true);
+//	auto encodingTable = huffman.canonicalEncoding();
+	auto encodingTable = huffman.lengthLimitedEncoding(4);
 //	Node* rootTree = huffman.standardTree();
-	Node* rootTree = huffman.canonicalTree();
-//	Node* rootTree = huffman.lengthLimitedTree(3);
+	Node* rootTree = huffman.treeFromEncodingTable(encodingTable);
 	
-	auto encodingTable = huffman.generateCanonicalEncodingTable(rootTree);
 	
-	for (auto pair: *encodingTable) {
-		std::cout << pair.first << ": " << pair.second.numberOfBits << " " << std::bitset<8>(pair.second.bits) << std::endl;
+	for (auto pair: encodingTable) {
+		std::cout << pair.first << ": " << pair.second.numberOfBits << " " << std::bitset<8>(pair.second.code) << std::endl;
 	}
 	
 	rootTree->print();

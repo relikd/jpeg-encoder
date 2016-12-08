@@ -24,13 +24,12 @@ class PackageMerge {
 	std::vector<PackageNode> nodesListPackaged;
 	
 public:
-	Node* generate(const std::vector<Node*> &input, unsigned short limit);
+	const std::vector<Level> generate(const std::vector<Node*> &input, Level limit);
 	
 private:
 	void package();
 	void merge();
-	std::vector<unsigned short> calculateLevelList();
-	Node* generateTree(const std::vector<unsigned short>& levelList, const std::vector<Node*> &nodeList);
+	std::vector<Level> calculateLevelList();
 };
 
 #endif /* PackageMerge_hpp */
