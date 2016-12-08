@@ -148,16 +148,16 @@ std::map<Symbol, SymbolBits>* Huffman::generateCanonicalEncodingTable(Node* node
 	
 	auto oldLevel = -1;
 	int pathInTree = 0;
-	int startIndex = 0;
+	int firstNodeIndex = 0;
 	
 	if (noAllOnesPath) {
 		oldLevel = levelList[singleLeafNodes[1]->symbol];
 		pathInTree = (1 << oldLevel) - 2;
-		startIndex = 1;
+		firstNodeIndex = 1;
 	}
 	
-	for (; startIndex < singleLeafNodes.size(); ++startIndex) {
-		auto singleLeafNode = singleLeafNodes[startIndex];
+	for (; firstNodeIndex < singleLeafNodes.size(); ++firstNodeIndex) {
+		auto singleLeafNode = singleLeafNodes[firstNodeIndex];
 		auto level = levelList[singleLeafNode->symbol];
 		
 		if (level != oldLevel) {
