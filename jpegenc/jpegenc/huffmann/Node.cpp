@@ -8,22 +8,23 @@ Node::Node(Node* l, Node* r, bool swapLeftRight) {
 		left = l;
 		right = r;
 	}
-	depth = std::max(r->depth, l->depth) + 1;
-	accumulateFrequency();
-}
-
-inline void Node::accumulateFrequency() {
-	if ((left != nullptr) && (right != nullptr))
+	if (!isLeaf())
 		frequency = left->frequency + right->frequency;
 }
 
 void Node::print() {
 	std::vector<Node*> arr;
 	arr.push_back(this);
-	this->printWithDepth(arr, depth);
+	this->printWithDepth(arr, maxDepth(this));
 }
 
-void Node::printWithDepth(std::vector<Node*> arr, int level) {
+Level Node::maxDepth(Node* root) {
+	if (!root)
+		return -1; // unsigned but works properly
+	return std::max( 1 + maxDepth(root->left), 1 + maxDepth(root->right) );
+}
+
+void Node::printWithDepth(const std::vector<Node*> arr, Level level) {
 	for (int x = (1 << (level+1) ) - 2; x > 0; --x)
 		printf(" ");
 	
@@ -42,10 +43,10 @@ void Node::printWithDepth(std::vector<Node*> arr, int level) {
 		if (arr[i] == NULL) {
 			printf("   "); // change the three lines below if you change padding (03)
 		} else {
-			if (arr[i]->depth > 0)
-				printf(" * ");
-			else
+			if (arr[i]->isLeaf())
 				printf("%03d", arr[i]->symbol);
+			else
+				printf(" * ");
 		}
 		
 		if (i < maxWidth-1) {
@@ -60,8 +61,5 @@ void Node::printWithDepth(std::vector<Node*> arr, int level) {
 
 
 bool sortNode(const Node* node1, const Node* node2) {
-	if (node1->frequency == node2->frequency) {
-		return node1->depth < node2->depth;
-	}
 	return node1->frequency < node2->frequency;
 }

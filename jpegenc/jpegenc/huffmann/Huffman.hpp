@@ -6,50 +6,50 @@
 #include "Node.hpp"
 #include "../bitstream/Bitstream.hpp"
 
-
-struct SymbolBits {
-	Word bits = 0;
+struct Encoding {
+	Word code = 0;
 	unsigned short numberOfBits = 0;
 	
-	SymbolBits() {};
-	SymbolBits(Word bits, unsigned short numberOfBits) : bits(bits), numberOfBits(numberOfBits) {};
-	
-	bool operator  < (const SymbolBits& input) const { return (numberOfBits  < input.numberOfBits); }
-	bool operator  > (const SymbolBits& input) const { return (numberOfBits  > input.numberOfBits); }
+	Encoding() {};
+	Encoding(Word code, unsigned short numberOfBits) : code(code), numberOfBits(numberOfBits) {};
 };
+
+typedef std::map<Symbol, Encoding> EncodingTable;
+
 
 class Huffman {
 	std::map<Symbol, Frequency> symbolBook;
 	std::vector<Node*> singleLeafNodes; // sorted: least significant ones first
 	
 public:
+	// Constructor
 	Huffman() {}
 	Huffman(std::vector<Symbol> symbols) {
 		addSymbols(symbols);
 		generateNodeList();
 	}
 	
+	// Step I: Setup & Preparation
 	void addSymbol(Symbol);
 	void addSymbols(std::vector<Symbol>);
-	
-	void generateNodeList();
 	void preventAllOnesPath(bool prevent = true);
+	void generateNodeList();
 	
+	// Step II: Generate Encoding Table
+	const EncodingTable canonicalEncoding();
+	const EncodingTable lengthLimitedEncoding(Level limit);
+	
+	// Step III: Trees
 	Node* standardTree();
-	Node* canonicalTree();
-	Node* lengthLimitedTree(unsigned short limit);
+	static Node* treeFromEncodingTable(const EncodingTable &encodingTable);
 	
-	std::map<Symbol, SymbolBits>* generateEncodingTable(Node* node);
-	std::map<Symbol, SymbolBits>* generateCanonicalEncodingTable(Node* node);
-	std::vector<Symbol> decode(Bitstream* bitstream, Node* rootNode);
+	// Step IV: Decode With Given Tree
+	static std::vector<Symbol> decode(Bitstream* bitstream, Node* rootNode);
 	
 private:
-	
-	bool noAllOnesPath = false;
-	void climbTree(SymbolBits bitsForSymbol, Node* node, std::map<Symbol, SymbolBits>* map);
-	std::map<Symbol, int> generateLevelList(Node* node);
-	void generateLevelList(int level, Node* node, std::map<Symbol, int> &levelMap);
-	bool isLeadingBitsInVector(std::vector<SymbolBits> usedPaths, SymbolBits symbolBits);
+	void recursivelyGenerateLevelList(std::vector<Level> &list, Node* node, Level level = 0);
+	const std::vector<Encoding> generateEncodingList(const std::vector<Level> &levelList);
+	const EncodingTable generateEncodingTable(const std::vector<Node*> &symbolList, const std::vector<Encoding> &codeList);
 };
 
 

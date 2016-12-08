@@ -1,7 +1,7 @@
 #include "PackageMerge.hpp"
 #include <map>
 
-Node* PackageMerge::generate(const std::vector<Node*> &input, unsigned short limit) {
+const std::vector<Level> PackageMerge::generate(const std::vector<Node*> &input, Level limit) {
 	nodesListOriginal.clear();
 	nodesListPackaged.clear();
 	nodesListOriginal.reserve(input.size());
@@ -18,9 +18,7 @@ Node* PackageMerge::generate(const std::vector<Node*> &input, unsigned short lim
 		if (i > 1) // why should we merge in the last step? (just all symbols +1)
 			merge();
 	}
-	std::vector<unsigned short> levelList = calculateLevelList();
-	
-	return generateTree(levelList, input);
+	return calculateLevelList();
 }
 
 /** Make new packages by combining pairs together */
@@ -51,50 +49,17 @@ void PackageMerge::merge() {
 }
 
 /** Level list is needed for tree concatenation */
-std::vector<unsigned short> PackageMerge::calculateLevelList() {
-	std::map<Symbol, int> levelMap;
+std::vector<Level> PackageMerge::calculateLevelList() {
+	std::map<Symbol, Level> levelMap;
 	for (PackageNode pn : nodesListPackaged)
 		for (Symbol s : pn.symbols)
 			levelMap[s] += 1;
 	
-	std::vector<unsigned short> levelList;
+	std::vector<Level> levelList;
 	levelList.reserve(nodesListOriginal.size());
 	for (PackageNode on : nodesListOriginal)
 		levelList.push_back( levelMap[on.symbols[0]] );
 	
 	return levelList;
-}
-
-// TODO: refactor this method ... or get rid of it
-Node* PackageMerge::generateTree(const std::vector<unsigned short>& levelList, const std::vector<Node*> &nodeList) {
-	size_t count = levelList.size();
-	if (count != nodeList.size()) {
-		fputs("Something is wrong. LevelList and NodeList should always be in sync\n", stderr);
-		return nullptr;
-	}
-	
-	if (count <= 1)
-		return nodeList[0]; // tree generation done
-	
-	std::vector<unsigned short> newLevelList;
-	std::vector<Node*> newNodeList;
-	unsigned int currentLevel = levelList[0];
-	for (int i = 0; i < count; ++i) {
-		if (i+1 < count && levelList[i] == currentLevel && levelList[i+1] == currentLevel) {
-			newLevelList.push_back(levelList[i] - 1);
-			newNodeList.push_back( new Node(nodeList[i+1], nodeList[i]) );
-			++i;
-		} else { // dont merge anything, just copy
-			newLevelList.push_back(levelList[i]);
-			newNodeList.push_back(nodeList[i]);
-		}
-	}
-	
-	if (levelList == newLevelList) {
-		fputs("Something went wrong. TODO: prevent a too shallow depth limit here\n", stderr);
-		return nullptr;
-	}
-	
-	return generateTree(newLevelList, newNodeList);
 }
 
