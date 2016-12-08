@@ -102,16 +102,11 @@ Node* Huffman::treeFromEncodingTable(const EncodingTable &encodingTable) {
 		
 		while (remainingLevel--) {
 			// create any missing Nodes while going deeper
-			if (runningNode->left == nullptr)
+			if (runningNode->isLeaf()) {
 				runningNode->left = new Node();
-			if (runningNode->right == nullptr)
 				runningNode->right = new Node();
-			
-			// traverse though bit pattern
-			if ((pair.second.code >> remainingLevel) & 1)
-				runningNode = runningNode->right;
-			else
-				runningNode = runningNode->left;
+			}
+			runningNode = runningNode->deeper( (pair.second.code >> remainingLevel) & 1 );
 		}
 		runningNode->symbol = pair.first;
 	}
@@ -130,7 +125,6 @@ std::vector<Symbol> Huffman::decode(Bitstream* bitstream, Node* rootNode) {
 	std::vector<Symbol> symbols;
 	size_t numberOfBits = bitstream->numberOfBits();
 	Node* node = rootNode;
-	bool bit;
 	for (int i = 0; i < numberOfBits; ++i) {
 		if (!node) {
 			fputs("Error: Bitstream decode, unexpected symbol found.\n", stderr);
@@ -141,11 +135,7 @@ std::vector<Symbol> Huffman::decode(Bitstream* bitstream, Node* rootNode) {
 			node = rootNode;
 		}
 		// TODO: sequencial read + read single symbol
-		bit = bitstream->read(i);
-		if (bit)
-			node = node->right;
-		else
-			node = node->left;
+		node = node->deeper( bitstream->read(i) );
 	}
 	
 	return symbols;

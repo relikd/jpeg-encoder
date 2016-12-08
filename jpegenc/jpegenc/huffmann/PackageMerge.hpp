@@ -10,11 +10,7 @@ struct PackageNode {
 	
 	PackageNode(Symbol s, Frequency f) : frequency(f) { symbols.push_back(s); }
 	
-	void combine(PackageNode other) { // heavyNode.combine(lightNode) is faster
-		frequency += other.frequency;
-		for (Symbol s : other.symbols)
-			symbols.push_back(s);
-	}
+	void combine(PackageNode other);
 };
 
 

@@ -1,6 +1,22 @@
 #include "PackageMerge.hpp"
 #include <map>
 
+/**
+ * Sum frequencies and merge symbols
+ * @param other If possible use lighter Node here (faster)
+ */
+void PackageNode::combine(PackageNode other) {
+	frequency += other.frequency;
+	for (Symbol s : other.symbols)
+		symbols.push_back(s);
+}
+
+/**
+ * Perform the Package Merge algorithm
+ * @param input Original Nodes list. Should be leafs only and sorted by frequency (ascending)
+ * @param limit The maximal depth for the Huffman tree
+ * @return Level list with each leaf's depth. Same order as inut
+ */
 const std::vector<Level> PackageMerge::generate(const std::vector<Node*> &input, Level limit) {
 	nodesListOriginal.clear();
 	nodesListPackaged.clear();
@@ -37,7 +53,7 @@ void PackageMerge::package() {
 	}
 }
 
-/** Insertion Sort insert for newly found packages and original list */
+/** Insertion Sort insert for original list with newly found packages */
 void PackageMerge::merge() {
 	size_t i = 0;
 	for (PackageNode opn : nodesListOriginal) {
@@ -48,7 +64,7 @@ void PackageMerge::merge() {
 	}
 }
 
-/** Level list is needed for tree concatenation */
+/** Sum all symbols in all packages to create a level list */
 std::vector<Level> PackageMerge::calculateLevelList() {
 	std::map<Symbol, Level> levelMap;
 	for (PackageNode pn : nodesListPackaged)
