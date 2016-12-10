@@ -200,7 +200,7 @@ void testhuffmann() {
 
 int main(int argc, const char *argv[]) {
 	
-	testhuffmann();
+	//testhuffmann();
 	//testJPEGWriter();
 	
 	return 0;
