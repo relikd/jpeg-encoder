@@ -47,6 +47,21 @@ void EndOfImage::addToStream(Bitstream &stream) {
     stream.add(type, 16);
 }
 
+void DefineHuffmanTable::addToStream(Bitstream &stream) {
+    stream.add(type, 16);
+    stream.add(length, 16);
+    stream.add(htInfoNumber, 4);
+    stream.add(htInfoType, 1);
+    stream.add(htInfoRest, 3);
+    for ( int i = 0; i < 16; ++i )
+    {
+        stream.add(numberOfSymbols[i], 8);
+    }
+    for ( EncodingTable::iterator iterator = encodingTable.begin(); iterator != encodingTable.end(); ++iterator) {
+        stream.add(iterator->second.code, 8);
+    }
+}
+
 void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile) {
 
     StartOfImage* soi = new StartOfImage();

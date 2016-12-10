@@ -13,6 +13,7 @@
 #include <stdint.h>
 #include "../bitstream/Bitstream.hpp"
 #include "../model/Image.hpp"
+#include "../huffmann/Huffman.hpp"
 
 namespace JPEGSegments {
 	
@@ -76,6 +77,39 @@ namespace JPEGSegments {
     struct EndOfImage : JpegSegment {
     
         EndOfImage() : JpegSegment(0xFFD9) {
+        }
+        virtual void addToStream(Bitstream &stream);
+    };
+    
+    struct DefineHuffmanTable : JpegSegment {
+        uint16_t length;
+        EncodingTable encodingTable;
+        unsigned char htInfoNumber;
+        unsigned char htInfoType;
+        unsigned char htInfoRest;
+        unsigned char *numberOfSymbols;
+        
+        DefineHuffmanTable(EncodingTable encodingTable) : JpegSegment(0xFFC4) {
+            this->encodingTable = encodingTable;
+            this->htInfoNumber = 0; // hardcoded
+            this->htInfoType = 0; // hardcoded
+            this->htInfoRest = 0; // hardcoded
+            this->numberOfSymbols = new unsigned char[16];
+        
+            for ( int i = 0; i < 16; ++i )
+            {
+                numberOfSymbols[i] = 0;
+            }
+            
+            for (EncodingTable::iterator iterator = encodingTable.begin(); iterator != encodingTable.end(); ++iterator) {
+                unsigned short numberOfBits = iterator->second.numberOfBits;
+                ++numberOfSymbols[numberOfBits];
+            }
+            this->length = 19 + encodingTable.size();
+        }
+        
+        ~DefineHuffmanTable() {
+            delete[] numberOfSymbols;
         }
         virtual void addToStream(Bitstream &stream);
     };
