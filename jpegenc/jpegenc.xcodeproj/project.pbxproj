@@ -12,6 +12,7 @@
 		540D8CAF1DD0BE4D00A4E4C9 /* PPMLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 540D8CAD1DD0BE4D00A4E4C9 /* PPMLoader.cpp */; };
 		5412EC191DF4E062007604E9 /* Node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5412EC171DF4E062007604E9 /* Node.cpp */; };
 		542102FD1DB6A83C004A1246 /* very_small.ppm in CopyFiles */ = {isa = PBXBuildFile; fileRef = 542102FA1DB6A7D9004A1246 /* very_small.ppm */; };
+		543AF4AE1DFDC241006C8F7D /* Encoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 543AF4AD1DFDC241006C8F7D /* Encoding.cpp */; };
 		545A4D491DB6471500B5E365 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 545A4D481DB6471500B5E365 /* main.cpp */; };
 		546A42FA1DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F01DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp */; };
 		546A42FB1DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F21DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp */; };
@@ -48,6 +49,8 @@
 		5412EC171DF4E062007604E9 /* Node.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Node.cpp; sourceTree = "<group>"; };
 		5412EC181DF4E062007604E9 /* Node.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Node.hpp; sourceTree = "<group>"; };
 		542102FA1DB6A7D9004A1246 /* very_small.ppm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = very_small.ppm; sourceTree = "<group>"; };
+		543AF4AB1DFDBF56006C8F7D /* Encoding.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Encoding.hpp; sourceTree = "<group>"; };
+		543AF4AD1DFDC241006C8F7D /* Encoding.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Encoding.cpp; sourceTree = "<group>"; };
 		545A4D451DB6471500B5E365 /* jpegenc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = jpegenc; sourceTree = BUILT_PRODUCTS_DIR; };
 		545A4D481DB6471500B5E365 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		546A42F01DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RGBToYCbCrConverter.cpp; sourceTree = "<group>"; };
@@ -84,6 +87,8 @@
 		123881151DEC446E0017A619 /* huffmann */ = {
 			isa = PBXGroup;
 			children = (
+				543AF4AD1DFDC241006C8F7D /* Encoding.cpp */,
+				543AF4AB1DFDBF56006C8F7D /* Encoding.hpp */,
 				123881161DEC446E0017A619 /* Huffman.cpp */,
 				123881171DEC446E0017A619 /* Huffman.hpp */,
 				5412EC171DF4E062007604E9 /* Node.cpp */,
@@ -179,8 +184,8 @@
 		549E8DD21DD299540032006B /* bitstream */ = {
 			isa = PBXGroup;
 			children = (
-				950478D81DDB56AE007C1053 /* Bitstream.hpp */,
 				950478D91DDB56AE007C1053 /* Bitstream.cpp */,
+				950478D81DDB56AE007C1053 /* Bitstream.hpp */,
 			);
 			path = bitstream;
 			sourceTree = "<group>";
@@ -263,6 +268,7 @@
 				546A42FB1DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp in Sources */,
 				546A42FA1DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp in Sources */,
 				546A42FD1DBA7A8D006C2629 /* Image.cpp in Sources */,
+				543AF4AE1DFDC241006C8F7D /* Encoding.cpp in Sources */,
 				54B9AA021DF62F9700BB8D0D /* BitMath.cpp in Sources */,
 				5496ABDD1DCFA97100FED0CF /* Channel.cpp in Sources */,
 				54F366541DD45335004D4AA7 /* Test.cpp in Sources */,
