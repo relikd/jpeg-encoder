@@ -1,5 +1,4 @@
 #include "Huffman.hpp"
-#include <iostream>
 #include "PackageMerge.hpp"
 #include "BitMath.hpp"
 
@@ -60,8 +59,7 @@ const EncodingTable Huffman::canonicalEncoding() {
 	recursivelyGenerateLevelList(levelList, huffmanTree);
 	sort(levelList.begin(), levelList.end(), std::greater<Level>());
 	
-	std::vector<Encoding> encList = generateEncodingList(levelList);
-	return generateEncodingTable(singleLeafNodes, encList);
+	return generateEncodingTable(levelList);
 }
 
 /** @return Map with Symbol as key and bit pattern as value. Based on optimal length-limited tree */
@@ -71,8 +69,7 @@ const EncodingTable Huffman::lengthLimitedEncoding(Level limit) {
 		printf("Error: Can't create limited tree with given limit. Using limit %d instead.\n", limit);
 	}
 	std::vector<Level> levelList = PackageMerge().generate(singleLeafNodes, limit);
-	std::vector<Encoding> encList = generateEncodingList(levelList);
-	return generateEncodingTable(singleLeafNodes, encList);
+	return generateEncodingTable(levelList);
 }
 
 
@@ -162,47 +159,30 @@ void Huffman::recursivelyGenerateLevelList(std::vector<Level> &list, Node* node,
 	}
 }
 
-/**
- * Transforms a level list to an encoding list
- * @param levelList Must be sorted in @b descending order
- * @return Sorted list of encoding bit codes. Same ordering as @a singleLeafNodes
- */
-const std::vector<Encoding> Huffman::generateEncodingList(const std::vector<Level> &levelList) {
-	std::vector<Encoding> encodingList;
-	Level currentLevel = 255;
-	Word code = 0;
-	
-	for (Level lvl : levelList) { // level == numberOfBits
-		if (lvl < currentLevel) { // if level stays the same we just decrease code
-			currentLevel = lvl;
-			code = (1 << lvl) - 1;
-			
-			for (Encoding prevCode : encodingList)
-				if (code == (prevCode.code >> (prevCode.numberOfBits - lvl)))
-					--code; // found, but not a leaf, so decreas and continue
-		}
-		encodingList.push_back( Encoding(code--, lvl) );
-	}
-	return encodingList;
-}
 
 /**
- * Convert an encoding list to a map with @a Symbol as key
- * @param symbolList Sorted list of symbols, least significant first
- * @param codeList Sorted list of codes, longest sequence first
+ * Convert a level list to a map with @a Symbol as key
+ * @param levelList Must be sorted in @b descending order
  * @return The encoding map
+ * @see http://imrannazar.com/Let%27s-Build-a-JPEG-Decoder%3A-Huffman-Tables
  */
-const EncodingTable Huffman::generateEncodingTable(const std::vector<Node*> &symbolList, const std::vector<Encoding> &codeList) {
+const EncodingTable Huffman::generateEncodingTable(const std::vector<Level> &levelList) {
 	EncodingTable encodingMap;
-	size_t count = symbolList.size();
+	Encoding enc = Encoding(0b0, 1);
+	size_t count = levelList.size();
 	
-	if (count == codeList.size()) {
-		while (count--)
-			encodingMap[ symbolList[count]->symbol ] = codeList[count];
-		
-		encodingMap.erase(DEFAULT_SYMBOL);
+	if (count != singleLeafNodes.size()) {
+		fputs("Error: generateEncodingTable() Level list has to be the same size() like nodes list.\n", stderr);
 	} else {
-		fputs("Error: generateEncodingTable() Both lists have to be same size().\n", stderr);
+		while (count--) { // for all symbols
+			while (enc.numberOfBits < levelList[count]) { // between levels
+				enc.code <<= 1;
+				enc.numberOfBits++;
+			}
+			encodingMap[ singleLeafNodes[count]->symbol ] = enc;
+			enc.code++; // on same level
+		}
+		encodingMap.erase(DEFAULT_SYMBOL); // discard artificial node
 	}
 	
 	return encodingMap;

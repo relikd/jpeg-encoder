@@ -4,15 +4,8 @@
 #include <map>
 #include <vector>
 #include "Node.hpp"
+#include "Encoding.hpp"
 #include "../bitstream/Bitstream.hpp"
-
-struct Encoding {
-	Word code = 0;
-	unsigned short numberOfBits = 0;
-	
-	Encoding() {};
-	Encoding(Word code, unsigned short numberOfBits) : code(code), numberOfBits(numberOfBits) {};
-};
 
 typedef std::map<Symbol, Encoding> EncodingTable;
 
@@ -48,8 +41,7 @@ public:
 	
 private:
 	void recursivelyGenerateLevelList(std::vector<Level> &list, Node* node, Level level = 0);
-	const std::vector<Encoding> generateEncodingList(const std::vector<Level> &levelList);
-	const EncodingTable generateEncodingTable(const std::vector<Node*> &symbolList, const std::vector<Encoding> &codeList);
+	const EncodingTable generateEncodingTable(const std::vector<Level> &levelList);
 };
 
 

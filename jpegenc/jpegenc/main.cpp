@@ -124,9 +124,9 @@ void testJPEGWriter() {
 
 std::vector<Symbol> getWord() {
 	std::vector<Symbol> input;
-	input.push_back(2);
+	input.push_back(1);
 	input.push_back(4);
-	input.push_back(7);
+	input.push_back(6);
 	
 	return input;
 }
@@ -175,21 +175,18 @@ void testhuffmann() {
 	
 	
 	for (auto pair: encodingTable) {
-		std::cout << pair.first << ": " << pair.second.numberOfBits << " " << std::bitset<8>(pair.second.code) << std::endl;
+		std::cout << pair.first << ": " << pair.second << std::endl;
 	}
-	
 	rootTree->print();
 	
-	//std::map<Symbol, SymbolBits>* encodingTable = huffman.generateEncodingTable(rootTree);
-	
-//	Bitstream bitsteam;
-//	std::vector<Symbol> word = getWord();
-//	for (int i = 0; i < word.size(); ++i) {
-//		SymbolBits bitsOfSymbol = encodingTable->at(word[i]);
-//		bitsteam.add(bitsOfSymbol.bits, bitsOfSymbol.numberOfBits);
-//	}
-//	bitsteam.print();
-	
+	Bitstream bitsteam;
+	std::vector<Symbol> word = getWord();
+	for (int i = 0; i < word.size(); ++i) {
+		Encoding enc = encodingTable.at(word[i]);
+		std::cout << "füge " << enc << " hinzu (" << word[i] << ")" << std::endl;
+		bitsteam.add(enc.code, enc.numberOfBits);
+	}
+	bitsteam.print();
 }
 
 // ################################################################
@@ -200,7 +197,7 @@ void testhuffmann() {
 
 int main(int argc, const char *argv[]) {
 	
-	//testhuffmann();
+	testhuffmann();
 	//testJPEGWriter();
 	
 	return 0;
