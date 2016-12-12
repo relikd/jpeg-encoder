@@ -55,12 +55,12 @@ void PackageMerge::package() {
 
 /** Insertion Sort insert for original list with newly found packages */
 void PackageMerge::merge() {
-	size_t i = 0;
-	for (PackageNode opn : nodesListOriginal) {
-		while (opn.frequency > nodesListPackaged[i].frequency)
-			++i;
-		nodesListPackaged.insert(nodesListPackaged.begin() + i, opn);
-		++i;
+	size_t o = nodesListOriginal.size();
+	size_t p = nodesListPackaged.size();
+	while (o--) {
+		while (p && nodesListOriginal[o].frequency <= nodesListPackaged[p-1].frequency)
+			--p;
+		nodesListPackaged.insert(nodesListPackaged.begin() + p, nodesListOriginal[o]);
 	}
 }
 
