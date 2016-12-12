@@ -30,7 +30,7 @@ public:
 	
 	// Step II: Generate Encoding Table
 	const EncodingTable canonicalEncoding();
-	const EncodingTable lengthLimitedEncoding(Level limit);
+	const EncodingTable canonicalEncoding(Level lengthLimit);
 	
 	// Step III: Trees
 	Node* standardTree();

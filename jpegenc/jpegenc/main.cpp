@@ -169,7 +169,7 @@ void testhuffmann() {
 	Huffman huffman = Huffman(input);
 	huffman.preventAllOnesPath(true);
 //	auto encodingTable = huffman.canonicalEncoding();
-	auto encodingTable = huffman.lengthLimitedEncoding(4);
+	auto encodingTable = huffman.canonicalEncoding(4);
 //	Node* rootTree = huffman.standardTree();
 	Node* rootTree = huffman.treeFromEncodingTable(encodingTable);
 	
