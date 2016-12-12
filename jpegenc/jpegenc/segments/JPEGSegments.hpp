@@ -87,29 +87,24 @@ namespace JPEGSegments {
         unsigned char htInfoNumber;
         unsigned char htInfoType;
         unsigned char htInfoRest;
-        unsigned char *numberOfSymbols;
+        unsigned char *symbolsPerLevel;
         
         DefineHuffmanTable(EncodingTable encodingTable) : JpegSegment(0xFFC4) {
             this->encodingTable = encodingTable;
             this->htInfoNumber = 0; // hardcoded
             this->htInfoType = 0; // hardcoded
             this->htInfoRest = 0; // hardcoded
-            this->numberOfSymbols = new unsigned char[16];
-        
-            for ( int i = 0; i < 16; ++i )
-            {
-                numberOfSymbols[i] = 0;
+            this->symbolsPerLevel = new unsigned char[16];
+			
+			for (std::pair<Symbol, Encoding> enc : encodingTable) {
+                unsigned short numberOfBits = enc.second.numberOfBits;
+                symbolsPerLevel[numberOfBits - 1] += 1;
             }
-            
-            for (EncodingTable::iterator iterator = encodingTable.begin(); iterator != encodingTable.end(); ++iterator) {
-                unsigned short numberOfBits = iterator->second.numberOfBits;
-                ++numberOfSymbols[numberOfBits];
-            }
-            this->length = 19 + encodingTable.size();
+            this->length = 21 + encodingTable.size();
         }
         
         ~DefineHuffmanTable() {
-            delete[] numberOfSymbols;
+            delete[] symbolsPerLevel;
         }
         virtual void addToStream(Bitstream &stream);
     };

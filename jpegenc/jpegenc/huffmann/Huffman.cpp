@@ -63,12 +63,12 @@ const EncodingTable Huffman::canonicalEncoding() {
 }
 
 /** @return Map with Symbol as key and bit pattern as value. Based on optimal length-limited tree */
-const EncodingTable Huffman::lengthLimitedEncoding(Level limit) {
-	if (singleLeafNodes.size() > (1 << limit)) {
-		limit = BitMath::log2(singleLeafNodes.size());
-		printf("Error: Can't create limited tree with given limit. Using limit %d instead.\n", limit);
+const EncodingTable Huffman::canonicalEncoding(Level lengthLimit) {
+	if (singleLeafNodes.size() > (1 << lengthLimit)) {
+		lengthLimit = BitMath::log2(singleLeafNodes.size());
+		printf("Error: Can't create limited tree with given limit. Using limit %d instead.\n", lengthLimit);
 	}
-	std::vector<Level> levelList = PackageMerge().generate(singleLeafNodes, limit);
+	std::vector<Level> levelList = PackageMerge().generate(singleLeafNodes, lengthLimit);
 	return generateEncodingTable(levelList);
 }
 
@@ -151,11 +151,13 @@ std::vector<Symbol> Huffman::decode(Bitstream* bitstream, Node* rootNode) {
  * @param node Pass root node as a starting point
  */
 void Huffman::recursivelyGenerateLevelList(std::vector<Level> &list, Node* node, Level level) {
-	if (node->isLeaf()) {
-		list.push_back(level);
-	} else if (node) {
-		recursivelyGenerateLevelList(list, node->left, level + 1);
-		recursivelyGenerateLevelList(list, node->right, level + 1);
+	if (node) {
+		if (node->isLeaf()) {
+			list.push_back(level);
+		} else {
+			recursivelyGenerateLevelList(list, node->left, level + 1);
+			recursivelyGenerateLevelList(list, node->right, level + 1);
+		}
 	}
 }
 
