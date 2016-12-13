@@ -33,7 +33,7 @@ float Mat::get(int index) const{
 		int row = index / cols;
 		int col = index % cols;
 		
-		return get(col, row);
+		return get(row, col);
 	}
 	
 	return values[index];
@@ -48,7 +48,7 @@ void Mat::set(int index, float value) {
 		int row = index / cols;
 		int col = index % cols;
 		
-		set(col, row, value);
+		set(row, col, value);
 	}
 	
 	values[index] = value;
