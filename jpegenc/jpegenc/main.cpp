@@ -178,7 +178,7 @@ void testhuffmann() {
 		std::cout << pair.first << ": " << pair.second << std::endl;
 	}
 	rootTree->print();
-	
+	rootTree->exportTree();
 	Bitstream bitsteam;
 	std::vector<Symbol> word = getWord();
 	for (int i = 0; i < word.size(); ++i) {
