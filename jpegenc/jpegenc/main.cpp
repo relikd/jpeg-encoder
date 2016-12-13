@@ -5,6 +5,7 @@
 #include "converter/YCbCrToRGBConverter.hpp"
 #include "helper/Test.hpp"
 #include "Huffman.hpp"
+#include "DirectDCT.hpp"
 
 #include "bitstream/Bitstream.hpp"
 
@@ -189,6 +190,26 @@ void testhuffmann() {
 	bitsteam.print();
 }
 
+void testDirectDCT() {
+	Mat input(2);
+	for (int i = 0; i < input.N; ++i) {
+		for (int j = 0; j < input.N; ++j) {
+			input.mat[i][j] = 2;
+		}
+	}
+	DirectDCT test;
+	Mat out = test.transform(input);
+	
+	for (int i = 0; i < input.N; ++i) {
+		for (int j = 0; j < input.N; ++j) {
+			printf("%f ", out.mat[i][j]);
+		}
+		printf("\n");
+	}
+	
+	
+}
+
 // ################################################################
 // #
 // #  Main
@@ -197,8 +218,10 @@ void testhuffmann() {
 
 int main(int argc, const char *argv[]) {
 	
-	testhuffmann();
+	//testhuffmann();
 	//testJPEGWriter();
+	
+	testDirectDCT();
 	
 	return 0;
 }
