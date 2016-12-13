@@ -26,10 +26,12 @@ public:
 	inline bool isLeaf() { return (left == nullptr && right == nullptr); };
 	Node* deeper(bool rightNode);
 	void print();
+	void exportTree();
 	
 private:
 	Level maxDepth(Node* root);
 	void printWithDepth(const std::vector<Node*> arr, Level level);
+	void climbTree(Node* root, std::vector<Node*> &nodeList);
 };
 
 

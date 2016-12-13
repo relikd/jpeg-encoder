@@ -100,7 +100,7 @@ namespace JPEGSegments {
                 unsigned short numberOfBits = enc.second.numberOfBits;
                 symbolsPerLevel[numberOfBits - 1] += 1;
             }
-            this->length = 21 + encodingTable.size();
+            this->length = 2 + 17 + encodingTable.size();
         }
         
         ~DefineHuffmanTable() {

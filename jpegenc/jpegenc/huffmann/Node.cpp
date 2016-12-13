@@ -73,6 +73,42 @@ void Node::printWithDepth(const std::vector<Node*> arr, Level level) {
 		printWithDepth(newArr, level-1);
 }
 
+void Node::climbTree(Node* root, std::vector<Node*> &noteList) {
+	if (root->isLeaf()) {
+		return;
+	} else {
+		noteList.push_back(root);
+		noteList.push_back(root->left);
+		
+		noteList.push_back(root);
+		noteList.push_back(root->right);
+		
+		climbTree(root->left, noteList);
+		climbTree(root->right, noteList);
+	}
+	
+}
+
+void Node::exportTree() {
+	std::vector<Node*> newArr;
+	climbTree(this, newArr);
+	newArr.size();
+	
+	printf("graph tree {");
+	for (size_t i = 0; i < newArr.size(); i +=2) {
+		if (newArr[i]->isLeaf()) {
+			printf(  "%d -- \"%p\"; ", newArr[i]->symbol, newArr[i+1]);
+		} else if (newArr[i+1]->isLeaf()) {
+			printf(  "\"%p\" -- %d; ", newArr[i], newArr[i+1]->symbol);
+		} else {
+			printf(  "\"%p\" -- \"%p\"; ", newArr[i], newArr[i+1]);
+		}
+	}
+	printf("}\n");
+	
+}
+
+
 /** Function for sorting Node* pointer */
 bool sortNode(const Node* node1, const Node* node2) {
 	return node1->frequency < node2->frequency;
