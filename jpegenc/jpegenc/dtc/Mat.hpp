@@ -10,25 +10,25 @@
 #define Mat_hpp
 
 #include <stdio.h>
-#include "BitMath.hpp"
+#include <iostream>
 
 struct Mat {
 	
-	const int rows;
-	const int cols;
+	int rows;
+	int cols;
 	bool isTransposed = false;
 	
 	
+	Mat() {}
 	Mat(int rows) : Mat(rows, rows) {}
 	
-	Mat(int rows, int cols) : rows(rows), cols(cols), bitsForRows(BitMath::log2(rows)), bitsForCols(BitMath::log2(cols)) {
+	Mat(int rows, int cols) : rows(rows), cols(cols) {
 		values = new float[rows * cols];
 	}
+
+	void transpose(bool transpose = true);
 	
-	void transpose(bool transpose = true) {
-		isTransposed = transpose;
-	}
-	
+	void initiate(float* values, int rows, int cols);
 	float get(int row, int col) const;
 	float get(int index) const;
 	void set(int row, int col, float value);
@@ -36,10 +36,10 @@ struct Mat {
 
 	Mat operator+(const Mat &oMat) const;
 	Mat operator*(const Mat &oMat) const;
+	
+	void print();
 
 private:
-	const int bitsForRows;
-	const int bitsForCols;
 	float* values;
 	int calculateIndex(int row, int col) const;
 };

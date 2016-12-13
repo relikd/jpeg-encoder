@@ -232,6 +232,23 @@ void testIDCT() {
 	
 }
 
+void testMat() {
+	Mat a;
+	a.initiate((float[]){
+		1, 2, 3,
+		3, 1, 1}, 2 , 3);
+	
+	Mat b;
+	b.initiate((float[]){
+		2, 1,
+		1, 2,
+		2, 1
+	}, 3 , 2);
+	
+	Mat c = a * b;
+	c.print();
+}
+
 // ################################################################
 // #
 // #  Main
@@ -244,7 +261,8 @@ int main(int argc, const char *argv[]) {
 	//testJPEGWriter();
 	
 	//testDirectDCT();
-	testIDCT();
+//	testIDCT();
+	testMat();
 	
 	return 0;
 }
