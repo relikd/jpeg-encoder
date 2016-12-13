@@ -6,6 +6,7 @@
 #include "helper/Test.hpp"
 #include "Huffman.hpp"
 #include "DirectDCT.hpp"
+#include "IDCT.hpp"
 
 #include "bitstream/Bitstream.hpp"
 
@@ -206,7 +207,28 @@ void testDirectDCT() {
 		}
 		printf("\n");
 	}
+}
+
+void testIDCT() {
+	Mat input(2);
+	for (int i = 0; i < input.N; ++i) {
+		for (int j = 0; j < input.N; ++j) {
+			input.mat[i][j] = 2;
+		}
+	}
 	
+	DirectDCT test;
+	Mat out = test.transform(input);
+
+	IDCT idct;
+	Mat inverse = idct.transform(out);
+	
+	for (int i = 0; i < input.N; ++i) {
+		for (int j = 0; j < input.N; ++j) {
+			printf("%f ", inverse.mat[i][j]);
+		}
+		printf("\n");
+	}
 	
 }
 
@@ -221,7 +243,8 @@ int main(int argc, const char *argv[]) {
 	//testhuffmann();
 	//testJPEGWriter();
 	
-	testDirectDCT();
+	//testDirectDCT();
+	testIDCT();
 	
 	return 0;
 }

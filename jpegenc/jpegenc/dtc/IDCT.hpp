@@ -10,5 +10,13 @@
 #define IDCT_hpp
 
 #include <stdio.h>
+#include "Mat.hpp"
+
+class IDCT {
+public:
+	Mat transform(Mat input);
+private:
+	float getC(int i);
+};
 
 #endif /* IDCT_hpp */
