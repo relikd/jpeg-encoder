@@ -1,7 +1,24 @@
 #include <exception>
+#include <iostream>
 #include "Mat.hpp"
 
 
+void Mat::transpose(bool transpose) {
+	isTransposed = transpose;
+	int temp = rows;
+	rows = cols;
+	cols = temp;
+}
+
+/**
+ * Initiate will override the current values of the mat. The given
+ * array has to have the same number of elements as expected at creating the mat
+ */
+void Mat::initiate(float* values, int rows, int cols) {
+	this->rows = rows;
+	this->cols = cols;
+	this->values = values;
+}
 
 float Mat::get(int row, int col) const {
 	if (isTransposed) {
@@ -22,10 +39,6 @@ float Mat::get(int index) const{
 	return values[index];
 }
 
-
-
-
-
 void Mat::set(int row, int col, float value) {
 	values[calculateIndex(row, col)] = value;
 }
@@ -42,12 +55,12 @@ void Mat::set(int index, float value) {
 }
 
 Mat Mat::operator+(const Mat &oMat) const {
-	Mat mat(rows, cols);
 	if (this->rows != oMat.rows || this->cols != oMat.cols) {
 		fputs("Error can't add mats with different rows and cols!\n", stderr);
 		throw std::exception();
 	}
 	
+	Mat mat(rows, cols);
 	int size = rows * cols;
 	for (int i = 0; i < size; ++i) {
 		mat.set(i, this->get(i) + oMat.get(i));
@@ -58,9 +71,39 @@ Mat Mat::operator+(const Mat &oMat) const {
 	
 }
 Mat Mat::operator*(const Mat &oMat) const{
-	return Mat(2);
+	if (this->cols != oMat.rows) {
+		fputs("Error can't multiply mats with different cols to rows!\n", stderr);
+		throw std::exception();
+	}
+	
+	Mat mat(this->rows, oMat.cols);
+	for(int otherColumn = 0; otherColumn < oMat.cols; ++otherColumn) {
+		for(int currentRow = 0; currentRow < rows; ++currentRow) {
+			float result = 0;
+			for(int currentCol = 0; currentCol < cols; ++currentCol) {
+				result += this->get(currentRow, currentCol) * oMat.get(currentCol, otherColumn);
+			}
+			mat.set(currentRow, otherColumn, result);
+		}
+	}
+
+	return mat;
 }
 
 int Mat::calculateIndex(int row, int col) const{
-	return col + row * cols;
+	if (isTransposed) {
+		return col + row * rows;
+	} else {
+		return col + row * cols;
+	}
+	
+}
+
+void Mat::print() {
+	for (int i = 0 ; i < rows; ++i) {
+		for (int k = 0; k < cols; ++k) {
+			std::cout << get(i, k) << "\t";
+		}
+		std::cout << std::endl;
+	}
 }
