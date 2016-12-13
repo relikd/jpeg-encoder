@@ -14,22 +14,23 @@
 #include <math.h>
 
 Mat DirectDCT::transform(Mat input) {
-	Mat newMat(input.N);
-	for (int i = 0; i < input.N; ++i) {
-		for (int j = 0; j < input.N; ++j) {
+	// As mat has to be quadratic we can just work with the rows
+	Mat newMat(input.rows);
+	for (int i = 0; i < input.rows; ++i) {
+		for (int j = 0; j < input.rows; ++j) {
 		
-			float outer = 2/input.N * getC(i) * getC(j);
+			float outer = 2/input.rows * getC(i) * getC(j);
 			float inner = 0;
 	
-			for (int x = 0; x < input.N; ++x) {
-				for (int y = 0; y < input.N; ++y) {
-					float firstCos = cos(((2*x + 1) * i * M_PI) / (2 * input.N));
-					float secondCos = cos(((2*y + 1) * j * M_PI) / (2 * input.N));
-					inner += input.mat[x][y] * firstCos * secondCos;
+			for (int x = 0; x < input.rows; ++x) {
+				for (int y = 0; y < input.rows; ++y) {
+					float firstCos = cos(((2*x + 1) * i * M_PI) / (2 * input.rows));
+					float secondCos = cos(((2*y + 1) * j * M_PI) / (2 * input.rows));
+					inner += input.get(x, y) * firstCos * secondCos;
 				
 				}
 			}
-			newMat.mat[i][j] = outer * inner;
+			newMat.set(i , j , outer * inner);
 		}
 	}
 	

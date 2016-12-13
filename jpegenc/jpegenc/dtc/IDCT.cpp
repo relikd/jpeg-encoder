@@ -21,23 +21,24 @@ float IDCT::getC(int i) {
 }
 
 Mat IDCT::transform(Mat input){
-	Mat newMat(input.N);
+	// As mat has to be quadratic we can just work with the rows
+	Mat newMat(input.rows);
 	
-	for (int x = 0; x < input.N; ++x) {
-		for (int y = 0; y < input.N; ++y) {
+	for (int x = 0; x < input.rows; ++x) {
+		for (int y = 0; y < input.rows; ++y) {
 			
 			float inner = 0;
 			
-			for (int i = 0; i < input.N; ++i) {
-				for (int j = 0; j < input.N; ++j) {
-					float präfix = 2/input.N * getC(i) * getC(j) * input.mat[i][j];
-					float firstCos = cos(((2*x + 1) * i * M_PI) / (2 * input.N));
-					float secondCos = cos(((2*y + 1) * j * M_PI) / (2 * input.N));
+			for (int i = 0; i < input.rows; ++i) {
+				for (int j = 0; j < input.rows; ++j) {
+					float präfix = 2/input.rows * getC(i) * getC(j) * input.get(i, j);
+					float firstCos = cos(((2*x + 1) * i * M_PI) / (2 * input.rows));
+					float secondCos = cos(((2*y + 1) * j * M_PI) / (2 * input.rows));
 					inner += präfix * firstCos * secondCos;
 					
 				}
 			}
-			newMat.mat[x][y] = inner;
+			newMat.set(x, y, inner);
 		}
 	}
 	

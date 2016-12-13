@@ -193,17 +193,17 @@ void testhuffmann() {
 
 void testDirectDCT() {
 	Mat input(2);
-	for (int i = 0; i < input.N; ++i) {
-		for (int j = 0; j < input.N; ++j) {
-			input.mat[i][j] = 2;
+	for (int i = 0; i < input.rows; ++i) {
+		for (int j = 0; j < input.cols; ++j) {
+			input.set(i , j, 2);
 		}
 	}
 	DirectDCT test;
 	Mat out = test.transform(input);
 	
-	for (int i = 0; i < input.N; ++i) {
-		for (int j = 0; j < input.N; ++j) {
-			printf("%f ", out.mat[i][j]);
+	for (int i = 0; i < input.rows; ++i) {
+		for (int j = 0; j < input.cols; ++j) {
+			printf("%f ", out.get(i , j));
 		}
 		printf("\n");
 	}
@@ -211,9 +211,9 @@ void testDirectDCT() {
 
 void testIDCT() {
 	Mat input(2);
-	for (int i = 0; i < input.N; ++i) {
-		for (int j = 0; j < input.N; ++j) {
-			input.mat[i][j] = 2;
+	for (int i = 0; i < input.rows; ++i) {
+		for (int j = 0; j < input.cols; ++j) {
+			input.set(i , j , 2);
 		}
 	}
 	
@@ -223,9 +223,9 @@ void testIDCT() {
 	IDCT idct;
 	Mat inverse = idct.transform(out);
 	
-	for (int i = 0; i < input.N; ++i) {
-		for (int j = 0; j < input.N; ++j) {
-			printf("%f ", inverse.mat[i][j]);
+	for (int i = 0; i < input.rows; ++i) {
+		for (int j = 0; j < input.cols; ++j) {
+			printf("%f ", inverse.get(i , j));
 		}
 		printf("\n");
 	}
