@@ -8,12 +8,10 @@
 
 #define _USE_MATH_DEFINES
 
-#include <cmath>
-
-#include "directDCT.hpp"
+#include "DCT.hpp"
 #include <math.h>
 
-Mat DirectDCT::transform(Mat input) {
+Mat DCT::transform(Mat input) {
 	// As mat has to be quadratic we can just work with the rows
 	Mat newMat(input.rows);
 	for (int i = 0; i < input.rows; ++i) {
@@ -37,9 +35,21 @@ Mat DirectDCT::transform(Mat input) {
 	return newMat;
 }
 
-float DirectDCT::getC(int i) {
+float DCT::getC(int i) {
 	if (i == 0) {
 		return 1/sqrt(2);
 	}
 	return 1;
+}
+
+Mat DCT::generateA(int dimension) {
+	Mat mat(dimension);
+	
+	for (int k = 0; k < dimension) {
+		for (int n = 0; n < dimension) {
+			
+		}
+	}
+	
+	return Mat
 }
