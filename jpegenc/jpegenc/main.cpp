@@ -5,7 +5,7 @@
 #include "converter/YCbCrToRGBConverter.hpp"
 #include "helper/Test.hpp"
 #include "Huffman.hpp"
-#include "DirectDCT.hpp"
+#include "DCT.hpp"
 #include "IDCT.hpp"
 
 #include "bitstream/Bitstream.hpp"
@@ -198,8 +198,8 @@ void testDirectDCT() {
 			input.set(i , j, 2);
 		}
 	}
-	DirectDCT test;
-	Mat out = test.transform(input);
+	DCT dct;
+	Mat out = dct.transform(input);
 	
 	for (int i = 0; i < input.rows; ++i) {
 		for (int j = 0; j < input.cols; ++j) {
@@ -217,7 +217,7 @@ void testIDCT() {
 		}
 	}
 	
-	DirectDCT test;
+	DCT test;
 	Mat out = test.transform(input);
 
 	IDCT idct;
@@ -246,7 +246,7 @@ void testMat() {
 	}, 3 , 2);
 	
 	Mat c = a * b;
-//	c.print();
+	c.print();
 }
 
 // ################################################################

@@ -12,10 +12,13 @@
 #include <stdio.h>
 #include "Mat.hpp"
 
-class DirectDCT {
-public:
+struct DCT {
 	Mat transform(Mat input);
+	Mat transform2DDCT(Mat input);
 private:
 	float getC(int i);
+	Mat generateA(int dimension);
 };
+
+
 #endif /* directDCT_hpp */
