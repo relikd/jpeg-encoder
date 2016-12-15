@@ -11,8 +11,7 @@ void Mat::transpose(bool transpose) {
 }
 
 /**
- * Initiate will override the current values of the mat. The given
- * array has to have the same number of elements as expected at creating the mat
+ * Initiate will override the current values of the mat.
  */
 void Mat::initiate(float* values, int rows, int cols) {
 	this->rows = rows;
