@@ -6,7 +6,6 @@
 #include "helper/Test.hpp"
 #include "Huffman.hpp"
 #include "DCT.hpp"
-#include "IDCT.hpp"
 
 #include "bitstream/Bitstream.hpp"
 
@@ -218,10 +217,9 @@ void testIDCT() {
 	}
 	
 	DCT test;
-	Mat out = test.transform(input);
+	Mat out = test.transform2DDCT(input);
 
-	IDCT idct;
-	Mat inverse = idct.transform(out);
+	Mat inverse = test.transform(out);
 	
 	for (int i = 0; i < input.rows; ++i) {
 		for (int j = 0; j < input.cols; ++j) {
@@ -261,9 +259,9 @@ int main(int argc, const char *argv[]) {
 	//testJPEGWriter();
 	
 	//testDirectDCT();
-//	testIDCT();
+	testIDCT();
 //	testMat();
-	testImage();
+//	testImage();
 	
 	return 0;
 }

@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		123881181DEC446E0017A619 /* Huffman.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 123881161DEC446E0017A619 /* Huffman.cpp */; };
 		12B6F1821E002FE3006D0182 /* DCT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12B6F1801E002FE3006D0182 /* DCT.cpp */; };
-		12B6F1851E0030F0006D0182 /* IDCT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12B6F1831E0030F0006D0182 /* IDCT.cpp */; };
 		12B6F1881E00311A006D0182 /* Mat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12B6F1861E00311A006D0182 /* Mat.cpp */; };
 		40F5AE7D1DE3589100ECF256 /* JPEGSegments.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40F5AE7B1DE3589100ECF256 /* JPEGSegments.cpp */; };
 		540D8CAF1DD0BE4D00A4E4C9 /* PPMLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 540D8CAD1DD0BE4D00A4E4C9 /* PPMLoader.cpp */; };
@@ -31,8 +30,6 @@
 		123881171DEC446E0017A619 /* Huffman.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Huffman.hpp; sourceTree = "<group>"; };
 		12B6F1801E002FE3006D0182 /* DCT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DCT.cpp; sourceTree = "<group>"; };
 		12B6F1811E002FE3006D0182 /* DCT.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DCT.hpp; sourceTree = "<group>"; };
-		12B6F1831E0030F0006D0182 /* IDCT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IDCT.cpp; sourceTree = "<group>"; };
-		12B6F1841E0030F0006D0182 /* IDCT.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IDCT.hpp; sourceTree = "<group>"; };
 		12B6F1861E00311A006D0182 /* Mat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Mat.cpp; sourceTree = "<group>"; };
 		12B6F1871E00311A006D0182 /* Mat.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Mat.hpp; sourceTree = "<group>"; };
 		40F5AE7B1DE3589100ECF256 /* JPEGSegments.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JPEGSegments.cpp; sourceTree = "<group>"; };
@@ -90,16 +87,15 @@
 			path = huffmann;
 			sourceTree = "<group>";
 		};
-		12B6F17F1E002FE3006D0182 /* dtc */ = {
+		12B6F17F1E002FE3006D0182 /* dct */ = {
 			isa = PBXGroup;
 			children = (
 				12B6F1801E002FE3006D0182 /* DCT.cpp */,
 				12B6F1811E002FE3006D0182 /* DCT.hpp */,
-				12B6F1831E0030F0006D0182 /* IDCT.cpp */,
-				12B6F1841E0030F0006D0182 /* IDCT.hpp */,
 				12B6F1861E00311A006D0182 /* Mat.cpp */,
 				12B6F1871E00311A006D0182 /* Mat.hpp */,
 			);
+			name = dct;
 			path = dtc;
 			sourceTree = "<group>";
 		};
@@ -141,7 +137,7 @@
 		545A4D471DB6471500B5E365 /* jpegenc */ = {
 			isa = PBXGroup;
 			children = (
-				12B6F17F1E002FE3006D0182 /* dtc */,
+				12B6F17F1E002FE3006D0182 /* dct */,
 				123881151DEC446E0017A619 /* huffmann */,
 				40F5AE7A1DE3589100ECF256 /* segments */,
 				545A4D481DB6471500B5E365 /* main.cpp */,
@@ -266,7 +262,6 @@
 				12B6F1881E00311A006D0182 /* Mat.cpp in Sources */,
 				12B6F1821E002FE3006D0182 /* DCT.cpp in Sources */,
 				54B9AA021DF62F9700BB8D0D /* BitMath.cpp in Sources */,
-				12B6F1851E0030F0006D0182 /* IDCT.cpp in Sources */,
 				5496ABDD1DCFA97100FED0CF /* Channel.cpp in Sources */,
 				54F366541DD45335004D4AA7 /* Test.cpp in Sources */,
 			);
