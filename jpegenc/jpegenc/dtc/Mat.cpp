@@ -76,13 +76,13 @@ Mat Mat::operator*(const Mat &oMat) const{
 	}
 	
 	Mat mat(this->rows, oMat.cols);
-	for(int otherColumn = 0; otherColumn < oMat.cols; ++otherColumn) {
+	for(int oMatColumn = 0; oMatColumn < oMat.cols; ++oMatColumn) {
 		for(int currentRow = 0; currentRow < rows; ++currentRow) {
 			float result = 0;
 			for(int currentCol = 0; currentCol < cols; ++currentCol) {
-				result += this->get(currentRow, currentCol) * oMat.get(currentCol, otherColumn);
+				result += this->get(currentRow, currentCol) * oMat.get(currentCol, oMatColumn);
 			}
-			mat.set(currentRow, otherColumn, result);
+			mat.set(currentRow, oMatColumn, result);
 		}
 	}
 
