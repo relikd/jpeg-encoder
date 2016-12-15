@@ -35,6 +35,39 @@ Mat DCT::transform(Mat input) {
 	return newMat;
 }
 
+Mat DCT::transform2DDCT(Mat input) {
+	Mat a = generateA(input.rows);
+	Mat temp = a * input;
+	a.transpose();
+	
+	return temp * a;
+}
+
+Mat DCT::inverse(Mat input) {
+	// As mat has to be quadratic we can just work with the rows
+	Mat newMat(input.rows);
+	
+	for (int x = 0; x < input.rows; ++x) {
+		for (int y = 0; y < input.rows; ++y) {
+			
+			float inner = 0;
+			
+			for (int i = 0; i < input.rows; ++i) {
+				for (int j = 0; j < input.rows; ++j) {
+					float präfix = 2/input.rows * getC(i) * getC(j) * input.get(i, j);
+					float firstCos = cos(((2*x + 1) * i * M_PI) / (2 * input.rows));
+					float secondCos = cos(((2*y + 1) * j * M_PI) / (2 * input.rows));
+					inner += präfix * firstCos * secondCos;
+					
+				}
+			}
+			newMat.set(x, y, inner);
+		}
+	}
+	
+	return newMat;
+}
+
 float DCT::getC(int i) {
 	if (i == 0) {
 		return 1/sqrt(2);
@@ -45,11 +78,12 @@ float DCT::getC(int i) {
 Mat DCT::generateA(int dimension) {
 	Mat mat(dimension);
 	
-	for (int k = 0; k < dimension) {
-		for (int n = 0; n < dimension) {
-			
+	for (int k = 0; k < dimension; ++k) {
+		for (int n = 0; n < dimension; ++n) {
+			float value = getC(k) * sqrt(2 / dimension) * cos((2 * n + 1) * ((k * M_PI) / (2 * dimension)));
+			mat.set(k, n, value);
 		}
 	}
 	
-	return Mat
+	return mat;
 }

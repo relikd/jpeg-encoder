@@ -15,6 +15,7 @@
 struct DCT {
 	Mat transform(Mat input);
 	Mat transform2DDCT(Mat input);
+	Mat inverse(Mat input);
 private:
 	float getC(int i);
 	Mat generateA(int dimension);
