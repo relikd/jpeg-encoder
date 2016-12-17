@@ -13,12 +13,12 @@
 #include "Mat.hpp"
 
 struct DCT {
-	Mat transform(Mat input);
-	Mat transform2DDCT(Mat input);
-	Mat inverse(Mat input);
+	static Mat transform(Mat input);
+	static Mat transform2DDCT(Mat input);
+	static Mat inverse(Mat input);
 private:
-	float getC(int i);
-	Mat generateA(int dimension);
+	static float getC(int i);
+	static Mat generateA(int dimension);
 };
 
 

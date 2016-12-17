@@ -197,8 +197,7 @@ void testDirectDCT() {
 		2, 2
 	}, 2, 2);
 	
-	DCT dct;
-	Mat out = dct.transform(input);
+	Mat out = DCT::transform(input);
 	
 	out.print();
 }
@@ -210,10 +209,9 @@ void testIDCT() {
 		2, 2
 	}, 2, 2);
 	
-	DCT test;
-	Mat out = test.transform2DDCT(input);
+	Mat out = DCT::transform2DDCT(input);
 
-	Mat inverse = test.inverse(out);
+	Mat inverse = DCT::inverse(out);
 	inverse.print();
 }
 
