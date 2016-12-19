@@ -262,7 +262,7 @@ void testArai()
     
     if ( test )
     {
-        std::cout << "All values are still correct." << std::endl;
+        std::cout << "All values are correct." << std::endl;
     }
     else
     {
@@ -280,14 +280,11 @@ int main(int argc, const char *argv[]) {
 	
 	//testhuffmann();
 	//testJPEGWriter();
-	
 	//testDirectDCT();
-//	testIDCT();
-//	testMat();
-//	testImage();
-    
+	//testIDCT();
+	//testMat();
+	//testImage();
     testArai();
-    
 	
 	return 0;
 }
