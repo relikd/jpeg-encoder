@@ -316,7 +316,7 @@ int main(int argc, const char *argv[]) {
 	//testhuffmann();
     //testJPEGWriter();
 	//testDirectDCT();
-    testIDCT();
+    //testIDCT();
 	//testMat();
 	//testImage();
     //testAraiLine();
