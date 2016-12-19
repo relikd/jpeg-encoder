@@ -7,6 +7,7 @@
 #include "Huffman.hpp"
 #include "DCT.hpp"
 #include "Arai.hpp"
+#include "AraiTest.hpp"
 #include <math.h>
 
 #include "bitstream/Bitstream.hpp"
@@ -343,6 +344,14 @@ void testTransformations(int digits = 5)
     matrix = DCT::inverse(matrix);
     matrix.print(digits);
     std::cout << std::endl;
+	
+	matrix = AraiTest::transform(matrix);
+	matrix.print(digits);
+	std::cout << std::endl;
+	
+	matrix = DCT::inverse(matrix);
+	matrix.print(digits);
+	std::cout << std::endl;
 }
 
 // ################################################################
@@ -359,9 +368,9 @@ int main(int argc, const char *argv[]) {
     //testIDCT();
 	//testMat();
 	//testImage();
-//    testAraiLine();
+    testAraiLine();
 //    testAraiMatrix();
-	testTransformations(0);
+	testTransformations(5);
 	
 	return 0;
 }
