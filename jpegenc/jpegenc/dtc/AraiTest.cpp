@@ -26,7 +26,8 @@ static const float s7 = S(7);
 // |  Approach 1 - Stepwise
 // |
 //  ---------------------------------------------------------------
-#define addSubtract(a,b) tmp = x[a] - x[b]; x[a] += x[b]; x[b] = tmp;
+#define addSubtract(a,b)    tmp = x[a] - x[b]; x[a] += x[b]; x[b] = tmp;
+#define addSubtractInv(a,b) tmp = x[b] - x[a]; x[a] += x[b]; x[b] = tmp;
 inline void stepsAll(float* &x) {
 	float tmp = 0;
 	// step 1
@@ -37,7 +38,7 @@ inline void stepsAll(float* &x) {
 	// step 2
 	addSubtract(0,3);
 	addSubtract(1,2);
-	x[4] += x[5];
+	x[4] = -(x[4] + x[5]);
 	x[5] += x[6];
 	x[6] += x[7];
 	// step 3
@@ -46,14 +47,14 @@ inline void stepsAll(float* &x) {
 	// step 4
 	tmp = (x[4] + x[6]) * a5;
 	x[2] *= a1;
-	x[4] = x[4] * a2 + tmp;
+	x[4] = -(x[4] * a2 + tmp);
 	x[5] *= a3;
 	x[6] = x[6] * a4 - tmp;
 	// step 5
-	addSubtract(3,2);
-	addSubtract(7,5);
+	addSubtractInv(2,3);
+	addSubtractInv(5,7);
 	// step 6
-	addSubtract(7,4);
+	addSubtractInv(4,7);
 	addSubtract(5,6);
 	// step 7
 	x[0] *= s0;
@@ -67,6 +68,9 @@ inline void stepsAll(float* &x) {
 	x[7] = x[6] * s7;
 	x[6] = tmp;
 }
+
+
+
 inline void step1(float* &x) {
 	float tmp = 0;
 	addSubtract(0,7);

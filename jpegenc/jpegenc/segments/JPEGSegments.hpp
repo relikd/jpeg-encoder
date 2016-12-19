@@ -65,59 +65,55 @@ namespace JPEGSegments {
 		}
 		
 		virtual void addToStream(Bitstream &stream);
-    };
-    
-    struct StartOfImage : JpegSegment {
-    
-        StartOfImage() : JpegSegment(0xFFD8) {
-        }
-        virtual void addToStream(Bitstream &stream);
-    };
-    
-    struct EndOfImage : JpegSegment {
-    
-        EndOfImage() : JpegSegment(0xFFD9) {
-        }
-        virtual void addToStream(Bitstream &stream);
-    };
-    
-    struct DefineHuffmanTable : JpegSegment {
-        uint16_t length;
-        EncodingTable encodingTable;
-        unsigned char htInfoNumber;
-        unsigned char htInfoType;
-        unsigned char htInfoRest;
-        unsigned char *symbolsPerLevel;
-        
-        DefineHuffmanTable(EncodingTable encodingTable) : JpegSegment(0xFFC4) {
-            this->encodingTable = encodingTable;
-            this->htInfoNumber = 0; // hardcoded
-            this->htInfoType = 0; // hardcoded
-            this->htInfoRest = 0; // hardcoded
-            this->symbolsPerLevel = new unsigned char[16];
+	};
+	
+	struct StartOfImage : JpegSegment {
+		
+		StartOfImage() : JpegSegment(0xFFD8) {
+		}
+		virtual void addToStream(Bitstream &stream);
+	};
+	
+	struct EndOfImage : JpegSegment {
+		
+		EndOfImage() : JpegSegment(0xFFD9) {
+		}
+		virtual void addToStream(Bitstream &stream);
+	};
+	
+	struct DefineHuffmanTable : JpegSegment {
+		uint16_t length;
+		EncodingTable encodingTable;
+		unsigned char htInfoNumber;
+		unsigned char htInfoType;
+		unsigned char htInfoRest;
+		unsigned char symbolsPerLevel[16] = {0};
+		
+		DefineHuffmanTable(EncodingTable encodingTable) : JpegSegment(0xFFC4) {
+			this->encodingTable = encodingTable;
+			this->htInfoNumber = 0; // hardcoded
+			this->htInfoType = 0; // hardcoded
+			this->htInfoRest = 0; // hardcoded
 			
 			for (std::pair<Symbol, Encoding> enc : encodingTable) {
-                unsigned short numberOfBits = enc.second.numberOfBits;
-                symbolsPerLevel[numberOfBits - 1] += 1;
-            }
-            this->length = 2 + 17 + encodingTable.size();
-        }
-        
-        ~DefineHuffmanTable() {
-            delete[] symbolsPerLevel;
-        }
-        virtual void addToStream(Bitstream &stream);
-    };
+				unsigned short numberOfBits = enc.second.numberOfBits;
+				symbolsPerLevel[numberOfBits - 1] += 1;
+			}
+			this->length = 2 + 17 + encodingTable.size();
+		}
+		
+		virtual void addToStream(Bitstream &stream);
+	};
 	
-    struct JPEGWriter {
-        std::vector<JpegSegment*> segments;
-        Bitstream stream;
-        
-        JPEGWriter() {
-        }
-        
-        void writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile, EncodingTable encodingTable);
-    };
+	struct JPEGWriter {
+		std::vector<JpegSegment*> segments;
+		Bitstream stream;
+		
+		JPEGWriter() {
+		}
+		
+		void writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile, EncodingTable encodingTable);
+	};
 }
 
 
