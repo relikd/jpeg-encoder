@@ -37,7 +37,7 @@ struct Mat {
 	Mat operator+(const Mat &oMat) const;
 	Mat operator*(const Mat &oMat) const;
 	
-	void print();
+	void print(int digit = 5);
 
 private:
 	float* values;

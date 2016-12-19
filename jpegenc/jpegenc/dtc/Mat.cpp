@@ -4,9 +4,9 @@
 #include <math.h>
 
 
-float round(float value)
+float round(float value, int digit)
 {
-	return roundf(value * 100000) / 100000.0F;
+	return roundf(value * powf(10, digit)) / powf(10, digit);
 }
 
 
@@ -105,10 +105,10 @@ int Mat::calculateIndex(int row, int col) const{
 	
 }
 
-void Mat::print() {
+void Mat::print(int digits) {
 	for (int i = 0 ; i < rows; ++i) {
 		for (int k = 0; k < cols; ++k) {
-			std::cout << round(get(i, k)) << "\t";
+			std::cout << round(get(i, k), digits) << "\t\t";
 		}
 		std::cout << std::endl;
 	}
