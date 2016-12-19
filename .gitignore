@@ -66,3 +66,4 @@ xcuserdata/
 images/
 *.test.*
 
+**/data/**

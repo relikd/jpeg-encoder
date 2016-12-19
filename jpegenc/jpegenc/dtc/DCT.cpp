@@ -17,7 +17,7 @@ Mat DCT::transform(Mat input) {
 	for (int i = 0; i < input.rows; ++i) {
 		for (int j = 0; j < input.rows; ++j) {
 		
-			float outer = 2/input.rows * getC(i) * getC(j);
+			float outer = 2.0 /input.rows * getC(i) * getC(j);
 			float inner = 0;
 	
 			for (int x = 0; x < input.rows; ++x) {

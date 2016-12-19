@@ -116,7 +116,7 @@ namespace JPEGSegments {
         JPEGWriter() {
         }
         
-        void writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile);
+        void writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile, EncodingTable encodingTable);
     };
 }
 

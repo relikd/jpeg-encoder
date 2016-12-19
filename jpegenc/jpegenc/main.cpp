@@ -17,6 +17,8 @@ using namespace JPEGSegments;
 #define TEST_ITERATIONS 10000000
 #define TEST_REPEAT 10
 
+std::vector<int> generateTestHuffman();
+
 //  ---------------------------------------------------------------
 // |
 // |  PPM Image Processing
@@ -58,70 +60,74 @@ void testImage() {
 
 void testJPEGWriter() {
 	
-	Bitstream bitStream;
-	bitStream.add(1);
-	bitStream.add(0);
-	bitStream.add(1);
-	bitStream.add(1);
-	bitStream.add(0);
-	bitStream.print();
-	bitStream.fillup(1);
-	bitStream.print();
-	bitStream.saveToFile("out.txt");
-	
-	
-	std::cout << "Testing, Bitstream" << std::endl;
-	
-	std::cout << "Write single bit: ";
-	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
-		Bitstream bitstream;
-		while (numberOfElements--) {
-			bitstream.add(numberOfElements % 2);
-		}
-	});
-	
-	
-	std::cout << "Write byte bits: ";
-	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
-		Bitstream bitstream;
-		// bitstream.add(1);
-		while (numberOfElements--) {
-			bitstream.add(0xd2, 8);
-		}
-	});
-	
-	
-	// create random bitstream for reading
-	Bitstream testStream;
-	size_t fillRandom = TEST_ITERATIONS;
-	while (fillRandom--)
-		testStream.add( arc4random() % 2 );
-	
-	
-	std::cout << "Read single bit: ";
-	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [&testStream](size_t numberOfElements){
-		size_t maxRead = testStream.numberOfBits() - 2;
-		size_t idx = 0;
-		while (numberOfElements--) {
-			testStream.read(idx++);
-			if (idx > maxRead)
-				idx = 0;
-		}
-	});
-	
-	
-	std::cout << "Write file: ";
-	Test::performance([&testStream] {
-		testStream.saveToFile("data/writeOleg.txt");
-	});
-	
+//	Bitstream bitStream;
+//	bitStream.add(1);
+//	bitStream.add(0);
+//	bitStream.add(1);
+//	bitStream.add(1);
+//	bitStream.add(0);
+//	bitStream.print();
+//	bitStream.fillup(1);
+//	bitStream.print();
+//	bitStream.saveToFile("out.txt");
+//	
+//	
+//	std::cout << "Testing, Bitstream" << std::endl;
+//	
+//	std::cout << "Write single bit: ";
+//	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
+//		Bitstream bitstream;
+//		while (numberOfElements--) {
+//			bitstream.add(numberOfElements % 2);
+//		}
+//	});
+//	
+//	
+//	std::cout << "Write byte bits: ";
+//	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
+//		Bitstream bitstream;
+//		// bitstream.add(1);
+//		while (numberOfElements--) {
+//			bitstream.add(0xd2, 8);
+//		}
+//	});
+//	
+//	
+//	// create random bitstream for reading
+//	Bitstream testStream;
+//	size_t fillRandom = TEST_ITERATIONS;
+//	while (fillRandom--)
+//		testStream.add( arc4random() % 2 );
+//	
+//	
+//	std::cout << "Read single bit: ";
+//	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [&testStream](size_t numberOfElements){
+//		size_t maxRead = testStream.numberOfBits() - 2;
+//		size_t idx = 0;
+//		while (numberOfElements--) {
+//			testStream.read(idx++);
+//			if (idx > maxRead)
+//				idx = 0;
+//		}
+//	});
+//	
+//	
+//	std::cout << "Write file: ";
+//	Test::performance([&testStream] {
+//		testStream.saveToFile("../data/writeOleg.txt");
+//	});
+//	
 	
 	
 	PPMLoader loader;
-	auto image = loader.load("data/very_small.ppm");
+	auto image = loader.load("../data/very_small.ppm");
 	
 	JPEGWriter writer;
-	writer.writeJPEGImage(image, "Test.test.jpg");
+	auto testData = generateTestHuffman();
+	Huffman huffman(testData);
+	
+	
+	writer.writeJPEGImage(image, "../data/Test1.test.jpg", huffman.canonicalEncoding(16));
 }
 
 std::vector<Symbol> getWord() {
@@ -292,7 +298,7 @@ void testAraiMatrix()
 
     std::cout << std::endl;
     
-    matrix = Arai::transform(matrix);
+    matrix = DCT::transform(matrix);
     matrix.print();
   
     std::cout << std::endl;
@@ -310,13 +316,13 @@ void testAraiMatrix()
 int main(int argc, const char *argv[]) {
 	
 	//testhuffmann();
-	//testJPEGWriter();
+	testJPEGWriter();
 	//testDirectDCT();
-	testIDCT();
+//	testIDCT();
 	//testMat();
 	//testImage();
     //testAraiLine();
-    //testAraiMatrix();
-    
+    testAraiMatrix();
+	
 	return 0;
 }

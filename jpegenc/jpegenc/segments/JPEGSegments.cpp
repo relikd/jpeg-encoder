@@ -63,7 +63,7 @@ void DefineHuffmanTable::addToStream(Bitstream &stream) {
     }
 }
 
-void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile) {
+void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile, EncodingTable encodingTable) {
 
     StartOfImage* soi = new StartOfImage();
     segments.push_back(soi);
@@ -74,9 +74,11 @@ void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathTo
     StartOfFrame0* sof0 = new StartOfFrame0(1, image);  // 1 = numberOfComponents
     segments.push_back(sof0);
 	
+	DefineHuffmanTable* dht = new DefineHuffmanTable(encodingTable);
+	segments.push_back(dht);
+	
     EndOfImage* eoi = new EndOfImage();
     segments.push_back(eoi);
-	
 	
     
     for (int i = 0; i < segments.size(); ++i) {
