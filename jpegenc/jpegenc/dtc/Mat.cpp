@@ -4,9 +4,9 @@
 #include <math.h>
 
 
-double round( double value )
+float round(float value)
 {
-	return floor( value * 100000 + 0.5 ) / 100000;
+	return roundf(value * 100000) / 100000.0F;
 }
 
 
