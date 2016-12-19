@@ -15,7 +15,6 @@
 		5412EC191DF4E062007604E9 /* Node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5412EC171DF4E062007604E9 /* Node.cpp */; };
 		543AF4AE1DFDC241006C8F7D /* Encoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 543AF4AD1DFDC241006C8F7D /* Encoding.cpp */; };
 		544ED4991E06247300593D75 /* AraiTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544ED4971E06247300593D75 /* AraiTest.cpp */; };
-		544ED49C1E06248800593D75 /* IDCT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544ED49A1E06248800593D75 /* IDCT.cpp */; };
 		545A4D491DB6471500B5E365 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 545A4D481DB6471500B5E365 /* main.cpp */; };
 		546A42FA1DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F01DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp */; };
 		546A42FB1DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F21DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp */; };
@@ -44,8 +43,6 @@
 		543AF4AD1DFDC241006C8F7D /* Encoding.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Encoding.cpp; sourceTree = "<group>"; };
 		544ED4971E06247300593D75 /* AraiTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AraiTest.cpp; sourceTree = "<group>"; };
 		544ED4981E06247300593D75 /* AraiTest.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = AraiTest.hpp; sourceTree = "<group>"; };
-		544ED49A1E06248800593D75 /* IDCT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = IDCT.cpp; sourceTree = "<group>"; };
-		544ED49B1E06248800593D75 /* IDCT.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = IDCT.hpp; sourceTree = "<group>"; };
 		545A4D451DB6471500B5E365 /* jpegenc */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = jpegenc; sourceTree = BUILT_PRODUCTS_DIR; };
 		545A4D481DB6471500B5E365 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		546A42F01DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RGBToYCbCrConverter.cpp; sourceTree = "<group>"; };
@@ -98,8 +95,6 @@
 			children = (
 				12B6F1801E002FE3006D0182 /* DCT.cpp */,
 				12B6F1811E002FE3006D0182 /* DCT.hpp */,
-				544ED49A1E06248800593D75 /* IDCT.cpp */,
-				544ED49B1E06248800593D75 /* IDCT.hpp */,
 				12B6F1861E00311A006D0182 /* Mat.cpp */,
 				12B6F1871E00311A006D0182 /* Mat.hpp */,
 				544ED4971E06247300593D75 /* AraiTest.cpp */,
@@ -267,7 +262,6 @@
 				40F5AE7D1DE3589100ECF256 /* JPEGSegments.cpp in Sources */,
 				546A42FB1DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp in Sources */,
 				546A42FA1DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp in Sources */,
-				544ED49C1E06248800593D75 /* IDCT.cpp in Sources */,
 				546A42FD1DBA7A8D006C2629 /* Image.cpp in Sources */,
 				543AF4AE1DFDC241006C8F7D /* Encoding.cpp in Sources */,
 				12B6F1881E00311A006D0182 /* Mat.cpp in Sources */,
