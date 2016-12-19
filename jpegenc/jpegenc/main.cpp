@@ -286,21 +286,18 @@ void testAraiMatrix()
     Mat matrix;
     
     matrix.initiate((float[]) {
-        2, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0
+        1, 7, 3, 4, 5, 4, 3, 2,
+        7, 0, 0, 0, 0, 0, 0, 0,
+        3, 0, 0, 0, 0, 0, 0, 0,
+        4, 0, 0, 0, 0, 0, 0, 0,
+        5, 0, 0, 0, 0, 0, 0, 0,
+        4, 0, 0, 0, 0, 0, 0, 0,
+        3, 0, 0, 0, 0, 0, 0, 0,
+        2, 0, 0, 0, 0, 0, 0, 0
     }, 8, 8);
-    //matrix.print();
 
-    std::cout << std::endl;
-    
     matrix = Arai::transform(matrix);
-    //matrix.print();
+    matrix.print();
 	
     std::cout << std::endl;
 
@@ -322,8 +319,8 @@ int main(int argc, const char *argv[]) {
     //testIDCT();
 	//testMat();
 	//testImage();
-    testAraiLine();
-    //testAraiMatrix();
+    //testAraiLine();
+    testAraiMatrix();
 	
 	return 0;
 }
