@@ -359,9 +359,8 @@ int main(int argc, const char *argv[]) {
     //testIDCT();
 	//testMat();
 	//testImage();
-    //testAraiLine();
-    //testAraiMatrix();
-    testTransformations();
+    testAraiLine();
+    testAraiMatrix();
 	
 	return 0;
 }
