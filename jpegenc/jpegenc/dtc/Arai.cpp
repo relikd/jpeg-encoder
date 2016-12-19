@@ -16,8 +16,10 @@
 #define S6 0.653282
 #define S7 1.28146
 
-/* Effizienz
+/*
 
+ Effizienz
+ ---------
  13 x Multiplikation
  15 x Addition
  14 x Subtraktion
@@ -61,4 +63,66 @@ void Arai::transformLine(float *values) {
     values[5] = (d4 + e7) * S5;
     values[6] = (b3 - d2) * S6;
     values[7] = (e5 - d6) * S7;
+}
+
+Mat Arai::transform(Mat input)
+{
+    if ( input.rows != 8 || input.cols != 8 )
+    {
+        std::cout << "ERROR: Malformed matrix. Expected 8X8 but got " << input.rows << "X" << input.cols << ". Skipping Arai transformation." << std::endl;
+    }
+    else
+    {
+        processColumns(input);
+        processRows(input);
+    }
+    return input;
+}
+
+void Arai::processColumns(Mat input) {
+    for (int y = 0; y < 8; ++y)
+    {
+        float* currentColumn = new float[8];
+        
+        // Read values
+        for (int x = 0; x < 8; ++x)
+        {
+            currentColumn[x] = input.get(y, x);
+        }
+        
+        // Transform values
+        transformLine(currentColumn);
+        
+        // Write values
+        for(int x = 0; x < 8; ++x)
+        {
+            input.set(y, x, currentColumn[x]);
+        }
+        
+        delete[] currentColumn;
+    }
+}
+
+void Arai::processRows(Mat input) {
+    for (int x = 0; x < 8; ++x)
+    {
+        float* currentRow = new float[8];
+        
+        // Read values
+        for (int y = 0; y < 8; ++y)
+        {
+            currentRow[y] = input.get(y, x);
+        }
+        
+        // Transform values
+        transformLine(currentRow);
+        
+        // Write values
+        for (int y = 0; y < 8; ++y)
+        {
+            input.set(y, x, currentRow[y]);
+        }
+        
+        delete[] currentRow;
+    }
 }
