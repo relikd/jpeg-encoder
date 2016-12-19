@@ -17,15 +17,14 @@ Mat DCT::transform(Mat input) {
 	for (int i = 0; i < input.rows; ++i) {
 		for (int j = 0; j < input.rows; ++j) {
 		
-			float outer = 2.0 /input.rows * getC(i) * getC(j);
+			float outer = 2.0F / input.rows * getC(i) * getC(j);
 			float inner = 0;
 	
 			for (int x = 0; x < input.rows; ++x) {
 				for (int y = 0; y < input.rows; ++y) {
-					float firstCos = cos(((2*x + 1) * i * M_PI) / (2.0 * input.rows));
-					float secondCos = cos(((2*y + 1) * j * M_PI) / (2.0 * input.rows));
+					float firstCos = cos(((2 * x + 1) * i * M_PI) / (2.0 * input.rows));
+					float secondCos = cos(((2 * y + 1) * j * M_PI) / (2.0 * input.rows));
 					inner += input.get(x, y) * firstCos * secondCos;
-				
 				}
 			}
 			newMat.set(i , j , outer * inner);
@@ -35,12 +34,12 @@ Mat DCT::transform(Mat input) {
 	return newMat;
 }
 
-Mat DCT::transform2DDCT(Mat input) {
+Mat DCT::transform2(Mat input) {
 	Mat a = generateA(input.rows);
 	Mat temp = a * input;
 	a.transpose();
 	
-	return temp  * a;
+	return temp * a;
 }
 
 Mat DCT::inverse(Mat input) {
@@ -80,7 +79,7 @@ Mat DCT::generateA(int dimension) {
 	
 	for (int k = 0; k < dimension; ++k) {
 		for (int n = 0; n < dimension; ++n) {
-			float value = getC(k) * sqrt(2.0 / dimension) * cos((2 * n + 1) * ((k * M_PI) / (2 * dimension)));
+			float value = getC(k) * sqrt(2.0F / dimension) * cos((2 * n + 1) * ((k * M_PI) / (2 * dimension)));
 			mat.set(k, n, value);
 		}
 	}
