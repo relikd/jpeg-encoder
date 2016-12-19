@@ -34,9 +34,11 @@ void StartOfFrame0::addToStream(Bitstream &stream) {
 	stream.add(height, 16);
 	stream.add(width, 16);
 	stream.add(numberOfComponents, 8);
-    stream.add(0x01, 8);    // ID (Y)
-    stream.add(0x22, 8);    // Subsampling
-    stream.add(0x00, 8);    // Quantisierungstabelle
+	while (numberOfComponents--) {
+		stream.add(0x01, 8);    // ID (Y)
+		stream.add(0x22, 8);    // Subsampling
+		stream.add(0x00, 8);    // Quantisierungstabelle
+	}
 }
 
 void StartOfImage::addToStream(Bitstream &stream) {
