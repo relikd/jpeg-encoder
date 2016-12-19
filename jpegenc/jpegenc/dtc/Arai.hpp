@@ -6,11 +6,12 @@
 
 struct Arai
 {
-//    public:
-//    static Mat transform(Mat input);
-    
-//    private:
-    static void transformLine( float *values );
+public:
+    static Mat transform(Mat input);
+    static void transformLine(float *values);
+private:
+    static void processColumns(Mat input);
+    static void processRows(Mat input);
 };
 
 #endif /* Arai_hpp */

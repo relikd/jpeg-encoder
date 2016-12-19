@@ -6,6 +6,7 @@
 #include "helper/Test.hpp"
 #include "Huffman.hpp"
 #include "DCT.hpp"
+#include "IDCT.hpp"
 #include "Arai.hpp"
 
 #include "bitstream/Bitstream.hpp"
@@ -233,7 +234,7 @@ void testMat() {
 	c.print();
 }
 
-void testArai()
+void testAraiLine()
 {
     float *values = new float[8];
     
@@ -270,6 +271,33 @@ void testArai()
     }
 }
 
+void testAraiMatrix()
+{
+    Mat matrix;
+    
+    matrix.initiate((float[]) {
+        1, 7, 3, 4, 5, 4, 3, 2,
+        7, 0, 0, 0, 0, 0, 0, 0,
+        3, 0, 0, 0, 0, 0, 0, 0,
+        4, 0, 0, 0, 0, 0, 0, 0,
+        5, 0, 0, 0, 0, 0, 0, 0,
+        4, 0, 0, 0, 0, 0, 0, 0,
+        3, 0, 0, 0, 0, 0, 0, 0,
+        2, 0, 0, 0, 0, 0, 0, 0
+    }, 8, 8);
+    matrix.print();
+
+    std::cout << std::endl;
+    
+    matrix = Arai::transform(matrix);
+    matrix.print();
+  
+    std::cout << std::endl;
+
+    matrix = DCT::inverse(matrix);
+    matrix.print();
+}
+
 // ################################################################
 // #
 // #  Main
@@ -284,7 +312,8 @@ int main(int argc, const char *argv[]) {
 	//testIDCT();
 	//testMat();
 	//testImage();
-    testArai();
-	
+    //testAraiLine();
+    //testAraiMatrix();
+    
 	return 0;
 }
