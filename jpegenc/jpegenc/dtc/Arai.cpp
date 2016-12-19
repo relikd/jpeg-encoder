@@ -43,50 +43,32 @@ void Arai::transformLine(float *values) {
     float b4 = -a4 - a5;
     float b5 = a5 + a6;
     float b6 = a6 + a7;
-    float b7 = a7;
     
     float c0 = b0 + b1;
     float c1 = b0 - b1;
     float c2 = b2 + b3;
-    float c3 = b3;
-    float c4 = b4;
-    float c5 = b5;
-    float c6 = b6;
-    float c7 = b7;
 
-    float d0 = c0;
-    float d1 = c1;
     float d2 = c2 * A1;
-    float d3 = c3;
-    float d4 = -(c4 * A2) - ((c4 + c6) * A5);
-    float d5 = c5 * A3;
-    float d6 = (c6 * A4) - ((c4 + c6) * A5);
-    float d7 = c7;
+    float d4 = -(b4 * A2) - ((b4 + b6) * A5);
+    float d5 = b5 * A3;
+    float d6 = (b6 * A4) - ((b4 + b6) * A5);
 
-    float e0 = d0;
-    float e1 = d1;
-    float e2 = d2 + d3;
-    float e3 = d3 - d2;
-    float e4 = d4;
-    float e5 = d5 + d7;
-    float e6 = d6;
-    float e7 = d7 - d5;
+    float e2 = d2 + b3;
+    float e3 = b3 - d2;
+    float e5 = d5 + a7;
+    float e7 = a7 - d5;
     
-    float f0 = e0;
-    float f1 = e1;
-    float f2 = e2;
-    float f3 = e3;
-    float f4 = e4 + e7;
-    float f5 = e5 + e6;
-    float f6 = e5 - e6;
-    float f7 = e7 - e4;
+    float f4 = d4 + e7;
+    float f5 = e5 + d6;
+    float f6 = e5 - d6;
+    float f7 = e7 - d4;
     
-    values[0] = f0 * S0;
+    values[0] = c0 * S0;
     values[1] = f5 * S1;
-    values[2] = f2 * S2;
+    values[2] = e2 * S2;
     values[3] = f7 * S3;
-    values[4] = f1 * S4;
+    values[4] = c1 * S4;
     values[5] = f4 * S5;
-    values[6] = f3 * S6;
+    values[6] = e3 * S6;
     values[7] = f6 * S7;
 }
