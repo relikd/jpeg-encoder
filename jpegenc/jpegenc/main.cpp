@@ -6,7 +6,6 @@
 #include "helper/Test.hpp"
 #include "Huffman.hpp"
 #include "DCT.hpp"
-#include "IDCT.hpp"
 #include "Arai.hpp"
 
 #include "bitstream/Bitstream.hpp"
@@ -213,9 +212,11 @@ void testIDCT() {
 	}, 3, 3);
 	
 	Mat out = DCT::transform2DDCT(input);
+	std::cout << "DCT Mat:" << std::endl;
 	out.print();
 	
 	Mat inverse = DCT::inverse(out);
+	std::cout << "Inverse Mat:" << std::endl;
 	inverse.print();
 }
 
@@ -311,7 +312,7 @@ int main(int argc, const char *argv[]) {
 	//testhuffmann();
 	//testJPEGWriter();
 	//testDirectDCT();
-	//testIDCT();
+	testIDCT();
 	//testMat();
 	//testImage();
     //testAraiLine();
