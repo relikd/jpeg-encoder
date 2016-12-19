@@ -1,31 +1,23 @@
 #include "Arai.hpp"
 #include <math.h>
 
-#define C1 0.980785
-#define C2 0.92388
-#define C3 0.83147
-#define C4 0.707107
-#define C5 0.55557
-#define C6 0.382683
-#define C7 0.19509
-
 #define A1 0.707107
 #define A2 0.541197
 #define A3 0.707107
 #define A4 1.306563
 #define A5 0.382683
 
+#define S0 0.353553
+#define S1 0.254898
+#define S2 0.270598
+#define S3 0.300672
+#define S4 0.353553
+#define S5 0.449988
+#define S6 0.653282
+#define S7 1.28146
+
 void Arai::transformLine(float *values) {
    
-    float S0 = 1 / (2 * sqrt(2));
-    float S1 = 1 / (4 * C1);
-    float S2 = 1 / (4 * C2);
-    float S3 = 1 / (4 * C3);
-    float S4 = 1 / (4 * C4);
-    float S5 = 1 / (4 * C5);
-    float S6 = 1 / (4 * C6);
-    float S7 = 1 / (4 * C7);
-    
     float x0 = values[0];
     float x1 = values[1];
     float x2 = values[2];

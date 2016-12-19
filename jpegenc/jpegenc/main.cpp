@@ -247,10 +247,26 @@ void testArai()
     values[7] = 2;
 
     Arai::transformLine(values);
+
+    bool test = true;
+    float tolerance = 0.0001;
     
-    for (int i = 0; i < 8; ++i)
+    test = test && (values[0] - (10.253)     < tolerance);
+    test = test && (values[1] - (0.797218)   < tolerance);
+    test = test && (values[2] - (-2.19761)   < tolerance);
+    test = test && (values[3] - (-0.0377379) < tolerance);
+    test = test && (values[4] - (-1.76777)   < tolerance);
+    test = test && (values[5] - (-2.75264)   < tolerance);
+    test = test && (values[6] - (-2.53387)   < tolerance);
+    test = test && (values[7] - (-1.13403)   < tolerance);
+    
+    if ( test )
     {
-        std::cout << values[i] << std::endl;
+        std::cout << "All values are still correct." << std::endl;
+    }
+    else
+    {
+        std::cout << "Something went wrong." << std::endl;
     }
 }
 
