@@ -7,6 +7,7 @@
 #include "Huffman.hpp"
 #include "DCT.hpp"
 #include "Arai.hpp"
+#include <math.h>
 
 #include "bitstream/Bitstream.hpp"
 
@@ -261,14 +262,14 @@ void testAraiLine()
     bool test = true;
     float tolerance = 0.0001;
     
-    test = test && (values[0] - (10.253)     < tolerance);
-    test = test && (values[1] - (0.797218)   < tolerance);
-    test = test && (values[2] - (-2.19761)   < tolerance);
-    test = test && (values[3] - (-0.0377379) < tolerance);
-    test = test && (values[4] - (-1.76777)   < tolerance);
-    test = test && (values[5] - (-2.75264)   < tolerance);
-    test = test && (values[6] - (-2.53387)   < tolerance);
-    test = test && (values[7] - (-1.13403)   < tolerance);
+    test = test && (fabsf(values[0] - (10.253f))     < tolerance);
+    test = test && (fabsf(values[1] - (0.797218f))   < tolerance);
+    test = test && (fabsf(values[2] - (-2.19761f))   < tolerance);
+    test = test && (fabsf(values[3] - (-0.0377379f)) < tolerance);
+    test = test && (fabsf(values[4] - (-1.76777f))   < tolerance);
+    test = test && (fabsf(values[5] - (-2.75264f))   < tolerance);
+    test = test && (fabsf(values[6] - (-2.53387f))   < tolerance);
+    test = test && (fabsf(values[7] - (-1.13403f))   < tolerance);
     
     if ( test )
     {
@@ -294,12 +295,12 @@ void testAraiMatrix()
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0
     }, 8, 8);
-    matrix.print();
+    //matrix.print();
 
     std::cout << std::endl;
     
-    matrix = DCT::transform(matrix);
-//    matrix.print();
+    matrix = Arai::transform(matrix);
+    //matrix.print();
 	
     std::cout << std::endl;
 
@@ -316,13 +317,13 @@ void testAraiMatrix()
 int main(int argc, const char *argv[]) {
 	
 	//testhuffmann();
-//	testJPEGWriter();
-	testDirectDCT();
-//	testIDCT();
+    //testJPEGWriter();
+	//testDirectDCT();
+    //testIDCT();
 	//testMat();
 	//testImage();
-    //testAraiLine();
-    testAraiMatrix();
+    testAraiLine();
+    //testAraiMatrix();
 	
 	return 0;
 }
