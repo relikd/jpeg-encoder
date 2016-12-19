@@ -73,7 +73,7 @@ Mat Arai::transform(Mat input)
     }
     else
     {
-        //processColumns(input);
+        processColumns(input);
         processRows(input);
     }
     return input;
