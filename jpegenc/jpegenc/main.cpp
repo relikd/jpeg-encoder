@@ -217,7 +217,7 @@ void testIDCT() {
 		2, 2, 2
 	}, 3, 3);
 	
-	Mat out = DCT::transform2DDCT(input);
+	Mat out = DCT::transform2(input);
 	std::cout << "DCT Mat:" << std::endl;
 	out.print();
 	
@@ -285,22 +285,22 @@ void testAraiMatrix()
     Mat matrix;
     
     matrix.initiate((float[]) {
-        1, 7, 3, 4, 5, 4, 3, 2,
-        7, 0, 0, 0, 0, 0, 0, 0,
-        3, 0, 0, 0, 0, 0, 0, 0,
-        4, 0, 0, 0, 0, 0, 0, 0,
-        5, 0, 0, 0, 0, 0, 0, 0,
-        4, 0, 0, 0, 0, 0, 0, 0,
-        3, 0, 0, 0, 0, 0, 0, 0,
-        2, 0, 0, 0, 0, 0, 0, 0
+        2, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0
     }, 8, 8);
     matrix.print();
 
     std::cout << std::endl;
     
     matrix = DCT::transform(matrix);
-    matrix.print();
-  
+//    matrix.print();
+	
     std::cout << std::endl;
 
     matrix = DCT::inverse(matrix);
@@ -316,8 +316,8 @@ void testAraiMatrix()
 int main(int argc, const char *argv[]) {
 	
 	//testhuffmann();
-	testJPEGWriter();
-	//testDirectDCT();
+//	testJPEGWriter();
+	testDirectDCT();
 //	testIDCT();
 	//testMat();
 	//testImage();

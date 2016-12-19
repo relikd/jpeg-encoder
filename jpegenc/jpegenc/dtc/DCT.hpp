@@ -14,7 +14,7 @@
 
 struct DCT {
 	static Mat transform(Mat input);
-	static Mat transform2DDCT(Mat input);
+	static Mat transform2(Mat input);
 	static Mat inverse(Mat input);
 private:
 	static float getC(int i);
