@@ -10,6 +10,7 @@
 		123881181DEC446E0017A619 /* Huffman.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 123881161DEC446E0017A619 /* Huffman.cpp */; };
 		12B6F1821E002FE3006D0182 /* DCT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12B6F1801E002FE3006D0182 /* DCT.cpp */; };
 		12B6F1881E00311A006D0182 /* Mat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12B6F1861E00311A006D0182 /* Mat.cpp */; };
+		4066437E1E07D37300F37B1F /* Arai.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4066437C1E07D37300F37B1F /* Arai.cpp */; };
 		40F5AE7D1DE3589100ECF256 /* JPEGSegments.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40F5AE7B1DE3589100ECF256 /* JPEGSegments.cpp */; };
 		540D8CAF1DD0BE4D00A4E4C9 /* PPMLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 540D8CAD1DD0BE4D00A4E4C9 /* PPMLoader.cpp */; };
 		5412EC191DF4E062007604E9 /* Node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5412EC171DF4E062007604E9 /* Node.cpp */; };
@@ -33,6 +34,8 @@
 		12B6F1811E002FE3006D0182 /* DCT.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DCT.hpp; sourceTree = "<group>"; };
 		12B6F1861E00311A006D0182 /* Mat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Mat.cpp; sourceTree = "<group>"; };
 		12B6F1871E00311A006D0182 /* Mat.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Mat.hpp; sourceTree = "<group>"; };
+		4066437C1E07D37300F37B1F /* Arai.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Arai.cpp; sourceTree = "<group>"; };
+		4066437D1E07D37300F37B1F /* Arai.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Arai.hpp; sourceTree = "<group>"; };
 		40F5AE7B1DE3589100ECF256 /* JPEGSegments.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JPEGSegments.cpp; sourceTree = "<group>"; };
 		40F5AE7C1DE3589100ECF256 /* JPEGSegments.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = JPEGSegments.hpp; sourceTree = "<group>"; };
 		540D8CAD1DD0BE4D00A4E4C9 /* PPMLoader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PPMLoader.cpp; sourceTree = "<group>"; };
@@ -99,6 +102,8 @@
 				12B6F1871E00311A006D0182 /* Mat.hpp */,
 				544ED4971E06247300593D75 /* AraiTest.cpp */,
 				544ED4981E06247300593D75 /* AraiTest.hpp */,
+				4066437C1E07D37300F37B1F /* Arai.cpp */,
+				4066437D1E07D37300F37B1F /* Arai.hpp */,
 			);
 			name = dct;
 			path = dtc;
@@ -263,6 +268,7 @@
 				546A42FB1DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp in Sources */,
 				546A42FA1DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp in Sources */,
 				546A42FD1DBA7A8D006C2629 /* Image.cpp in Sources */,
+				4066437E1E07D37300F37B1F /* Arai.cpp in Sources */,
 				543AF4AE1DFDC241006C8F7D /* Encoding.cpp in Sources */,
 				12B6F1881E00311A006D0182 /* Mat.cpp in Sources */,
 				12B6F1821E002FE3006D0182 /* DCT.cpp in Sources */,
