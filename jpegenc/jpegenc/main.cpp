@@ -6,6 +6,7 @@
 #include "helper/Test.hpp"
 #include "Huffman.hpp"
 #include "DCT.hpp"
+#include "Arai.hpp"
 
 #include "bitstream/Bitstream.hpp"
 
@@ -232,6 +233,27 @@ void testMat() {
 	c.print();
 }
 
+void testArai()
+{
+    float *values = new float[8];
+    
+    values[0] = 1;
+    values[1] = 7;
+    values[2] = 3;
+    values[3] = 4;
+    values[4] = 5;
+    values[5] = 4;
+    values[6] = 3;
+    values[7] = 2;
+
+    Arai::transformLine(values);
+    
+    for (int i = 0; i < 8; ++i)
+    {
+        std::cout << values[i] << std::endl;
+    }
+}
+
 // ################################################################
 // #
 // #  Main
@@ -244,9 +266,12 @@ int main(int argc, const char *argv[]) {
 	//testJPEGWriter();
 	
 	//testDirectDCT();
-	testIDCT();
+//	testIDCT();
 //	testMat();
 //	testImage();
+    
+    testArai();
+    
 	
 	return 0;
 }
