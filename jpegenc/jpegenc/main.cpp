@@ -305,6 +305,46 @@ void testAraiMatrix()
     matrix.print();
 }
 
+void testTransformations()
+{
+    Mat matrix;
+    
+    matrix.initiate((float[]) {
+        1, 7, 3, 4, 5, 4, 3, 2,
+        7, 0, 0, 0, 0, 0, 0, 0,
+        3, 0, 0, 0, 0, 0, 0, 0,
+        4, 0, 0, 0, 0, 0, 0, 0,
+        5, 0, 0, 0, 0, 0, 0, 0,
+        4, 0, 0, 0, 0, 0, 0, 0,
+        3, 0, 0, 0, 0, 0, 0, 0,
+        2, 0, 0, 0, 0, 0, 0, 0
+    }, 8, 8);
+    
+    matrix = DCT::transform(matrix);
+    matrix.print();
+    std::cout << std::endl;
+    
+    matrix = DCT::inverse(matrix);
+    matrix.print();
+    std::cout << std::endl;
+
+    matrix = DCT::transform2(matrix);
+    matrix.print();
+    std::cout << std::endl;
+    
+    matrix = DCT::inverse(matrix);
+    matrix.print();
+    std::cout << std::endl;
+
+    matrix = Arai::transform(matrix);
+    matrix.print();
+    std::cout << std::endl;
+    
+    matrix = DCT::inverse(matrix);
+    matrix.print();
+    std::cout << std::endl;
+}
+
 // ################################################################
 // #
 // #  Main
@@ -320,7 +360,8 @@ int main(int argc, const char *argv[]) {
 	//testMat();
 	//testImage();
     //testAraiLine();
-    testAraiMatrix();
+    //testAraiMatrix();
+    testTransformations();
 	
 	return 0;
 }
