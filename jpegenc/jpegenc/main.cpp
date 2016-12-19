@@ -6,6 +6,8 @@
 #include "helper/Test.hpp"
 #include "Huffman.hpp"
 #include "DCT.hpp"
+#include "IDCT.hpp"
+#include "Arai.hpp"
 
 #include "bitstream/Bitstream.hpp"
 
@@ -234,6 +236,70 @@ void testMat() {
 	c.print();
 }
 
+void testAraiLine()
+{
+    float *values = new float[8];
+    
+    values[0] = 1;
+    values[1] = 7;
+    values[2] = 3;
+    values[3] = 4;
+    values[4] = 5;
+    values[5] = 4;
+    values[6] = 3;
+    values[7] = 2;
+
+    Arai::transformLine(values);
+
+    bool test = true;
+    float tolerance = 0.0001;
+    
+    test = test && (values[0] - (10.253)     < tolerance);
+    test = test && (values[1] - (0.797218)   < tolerance);
+    test = test && (values[2] - (-2.19761)   < tolerance);
+    test = test && (values[3] - (-0.0377379) < tolerance);
+    test = test && (values[4] - (-1.76777)   < tolerance);
+    test = test && (values[5] - (-2.75264)   < tolerance);
+    test = test && (values[6] - (-2.53387)   < tolerance);
+    test = test && (values[7] - (-1.13403)   < tolerance);
+    
+    if ( test )
+    {
+        std::cout << "All values are correct." << std::endl;
+    }
+    else
+    {
+        std::cout << "Something went wrong." << std::endl;
+    }
+}
+
+void testAraiMatrix()
+{
+    Mat matrix;
+    
+    matrix.initiate((float[]) {
+        1, 7, 3, 4, 5, 4, 3, 2,
+        7, 0, 0, 0, 0, 0, 0, 0,
+        3, 0, 0, 0, 0, 0, 0, 0,
+        4, 0, 0, 0, 0, 0, 0, 0,
+        5, 0, 0, 0, 0, 0, 0, 0,
+        4, 0, 0, 0, 0, 0, 0, 0,
+        3, 0, 0, 0, 0, 0, 0, 0,
+        2, 0, 0, 0, 0, 0, 0, 0
+    }, 8, 8);
+    matrix.print();
+
+    std::cout << std::endl;
+    
+    matrix = Arai::transform(matrix);
+    matrix.print();
+  
+    std::cout << std::endl;
+
+    matrix = DCT::inverse(matrix);
+    matrix.print();
+}
+
 // ################################################################
 // #
 // #  Main
@@ -244,11 +310,12 @@ int main(int argc, const char *argv[]) {
 	
 	//testhuffmann();
 	//testJPEGWriter();
-	
 	//testDirectDCT();
-		testIDCT();
-//	testMat();
-	//	testImage();
-	
+	//testIDCT();
+	//testMat();
+	//testImage();
+    //testAraiLine();
+    //testAraiMatrix();
+    
 	return 0;
 }
