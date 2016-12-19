@@ -169,9 +169,9 @@ void testhuffmann() {
 	
 	Huffman huffman = Huffman(input);
 	huffman.preventAllOnesPath(true);
-//	auto encodingTable = huffman.canonicalEncoding();
+	//	auto encodingTable = huffman.canonicalEncoding();
 	auto encodingTable = huffman.canonicalEncoding(4);
-//	Node* rootTree = huffman.standardTree();
+	//	Node* rootTree = huffman.standardTree();
 	Node* rootTree = huffman.treeFromEncodingTable(encodingTable);
 	
 	
@@ -205,12 +205,14 @@ void testDirectDCT() {
 void testIDCT() {
 	Mat input;
 	input.initiate((float[]){
-		2, 2,
-		2, 2
-	}, 2, 2);
+		2, 2, 2,
+		2, 2, 2,
+		2, 2, 2
+	}, 3, 3);
 	
 	Mat out = DCT::transform2DDCT(input);
-
+	out.print();
+	
 	Mat inverse = DCT::inverse(out);
 	inverse.print();
 }
@@ -218,15 +220,15 @@ void testIDCT() {
 void testMat() {
 	Mat a;
 	a.initiate((float[]){
-		1, 2, 3,
-		3, 1, 1}, 2 , 3);
+		1, 0, 0,
+		0, 1, 0,
+		0, 0, 1}, 3 , 3);
 	
 	Mat b;
 	b.initiate((float[]){
-		2, 1,
-		1, 2,
-		2, 1
-	}, 3 , 2);
+		1, 2, 3,
+		0, 1, 4,
+		0, 5, 1}, 3 , 3);
 	
 	Mat c = a * b;
 	c.print();
@@ -244,9 +246,9 @@ int main(int argc, const char *argv[]) {
 	//testJPEGWriter();
 	
 	//testDirectDCT();
-	testIDCT();
+		testIDCT();
 //	testMat();
-//	testImage();
+	//	testImage();
 	
 	return 0;
 }
