@@ -305,7 +305,7 @@ void testAraiMatrix()
     matrix.print();
 }
 
-void testTransformations()
+void testTransformations(int digits = 5)
 {
     Mat matrix;
     
@@ -321,27 +321,27 @@ void testTransformations()
     }, 8, 8);
     
     matrix = DCT::transform(matrix);
-    matrix.print();
+    matrix.print(digits);
     std::cout << std::endl;
     
     matrix = DCT::inverse(matrix);
-    matrix.print();
+    matrix.print(digits);
     std::cout << std::endl;
 
     matrix = DCT::transform2(matrix);
-    matrix.print();
+    matrix.print(digits);
     std::cout << std::endl;
     
     matrix = DCT::inverse(matrix);
-    matrix.print();
+    matrix.print(digits);
     std::cout << std::endl;
 
     matrix = Arai::transform(matrix);
-    matrix.print();
+    matrix.print(digits);
     std::cout << std::endl;
     
     matrix = DCT::inverse(matrix);
-    matrix.print();
+    matrix.print(digits);
     std::cout << std::endl;
 }
 
@@ -359,8 +359,9 @@ int main(int argc, const char *argv[]) {
     //testIDCT();
 	//testMat();
 	//testImage();
-    testAraiLine();
-    testAraiMatrix();
+//    testAraiLine();
+//    testAraiMatrix();
+	testTransformations(0);
 	
 	return 0;
 }
