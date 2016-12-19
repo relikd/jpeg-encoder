@@ -1,6 +1,13 @@
 #include <exception>
 #include <iostream>
 #include "Mat.hpp"
+#include <math.h>
+
+
+double round( double value )
+{
+	return floor( value * 100000 + 0.5 ) / 100000;
+}
 
 
 void Mat::transpose(bool transpose) {
@@ -101,7 +108,7 @@ int Mat::calculateIndex(int row, int col) const{
 void Mat::print() {
 	for (int i = 0 ; i < rows; ++i) {
 		for (int k = 0; k < cols; ++k) {
-			std::cout << get(i, k) << "\t";
+			std::cout << round(get(i, k)) << "\t";
 		}
 		std::cout << std::endl;
 	}
