@@ -69,7 +69,7 @@ Mat DCT::inverse(Mat input) {
 
 float DCT::getC(int i) {
 	if (i == 0) {
-		return 1.0/sqrt(2);
+		return 0.7071067811865475244008443621048490392848359376884740;  //1/sqrt(2)
 	}
 	return 1;
 }
