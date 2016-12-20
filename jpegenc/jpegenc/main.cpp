@@ -345,13 +345,22 @@ void testTransformations(int digits = 5)
     matrix.print(digits);
     std::cout << std::endl;
 	
-	matrix = AraiTest::transform(matrix);
-	matrix.print(digits);
-	std::cout << std::endl;
 	
-	matrix = DCT::inverse(matrix);
-	matrix.print(digits);
-	std::cout << std::endl;
+	Test::howManyOperationsInSeconds(3, "Arai", [&matrix](bool &shouldRun){
+		size_t iters = 0;
+		while (shouldRun) {
+			Arai::transform(matrix);
+			++iters;
+		}
+		return iters;
+	});
+
+	size_t iters = 460000;
+	Timer t;
+	while (iters--) {
+		Arai::transform(matrix);
+	}
+	printf("Testing <Arai> took %lf seconds with %lu iterations (%lfms per operation)\n", t.elapsed(), 460000L, t.elapsed() / 460000 * 1000);
 }
 
 // ################################################################
@@ -369,7 +378,7 @@ int main(int argc, const char *argv[]) {
 	//testMat();
 	//testImage();
     testAraiLine();
-//    testAraiMatrix();
+	//testAraiMatrix();
 	testTransformations(5);
 	
 	return 0;
