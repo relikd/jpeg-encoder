@@ -33,24 +33,20 @@ void testImage() {
 		PPMLoader loader;
 		auto image = loader.load("../data/singapore4k.test.ppm");
 		
-		//		RGBToYCbCrConverter converter1;
-		//		converter1.convert(image);
-		//
-		//		image->print();
-		//
-		//		image->channel2->reduceBySubSampling( image->imageSize.width, image->imageSize.height );
-		//		image->channel3->reduceBySubSampling( image->imageSize.width, image->imageSize.height );
-		//
-		//		YCbCrToRGBConverter converter2;
-		//		converter2.convert(image);
-		//
-		//		image->reduceBySubSample(2, 2);
-		//		image->reduceByAverage(2, 2);
-		//		image->print();
+		RGBToYCbCrConverter converter1;
+		converter1.convert(image);
 		
-		//		Test::performance([&loader, &image]{
-		//			loader.write("data/output.test.ppm", image);
-		//		});
+		//image->print();
+		
+		image->channel2->reduceBySubSampling(32, 32);
+		image->channel2 = Channel::enlarge(image->channel2, 32, 32); // this is only needed to convert back to RGB
+		
+		YCbCrToRGBConverter converter2;
+		converter2.convert(image);
+		
+		Test::performance([&loader, &image]{
+			loader.write("../data/output.test.ppm", image);
+		});
 	});
 }
 
@@ -376,10 +372,10 @@ int main(int argc, const char *argv[]) {
 	//testDirectDCT();
     //testIDCT();
 	//testMat();
-	//testImage();
-    testAraiLine();
+	testImage();
+//    testAraiLine();
 	//testAraiMatrix();
-	testTransformations(5);
+//	testTransformations(5);
 	
 	return 0;
 }

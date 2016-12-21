@@ -1,49 +1,78 @@
 #ifndef Channel_hpp
 #define Channel_hpp
 
-typedef float color;
-
 #include <functional>
+
+#define START_INDEX 0
+
+typedef float color;
+typedef enum {
+	ChannelSeekRead,
+	ChannelSeekWrite,
+	ChannelSeekBoth
+} ChannelSeekType;
+
 
 struct Dimension {
 	size_t width, height;
 	size_t pixelCount;
 	
 	Dimension(size_t w, size_t h) : width(w), height(h), pixelCount(w * h) {}
-	
-	Dimension& operator*=(size_t a) { width*=a; height*=a; pixelCount*=a*a; return *this; }
-	Dimension& operator/=(size_t a) { width/=a; height/=a; pixelCount/=a*a; return *this; }
-	Dimension& operator/=(const Dimension &other) {
-		width/=other.width; height/=other.height; pixelCount/=other.pixelCount; return *this;
-	}
-	bool operator==(const Dimension &other) { return (pixelCount == other.pixelCount); }
-	bool operator!=(const Dimension &other) { return (pixelCount != other.pixelCount); }
 };
 
 
 class Channel {
+private:
+	// Initial write
+	unsigned short currentBlockSize = 16;
+	size_t originalWidth = 0, originalHeight = 0;
+	unsigned short blockAddCols = 0, blockAddRows = 0;
+	
+	// write
+	color *writePointer;
+	size_t currentWriteRow, currentWriteColumn;
+	
+	// read
+	color *readPointer;
+	size_t subsampleReadSkipX = 1, subsampleReadSkipY = 1;
+	size_t countSkipX = 0, countSkipY = 0;
+	size_t remainingReadInLine = 0;
+	bool shouldReadSubsampleX = false, shouldReadSubsampleY = false;
+	
+public:
 	Dimension imageSize;
 	color *values;
 	
-public:
-	Channel(Dimension dim) : imageSize(dim) {
-		values = new color[imageSize.pixelCount];
-	}
+	// Constructor
+	Channel(Dimension dim, unsigned short blockSize = 8);
+	static Channel* enlarge(Channel *base, size_t xMultiply, size_t yMultiply);
 	
 	~Channel() {
 		delete[] values;
 	}
 	
-	size_t numberOfPixel() { return imageSize.pixelCount; }
+	inline size_t numberOfPixel() { return imageSize.pixelCount; }
 	
-	color getValue(size_t x, size_t y, Dimension mapped_size);
-	color getValue(size_t index, Dimension mapped_size);
-	void setValue(size_t x, size_t y, color &value);
-	void setValue(size_t index, color &value);
+	// Read & Write
+	color& readNextValue();
+	void appendValue(const color &value);
+	void appendValueAndFillupBlocks(const color &value);
+	
+	// Conditional Reading / Rules
+	void seekTo(ChannelSeekType type, size_t index = START_INDEX);
+	void setReadIndexAccessMappingRule(Dimension mapping_size);
+	void deleteReadIndexAccessMappingRule();
+	
+	// Subsampling & Averaging
 	void reduceBySubSampling(size_t stepWidth, size_t stepHeight=1);
 	void reduceByAveraging(size_t stepWidth, size_t stepHeight=1);
 	
 private:
+	inline void setImageSize(Dimension dim, unsigned short blockSize = 1);
+	inline void fillupValuesByDuplicating();
+	
+	color& readNextSubsampleValue();
+	
 	void reduceWithFunction(size_t stepWidth, size_t stepHeight, std::function<color(size_t, size_t)>);
 };
 
