@@ -14,16 +14,14 @@ private:
 	long filesize;
 	char *buffer; // the whole file content
 	
-	void normalize(color &outputValue, const unsigned short &inputValue, const unsigned short &maxValue);
-	
 	// read
 	void readFileToMemory(const char *pathToImage);
 	bool parseHeader(size_t &index, size_t &width, size_t &height, unsigned short &maxValue);
 	void parseData(size_t &index, std::shared_ptr<Image> image, const unsigned short maxValue);
 	
 	// write
-	void readNumberToFileSaveBuffer(size_t number, char *buf, unsigned short &index);
-	void readNumberToFileSaveBuffer(unsigned int &zahl, unsigned short &stellen, char *buf, unsigned short &index, unsigned int &zehnerPotenz);
+	inline void readNumberToFileSaveBuffer(size_t number, char *buf, unsigned short &index);
+	inline void readNumberToFileSaveBuffer(size_t zahl, unsigned short stellen, char *buf, unsigned short index);
 };
 
 #endif /* PPMLoader_hpp */
