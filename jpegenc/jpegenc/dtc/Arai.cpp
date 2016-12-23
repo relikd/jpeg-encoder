@@ -29,20 +29,19 @@
 
  */
 
-void Arai::transformLine(float *values) {
-   
-    float a0 = values[0] + values[7];
-    float a1 = values[1] + values[6];
-    float a2 = values[2] + values[5];
-    float a3 = values[3] + values[4];
-    float a5 = values[2] - values[5];
-    float a6 = values[1] - values[6];
-    float a7 = values[0] - values[7];
+void Arai::transformLine(float **x) {
+    float a0 = *x[0] + *x[7];
+    float a1 = *x[1] + *x[6];
+    float a2 = *x[2] + *x[5];
+    float a3 = *x[3] + *x[4];
+    float a5 = *x[2] - *x[5];
+    float a6 = *x[1] - *x[6];
+    float a7 = *x[0] - *x[7];
     
     float b0 = a0 + a3;
     float b1 = a1 + a2;
     float b3 = a0 - a3;
-    float b4 = -(values[3] - values[4]) - a5;
+    float b4 = -(*x[3] - *x[4]) - a5;
     float b6 = a6 + a7;
     
     float A5_block = (b4 + b6) * A5;
@@ -51,78 +50,52 @@ void Arai::transformLine(float *values) {
     float d4 = -(b4 * A2) - A5_block;
     float d5 = (a5 + a6) * A3;
     float d6 = (b6 * A4) - A5_block;
-
+    
     float e5 = d5 + a7;
     float e7 = a7 - d5;
     
-    values[0] = (b0 + b1) * S0;
-    values[1] = (e5 + d6) * S1;
-    values[2] = (d2 + b3) * S2;
-    values[3] = (e7 - d4) * S3;
-    values[4] = (b0 - b1) * S4;
-    values[5] = (d4 + e7) * S5;
-    values[6] = (b3 - d2) * S6;
-    values[7] = (e5 - d6) * S7;
+    *x[0] = (b0 + b1) * S0;
+    *x[1] = (e5 + d6) * S1;
+    *x[2] = (d2 + b3) * S2;
+    *x[3] = (e7 - d4) * S3;
+    *x[4] = (b0 - b1) * S4;
+    *x[5] = (d4 + e7) * S5;
+    *x[6] = (b3 - d2) * S6;
+    *x[7] = (e5 - d6) * S7;
 }
 
-Mat Arai::transform(Mat input)
-{
-    if ( input.rows != 8 || input.cols != 8 )
-    {
-        std::cout << "ERROR: Malformed matrix. Expected 8X8 but got " << input.rows << "X" << input.cols << ". Skipping Arai transformation." << std::endl;
-    }
-    else
-    {
-        processColumns(input);
-        processRows(input);
-    }
-    return input;
+Mat Arai::transform(Mat matrix) {
+    processRows(matrix.values);
+    processColumns(matrix.values);
+    return matrix;
 }
 
-void Arai::processColumns(Mat input) {
-    for (int y = 0; y < 8; ++y)
+void Arai::processRows(float *values) {
+    for (int row = 0; row < 8; ++row)
     {
-        float* currentColumn = new float[8];
+        float **currentLine = new float*[8];
         
-        // Read values
-        for (int x = 0; x < 8; ++x)
+        for (int column = 0; column < 8; ++column)
         {
-            currentColumn[x] = input.get(y, x);
+            currentLine[column] = &values[row * 8 + column];
         }
+        transformLine(currentLine);
         
-        // Transform values
-        transformLine(currentColumn);
-        
-        // Write values
-        for(int x = 0; x < 8; ++x)
-        {
-            input.set(y, x, currentColumn[x]);
-        }
-        
-        delete[] currentColumn;
+        delete[] currentLine;
     }
 }
 
-void Arai::processRows(Mat input) {
-    for (int x = 0; x < 8; ++x)
+void Arai::processColumns(float *values) {
+    for (int column = 0; column < 8; ++column)
     {
-        float* currentRow = new float[8];
+        float **currentLine = new float*[8];
         
-        // Read values
-        for (int y = 0; y < 8; ++y)
+        for (int row = 0; row < 8; ++row)
         {
-            currentRow[y] = input.get(y, x);
+            currentLine[row] = &values[row * 8 + column];
         }
+        transformLine(currentLine);
         
-        // Transform values
-        transformLine(currentRow);
-        
-        // Write values
-        for (int y = 0; y < 8; ++y)
-        {
-            input.set(y, x, currentRow[y]);
-        }
-        
-        delete[] currentRow;
+        delete[] currentLine;
     }
 }

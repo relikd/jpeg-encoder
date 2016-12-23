@@ -7,11 +7,11 @@
 struct Arai
 {
 public:
-    static Mat transform(Mat input);
-    static void transformLine(float *values);
+    static Mat transform(Mat matrix);
+    static void transformLine(float **x);
 private:
-    static void processColumns(Mat input);
-    static void processRows(Mat input);
+    static void processRows(float *values);
+    static void processColumns(float *values);
 };
 
 #endif /* Arai_hpp */

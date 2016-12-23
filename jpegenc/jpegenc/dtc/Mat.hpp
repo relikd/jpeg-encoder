@@ -38,9 +38,9 @@ struct Mat {
 	Mat operator*(const Mat &oMat) const;
 	
 	void print(int digit = 5);
+    float* values;
 
 private:
-	float* values;
 	int calculateIndex(int row, int col) const;
 };
 
