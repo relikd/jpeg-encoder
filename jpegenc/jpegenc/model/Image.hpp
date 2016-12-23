@@ -32,6 +32,8 @@ struct Image {
 	void print(bool useIntValues = true);
 	void reduceBySubSample(size_t xdiv, size_t ydiv);
 	void reduceByAverage(size_t xdiv, size_t ydiv);
+	void seekAllChannelToStart(ChannelSeekType type);
+	void setReadingRuleForAllChannel();
 };
 
 #endif /* Image_hpp */

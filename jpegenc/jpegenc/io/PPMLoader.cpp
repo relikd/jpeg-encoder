@@ -1,9 +1,9 @@
+#include "PPMLoader.hpp"
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
-#include <math.h>
+#include "BitMath.hpp"
 
-#include "PPMLoader.hpp"
 
 std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 	readFileToMemory(pathToImage);
@@ -37,9 +37,6 @@ void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
 	
 	char out[4096];
 	unsigned short idx = 0;
-	unsigned int zahl;
-	unsigned short stellen;
-	unsigned int zehnerPotenz;
 	
 	FILE *f = fopen(pathToImage, "w");
 	
@@ -53,17 +50,19 @@ void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
 	
 	
 	Channel *channels[] = {image->channel1, image->channel2, image->channel3};
-	unsigned short charactersOnLine = 0;
+	image->setReadingRuleForAllChannel();
 	
+	unsigned short charactersOnLine = 0;
 	for (size_t i = 0; i < pixelCount; i++) {
 		
-		zahl = channels[i%3]->getValue(i/3, imageSize) * 255;
-		stellen = log10f(zahl);
+		unsigned int zahl = channels[i%3]->readNextValue() * 255;
+		unsigned short stellen = BitMath::numberOfDigitsBase10(zahl);
+		charactersOnLine += stellen + 1;
 		
 		// if the next number will exceed the 70 character limit, start new line
-		if (charactersOnLine + stellen + 2 > 69) { // + 1 for ' ' + 1 because of log10()
+		if (charactersOnLine > 69) { // + 1 for ' '
 			out[idx-1] = '\n'; // replace ' ' with '\n'
-			charactersOnLine = 0;
+			charactersOnLine = stellen + 1; // put number on new line
 			
 			if (idx + 70 > 4095) { // once buffer full, write to disk
 				fwrite(out, 1, idx, f);
@@ -71,32 +70,28 @@ void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
 			}
 		}
 		// parse int-number to string-number
-		charactersOnLine += stellen + 2;
-		readNumberToFileSaveBuffer(zahl, stellen, out, idx, zehnerPotenz);
+		readNumberToFileSaveBuffer(zahl, stellen, out, idx);
+		idx += stellen + 1;
 	}
 	
 	// write all remaining bytes
-	fwrite(out, 1, idx - 1, f);
+	fwrite(out, 1, idx, f);
 	fclose(f);
 }
 
-void PPMLoader::readNumberToFileSaveBuffer(size_t number, char *buf, unsigned short &index) {
-	unsigned int zehnerPotenz;
-	unsigned int zahl = (unsigned int)number;
-	unsigned short stellen = log10f(zahl);
-	readNumberToFileSaveBuffer(zahl, stellen, buf, index, zehnerPotenz);
+inline void PPMLoader::readNumberToFileSaveBuffer(size_t number, char *buf, unsigned short &index) {
+	unsigned short stellen = BitMath::numberOfDigitsBase10(number);
+	readNumberToFileSaveBuffer(number, stellen, buf, index);
+	index += stellen + 1;
 }
 
-void PPMLoader::readNumberToFileSaveBuffer(unsigned int &zahl, unsigned short &stellen, char *buf, unsigned short &index, unsigned int &zehnerPotenz) {
-	
-	zehnerPotenz = powf(10, stellen);
+inline void PPMLoader::readNumberToFileSaveBuffer(size_t zahl, unsigned short stellen, char *buf, unsigned short index) {
+	// write buffer last character first
+	buf[index + stellen] = ' ';
 	while (stellen--) {
-		buf[index++] = (zahl / zehnerPotenz) + 48; // 48 == '0'
-		zahl %= zehnerPotenz;
-		zehnerPotenz /= 10;
+		buf[index + stellen] = (zahl % 10) + 48; // 48 == '0'
+		zahl /= 10;
 	}
-	buf[index++] = zahl + 48;
-	buf[index++] = ' ';
 }
 
 // ################################################################
@@ -105,10 +100,9 @@ void PPMLoader::readNumberToFileSaveBuffer(unsigned int &zahl, unsigned short &s
 // #
 // ################################################################
 
-void PPMLoader::normalize(color &outputValue, const unsigned short &inputValue, const unsigned short &maxValue){
-	outputValue = inputValue / (color) maxValue;
+inline color normalize(const unsigned short &inputValue, const unsigned short &maxValue){
+	return inputValue / (color) maxValue;
 }
-
 
 // ################################################################
 // #
@@ -163,7 +157,7 @@ bool PPMLoader::parseHeader(size_t &index, size_t &width, size_t &height, unsign
 		}
 		// calculate number
 		if (c > 47 && c < 59) {
-			if (headerIndex >2) {
+			if (headerIndex > 2) {
 				--index;
 				return true; // index = begining of the first data value
 			}
@@ -189,17 +183,15 @@ bool PPMLoader::parseHeader(size_t &index, size_t &width, size_t &height, unsign
 }
 
 void PPMLoader::parseData(size_t &index, std::shared_ptr<Image> image, const unsigned short maxValue) {
-	char c;
-	size_t pixelIndex = 0; // logical index to channel array index
 	int value = 0; // holds the actual number
 	bool valueChanged = false;
 	
+	size_t channelIndex = 0; // constantly switch the three channels
 	Channel *channels[] = {image->channel1, image->channel2, image->channel3};
-	char channelIndex = 0; // constantly switch the three channels
-	color currentColor = 0;
+	image->seekAllChannelToStart(ChannelSeekWrite);
 	
 	while (index < filesize) {
-		c = buffer[ index++ ];
+		char c = buffer[ index++ ];
 		
 		// calculate number
 		if (c > 47 && c < 59) {
@@ -209,13 +201,10 @@ void PPMLoader::parseData(size_t &index, std::shared_ptr<Image> image, const uns
 		}
 		// save number to channel array
 		if (valueChanged) {
+			channels[channelIndex]->appendValueAndFillupBlocks( normalize(value, maxValue) );
 			
-			normalize(currentColor, value, maxValue);
-			channels[channelIndex]->setValue(pixelIndex, currentColor);
-			
-			channelIndex = (channelIndex + 1) % 3;
-			if (channelIndex == 0)
-				++pixelIndex;
+			if (++channelIndex > 2)
+				channelIndex = 0;
 			
 			value = 0;
 			valueChanged = false;
@@ -224,8 +213,7 @@ void PPMLoader::parseData(size_t &index, std::shared_ptr<Image> image, const uns
 	
 	// if there's no whitespace after the last number! Otherwise the loop will omit it
 	if (value > 0) {
-		normalize(currentColor, value, maxValue);
-		channels[channelIndex]->setValue(pixelIndex, currentColor);
+		channels[channelIndex]->appendValue( normalize(value, maxValue) );
 	}
 }
 

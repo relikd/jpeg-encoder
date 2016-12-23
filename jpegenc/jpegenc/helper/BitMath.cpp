@@ -23,5 +23,3 @@ unsigned short BitMath::log2(unsigned long v) {
 					 else       return LogTable256[v];}
 	}
 }
-
-
