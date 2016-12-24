@@ -14,6 +14,9 @@
 		40F5AE7D1DE3589100ECF256 /* JPEGSegments.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40F5AE7B1DE3589100ECF256 /* JPEGSegments.cpp */; };
 		540D8CAF1DD0BE4D00A4E4C9 /* PPMLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 540D8CAD1DD0BE4D00A4E4C9 /* PPMLoader.cpp */; };
 		5412EC191DF4E062007604E9 /* Node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5412EC171DF4E062007604E9 /* Node.cpp */; };
+		5427976E1E0E835000E702C7 /* OCL_Transpose.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5427976A1E0E835000E702C7 /* OCL_Transpose.cpp */; };
+		5427976F1E0E835000E702C7 /* oclUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5427976C1E0E835000E702C7 /* oclUtils.cpp */; };
+		542797711E0E839600E702C7 /* transpose.cl in Sources */ = {isa = PBXBuildFile; fileRef = 542797701E0E839600E702C7 /* transpose.cl */; };
 		543AF4AE1DFDC241006C8F7D /* Encoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 543AF4AD1DFDC241006C8F7D /* Encoding.cpp */; };
 		544ED4991E06247300593D75 /* AraiTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544ED4971E06247300593D75 /* AraiTest.cpp */; };
 		545A4D491DB6471500B5E365 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 545A4D481DB6471500B5E365 /* main.cpp */; };
@@ -42,6 +45,15 @@
 		540D8CAE1DD0BE4D00A4E4C9 /* PPMLoader.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PPMLoader.hpp; sourceTree = "<group>"; };
 		5412EC171DF4E062007604E9 /* Node.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Node.cpp; sourceTree = "<group>"; };
 		5412EC181DF4E062007604E9 /* Node.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Node.hpp; sourceTree = "<group>"; };
+		542797631E0E831900E702C7 /* output.test.ppm */ = {isa = PBXFileReference; lastKnownFileType = text; path = output.test.ppm; sourceTree = "<group>"; };
+		542797641E0E831900E702C7 /* singapore4k.test.ppm */ = {isa = PBXFileReference; lastKnownFileType = text; path = singapore4k.test.ppm; sourceTree = "<group>"; };
+		542797651E0E831900E702C7 /* Test1.test.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Test1.test.jpg; sourceTree = "<group>"; };
+		542797671E0E831900E702C7 /* very_small.ppm */ = {isa = PBXFileReference; lastKnownFileType = text; path = very_small.ppm; sourceTree = "<group>"; };
+		5427976A1E0E835000E702C7 /* OCL_Transpose.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OCL_Transpose.cpp; sourceTree = "<group>"; };
+		5427976B1E0E835000E702C7 /* OCL_Transpose.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCL_Transpose.h; sourceTree = "<group>"; };
+		5427976C1E0E835000E702C7 /* oclUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = oclUtils.cpp; sourceTree = "<group>"; };
+		5427976D1E0E835000E702C7 /* oclUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oclUtils.h; sourceTree = "<group>"; };
+		542797701E0E839600E702C7 /* transpose.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = transpose.cl; sourceTree = "<group>"; };
 		543AF4AB1DFDBF56006C8F7D /* Encoding.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Encoding.hpp; sourceTree = "<group>"; };
 		543AF4AD1DFDC241006C8F7D /* Encoding.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Encoding.cpp; sourceTree = "<group>"; };
 		544ED4971E06247300593D75 /* AraiTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AraiTest.cpp; sourceTree = "<group>"; };
@@ -127,6 +139,38 @@
 			path = io;
 			sourceTree = "<group>";
 		};
+		542797621E0E831900E702C7 /* data */ = {
+			isa = PBXGroup;
+			children = (
+				542797631E0E831900E702C7 /* output.test.ppm */,
+				542797641E0E831900E702C7 /* singapore4k.test.ppm */,
+				542797651E0E831900E702C7 /* Test1.test.jpg */,
+				542797671E0E831900E702C7 /* very_small.ppm */,
+			);
+			path = data;
+			sourceTree = SOURCE_ROOT;
+		};
+		542797691E0E835000E702C7 /* opencl */ = {
+			isa = PBXGroup;
+			children = (
+				542797721E0E840C00E702C7 /* CL files */,
+				5427976A1E0E835000E702C7 /* OCL_Transpose.cpp */,
+				5427976B1E0E835000E702C7 /* OCL_Transpose.h */,
+				5427976C1E0E835000E702C7 /* oclUtils.cpp */,
+				5427976D1E0E835000E702C7 /* oclUtils.h */,
+			);
+			name = opencl;
+			path = jpegenc/opencl;
+			sourceTree = SOURCE_ROOT;
+		};
+		542797721E0E840C00E702C7 /* CL files */ = {
+			isa = PBXGroup;
+			children = (
+				542797701E0E839600E702C7 /* transpose.cl */,
+			);
+			name = "CL files";
+			sourceTree = "<group>";
+		};
 		545A4D3C1DB6471500B5E365 = {
 			isa = PBXGroup;
 			children = (
@@ -147,6 +191,8 @@
 		545A4D471DB6471500B5E365 /* jpegenc */ = {
 			isa = PBXGroup;
 			children = (
+				542797621E0E831900E702C7 /* data */,
+				542797691E0E835000E702C7 /* opencl */,
 				12B6F17F1E002FE3006D0182 /* dct */,
 				123881151DEC446E0017A619 /* huffmann */,
 				40F5AE7A1DE3589100ECF256 /* segments */,
@@ -267,6 +313,7 @@
 				40F5AE7D1DE3589100ECF256 /* JPEGSegments.cpp in Sources */,
 				546A42FB1DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp in Sources */,
 				546A42FA1DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp in Sources */,
+				5427976E1E0E835000E702C7 /* OCL_Transpose.cpp in Sources */,
 				546A42FD1DBA7A8D006C2629 /* Image.cpp in Sources */,
 				4066437E1E07D37300F37B1F /* Arai.cpp in Sources */,
 				543AF4AE1DFDC241006C8F7D /* Encoding.cpp in Sources */,
@@ -275,6 +322,8 @@
 				54B9AA021DF62F9700BB8D0D /* BitMath.cpp in Sources */,
 				5496ABDD1DCFA97100FED0CF /* Channel.cpp in Sources */,
 				54F366541DD45335004D4AA7 /* Test.cpp in Sources */,
+				5427976F1E0E835000E702C7 /* oclUtils.cpp in Sources */,
+				542797711E0E839600E702C7 /* transpose.cl in Sources */,
 				544ED4991E06247300593D75 /* AraiTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

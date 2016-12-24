@@ -8,6 +8,7 @@
 #include "DCT.hpp"
 #include "Arai.hpp"
 #include "AraiTest.hpp"
+#include "OCL_Transpose.h"
 #include <math.h>
 
 #include "bitstream/Bitstream.hpp"
@@ -36,10 +37,12 @@ void testImage() {
 		RGBToYCbCrConverter converter1;
 		converter1.convert(image);
 		
+		OCL_Transpose ocl_trans;
+		ocl_trans.transpose8x8(image->channel1);
 		//image->print();
 		
-		image->channel2->reduceBySubSampling(32, 32);
-		image->channel2 = Channel::enlarge(image->channel2, 32, 32); // this is only needed to convert back to RGB
+//		image->channel2->reduceBySubSampling(32, 32);
+//		image->channel2 = Channel::enlarge(image->channel2, 32, 32); // this is only needed to convert back to RGB
 		
 		YCbCrToRGBConverter converter2;
 		converter2.convert(image);
@@ -405,7 +408,7 @@ int main(int argc, const char *argv[]) {
 	//testDirectDCT();
     //testIDCT();
 	//testMat();
-//	testImage();
+	testImage();
 //    testAraiLine();
 	testAraiMatrixOG();
 //	testTransformations(5);
