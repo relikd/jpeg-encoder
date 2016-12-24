@@ -254,7 +254,7 @@ void testAraiLine()
     values[6] = 3;
     values[7] = 2;
 
-    Arai::transformLine(values);
+    Arai::transformLineOG(values);
 
     bool test = true;
     float tolerance = 0.0001;
@@ -302,10 +302,50 @@ void testAraiMatrix()
     matrix.print();
 }
 
+
+
+void testAraiMatrixOG()
+{
+	float* vls = new float[64] {
+		1, 7, 3, 4, 5, 4, 3, 2,
+		7, 0, 0, 0, 0, 0, 0, 0,
+		3, 0, 0, 0, 0, 0, 0, 0,
+		4, 0, 0, 0, 0, 0, 0, 0,
+		5, 0, 0, 0, 0, 0, 0, 0,
+		4, 0, 0, 0, 0, 0, 0, 0,
+		3, 0, 0, 0, 0, 0, 0, 0,
+		2, 0, 0, 0, 0, 0, 0, 0
+	};
+	
+	Test::howManyOperationsInSeconds(3, "Marv Arai", [&vls]OPERATIONS_IN_TIME( Arai::transformMT(vls); ));
+	
+	// reset matrix to get the same sequence of calculations
+	vls = new float[64] {
+		1, 7, 3, 4, 5, 4, 3, 2,
+		7, 0, 0, 0, 0, 0, 0, 0,
+		3, 0, 0, 0, 0, 0, 0, 0,
+		4, 0, 0, 0, 0, 0, 0, 0,
+		5, 0, 0, 0, 0, 0, 0, 0,
+		4, 0, 0, 0, 0, 0, 0, 0,
+		3, 0, 0, 0, 0, 0, 0, 0,
+		2, 0, 0, 0, 0, 0, 0, 0
+	};
+	
+	Test::howManyOperationsInSeconds(3, "Oleg Arai", [&vls]OPERATIONS_IN_TIME( Arai::transformOG(vls, 8, 8); ));
+	
+//	for (int i = 0; i < 64; ++i) {
+//		printf("%1.3f\t", vls[i]);
+//		if (i % 8 == 7)
+//			printf("\n");
+//	}
+	
+	std::cout << std::endl;
+}
+
 void testTransformations(int digits = 5)
 {
     Mat matrix;
-    
+	
     matrix.initiate((float[]) {
         1, 7, 3, 4, 5, 4, 3, 2,
         7, 0, 0, 0, 0, 0, 0, 0,
@@ -342,14 +382,7 @@ void testTransformations(int digits = 5)
     std::cout << std::endl;
 	
 	
-	Test::howManyOperationsInSeconds(3, "Arai", [&matrix](bool &shouldRun){
-		size_t iters = 0;
-		while (shouldRun) {
-			Arai::transform(matrix);
-			++iters;
-		}
-		return iters;
-	});
+	Test::howManyOperationsInSeconds(3, "Arai", [&matrix]OPERATIONS_IN_TIME( Arai::transform(matrix); ));
 
 	size_t iters = 460000;
 	Timer t;
@@ -372,9 +405,9 @@ int main(int argc, const char *argv[]) {
 	//testDirectDCT();
     //testIDCT();
 	//testMat();
-	testImage();
+//	testImage();
 //    testAraiLine();
-	//testAraiMatrix();
+	testAraiMatrixOG();
 //	testTransformations(5);
 	
 	return 0;

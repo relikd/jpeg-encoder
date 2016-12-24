@@ -7,7 +7,7 @@
 // |  Performance
 // |
 //  ---------------------------------------------------------------
-void Test::howManyOperationsInSeconds(size_t seconds, const char* description, std::function<size_t(bool &shouldExecute)> func) {
+void Test::howManyOperationsInSeconds(size_t seconds, const char* description, std::function<size_t(const bool &shouldExecute)> func) {
 	bool runWhile = true;
 	
 	std::thread([seconds, &runWhile]() {
