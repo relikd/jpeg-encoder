@@ -19,9 +19,11 @@ private:
 };
 
 
+#define OPERATIONS_IN_TIME(__x__) (const bool &shouldRun){ size_t iters = 0; while (shouldRun) { __x__; ++iters; } return iters; }
+
 class Test {
 public:
-	static void howManyOperationsInSeconds(size_t seconds, const char* description, std::function<size_t(bool &shouldExecute)> func);
+	static void howManyOperationsInSeconds(size_t seconds, const char* description, std::function<size_t(const bool &shouldExecute)> func);
 	static void performance(std::function<void()> func);
 	static void performance(const size_t iterations, const size_t rounds, std::function<void(size_t numberOfElements)> func);
 };

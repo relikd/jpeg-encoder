@@ -70,6 +70,11 @@ Mat Arai::transform(Mat matrix) {
     return matrix;
 }
 
+void Arai::transformMT(float* values) {
+	processRows(values);
+	processColumns(values);
+}
+
 void Arai::processRows(float *values) {
     for (int row = 0; row < 8; ++row)
     {
@@ -98,4 +103,87 @@ void Arai::processColumns(float *values) {
         
         delete[] currentLine;
     }
+}
+
+
+
+
+void Arai::transformLineOG(float* &x, size_t mat_width) {
+	// TODO: We could make two functions, this multiplication is only needed for columns
+	float &idx0 = x[0];
+	float &idx1 = x[mat_width];
+	float &idx2 = x[mat_width * 2];
+	float &idx3 = x[mat_width * 3];
+	float &idx4 = x[mat_width * 4];
+	float &idx5 = x[mat_width * 5];
+	float &idx6 = x[mat_width * 6];
+	float &idx7 = x[mat_width * 7];
+	
+	float a0 = idx0 + idx7;
+	float a1 = idx1 + idx6;
+	float a2 = idx2 + idx5;
+	float a3 = idx3 + idx4;
+	float a5 = idx2 - idx5;
+	float a6 = idx1 - idx6;
+	float a7 = idx0 - idx7;
+	
+	float b0 = a0 + a3;
+	float b1 = a1 + a2;
+	float b3 = a0 - a3;
+	float b4 = -(idx3 - idx4) - a5;
+	float b6 = a6 + a7;
+	
+	float A5_block = (b4 + b6) * A5;
+	
+	float d2 = ((a1 - a2) + b3) * A1;
+	float d4 = -(b4 * A2) - A5_block;
+	float d5 = (a5 + a6) * A3;
+	float d6 = (b6 * A4) - A5_block;
+	
+	float e5 = d5 + a7;
+	float e7 = a7 - d5;
+	
+	idx0 = (b0 + b1) * S0;
+	idx1 = (e5 + d6) * S1;
+	idx2 = (d2 + b3) * S2;
+	idx3 = (e7 - d4) * S3;
+	idx4 = (b0 - b1) * S4;
+	idx5 = (d4 + e7) * S5;
+	idx6 = (b3 - d2) * S6;
+	idx7 = (e5 - d6) * S7;
+}
+
+void Arai::processRowsOG(float* &values, size_t numberOfPixels) {
+	float *rowPointer = &values[0];
+	size_t rowRepeat = numberOfPixels / 8;
+	
+	while (rowRepeat--) {
+		transformLineOG(rowPointer);
+		rowPointer += 8;
+	}
+}
+
+void Arai::processColumnsOG(float* &values, size_t image_width, size_t image_height) {
+	float *colPointer = &values[0];
+	size_t colRepeatY = image_height / 8;
+	size_t colRepeatX;
+	
+	while (colRepeatY--) {
+		colRepeatX = image_width;
+		while (colRepeatX--) {
+			transformLineOG(colPointer, 8);
+			++colPointer;
+		}
+		colPointer += image_width * 7; // 8 (- 1 line) we already calculated
+	}
+}
+
+void Arai::transformOG(float* &values, size_t image_width, size_t image_height) {
+	
+	if (image_width % 8 != 0 || image_height % 8 != 0) {
+		fputs("Error: Arai needs an image dimension of an multiple of 8\n", stderr);
+	}
+	
+	processRowsOG(values, image_width * image_height);
+	processColumnsOG(values, image_width, image_height);
 }
