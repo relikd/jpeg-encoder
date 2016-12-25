@@ -12,7 +12,6 @@ public:
 	
 	static void transformMT(float* values);
 	static void transformOG(float* &values, size_t image_width, size_t image_height);
-	static void transformLineOG(float* &x, size_t mat_width = 1);
 private:
     static void processRows(float *values);
     static void processColumns(float *values);

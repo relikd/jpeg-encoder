@@ -257,7 +257,7 @@ void testAraiLine()
     values[6] = 3;
     values[7] = 2;
 
-    Arai::transformLineOG(values);
+//    Arai::transformLineOG(values);
 
     bool test = true;
     float tolerance = 0.0001;
@@ -455,7 +455,9 @@ void testFloatMatrixArrayDCT() {
 //	size_t width = 8, height = 8;
 //	float *vls = generateBlockMatrix(width, height);
 //	float *out = new float[width * height];
-//	
+//
+	Test::howManyOperationsInSeconds(1, "lambda init", [&vls,&width,&height]OPERATIONS_IN_TIME( DCT::transform2(vls, width, height); ));
+	
 //	Test::howManyOperationsInSeconds(5, "Arai DCT (OLD)", [&matrix]OPERATIONS_IN_TIME( Arai::transform(matrix); ));
 //	Test::howManyOperationsInSeconds(5, "Separated DCT (OLD)", [&matrix]OPERATIONS_IN_TIME( DCT::transform2(matrix); ));
 //	Test::howManyOperationsInSeconds(5, "Normal DCT (OLD)", [&matrix]OPERATIONS_IN_TIME( matrix = DCT::transform(matrix); ));
