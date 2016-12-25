@@ -10,6 +10,7 @@ struct DCT {
 	static Mat transform2(Mat input);
 	static void transform2(float* &input);
 	static Mat inverse(Mat input);
+	static void inverse(float* &input, float* &output);
 private:
 	static Mat generateA(int dimension);
 };
