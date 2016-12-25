@@ -1,9 +1,15 @@
 #include "DCT.hpp"
-#include <math.h>
+#include <math.h> // OLD
+
+//  ---------------------------------------------------------------
+// |
+// |  Constants and Helper
+// |
+//  ---------------------------------------------------------------
 
 #define N 8
 
-inline float getC(size_t i) {
+inline float getC(size_t i) { // OLD
 	if (i == 0)
 		return 0.7071067811865475244008443621048490392848359376884740;  //1/sqrt(2)
 	return 1;
@@ -44,7 +50,15 @@ static const float* matrixA = new float[64] {
 	0.097545161008064151797469776283833198249340057373046875, -0.277785116509801088824360704165883362293243408203125000,  0.415734806151272784369155033346032723784446716308593750, -0.490392640201615326311923581670271232724189758300781250,  0.490392640201615215289621119154617190361022949218750000, -0.415734806151272506813398877056897617876529693603515625,  0.277785116509800755757453316618921235203742980957031250, -0.097545161008064276697560046613943995907902717590332031
 };
 
-Mat DCT::transform(Mat input) {
+
+
+//  ---------------------------------------------------------------
+// |
+// |  Naive Sum DCT
+// |
+//  ---------------------------------------------------------------
+
+Mat DCT::transform(Mat input) { // OLD
 	// As mat has to be quadratic we can just work with the rows
 	Mat newMat(input.rows);
 	for (int i = 0; i < input.rows; ++i) {
@@ -67,26 +81,59 @@ Mat DCT::transform(Mat input) {
 	return newMat;
 }
 
-void DCT::transform(float* &input, float* &output, size_t width, size_t height) {
+void transform8x8_normal(float* &input, float* &output, size_t width) {
 	unsigned char i,j,x,y;
+	
+	// jump through output
 	i = N;
 	while (i--) { // outer loop over output
 		j = N;
 		while (j--) {
 			float inner = 0;
+			
+			// jump through input
 			x = N;
 			while (x--) { // inner loop over input
 				y = N;
 				while (y--) {
-					inner += input[y + x * N] * cos_2x1iPi_2N[x][i] * cos_2x1iPi_2N[y][j];
+					inner += input[y + x * width] * cos_2x1iPi_2N[x][i] * cos_2x1iPi_2N[y][j];
 				}
 			}
-			output[j + i * N] = getConstantC(i,j) * inner;
+			output[j + i * width] = getConstantC(i, j) * inner;
 		}
 	}
 }
 
-Mat DCT::transform2(Mat input) {
+void DCT::transform(float* &input, float* &output, const size_t width, const size_t height) {
+	float *ptIn = &input[0];
+	float *ptOut = &output[0];
+	
+	unsigned short x, y;
+	const unsigned short numOfCols = width / N; // otherwise will be calculated multiple times
+	const size_t lineJump = width * (N - 1); // only N-1 because one line was already processed
+	
+	x = height / N;
+	while (x--) {
+		y = numOfCols;
+		while (y--) {
+			transform8x8_normal(ptIn, ptOut, width);
+			ptIn += N;
+			ptOut += N;
+		}
+		ptIn += lineJump;
+		ptOut += lineJump;
+	}
+}
+
+
+
+//  ---------------------------------------------------------------
+// |
+// |  Separated Matrix Multiplication
+// |
+//  ---------------------------------------------------------------
+
+Mat DCT::transform2(Mat input) { // OLD
 	Mat a = generateA(input.rows);
 	Mat temp = a * input;
 	a.transpose();
@@ -94,7 +141,7 @@ Mat DCT::transform2(Mat input) {
 	return temp * a;
 }
 
-void multiplyWithMatrix(float* &a, float* &b, float* &result) {
+void multiplyMatrixAWith(float* &b, float* &result, const size_t width) {
 	unsigned char x,y, i;
 	y = N;
 	while (y--) {
@@ -103,14 +150,14 @@ void multiplyWithMatrix(float* &a, float* &b, float* &result) {
 			float sum = 0;
 			i = N;
 			while (i--) { // multiplication loop
-				sum += a[y * N + i] * b[i * N + x];
+				sum += matrixA[y * N + i] * b[i * width + x];
 			}
-			result[y * N + x] = sum;
+			result[y * width + x] = sum;
 		}
 	}
 }
-// two separate loops because its around 300.000 operations per second faster than a if (bool) clause
-void multiplyWithTransposedMatrix(float* &a, float* &b, float* &result) {
+// two separate loops because its around 300.000 operations per second faster than an if (bool) clause
+void multiplyWithTransposedMatrixA(float* &a, float* &result, const size_t width) {
 	unsigned char x,y, i;
 	y = N;
 	while (y--) {
@@ -119,20 +166,50 @@ void multiplyWithTransposedMatrix(float* &a, float* &b, float* &result) {
 			float sum = 0;
 			i = N;
 			while (i--) { // multiplication loop
-				sum += a[y * N + i] * b[x * N + i];
+				sum += a[y * width + i] * matrixA[x * N + i];
 			}
-			result[y * N + x] = sum;
+			result[y * width + x] = sum;
 		}
 	}
 }
 
-void DCT::transform2(float* &input) {
-	float* temp = new float[64];
-	multiplyWithMatrix((float*&)matrixA, input, temp); // a * input
-	multiplyWithTransposedMatrix(temp, (float*&)matrixA, input); // input^t * a
+void transform8x8_separated(float* &input, float* &temp, const size_t width) {
+//	float* temp = new float[64];
+	multiplyMatrixAWith(input, temp, width); // a * input
+	multiplyWithTransposedMatrixA(temp, input, width); // input * a^t
 }
 
-Mat DCT::inverse(Mat input) {
+void DCT::transform2(float* &input, const size_t width, const size_t height) {
+	float *ptIn = &input[0];
+	
+	unsigned short x, y;
+	const unsigned short numOfCols = width / N; // otherwise will be calculated multiple times
+	const size_t lineJump = width * (N - 1); // only N-1 because one line was already processed
+	
+	float* temp = new float[width * height];
+	
+	x = height / N;
+	while (x--) {
+		y = numOfCols;
+		while (y--) {
+			transform8x8_separated(ptIn, temp, width);
+			ptIn += N;
+		}
+		ptIn += lineJump;
+	}
+	
+	free(temp);
+}
+
+
+
+//  ---------------------------------------------------------------
+// |
+// |  Invers Calculation
+// |
+//  ---------------------------------------------------------------
+
+Mat DCT::inverse(Mat input) { // OLD
 	// As mat has to be quadratic we can just work with the rows
 	Mat newMat(input.rows);
 	
@@ -177,7 +254,7 @@ void DCT::inverse(float* &input, float* &output) {
 	}
 }
 
-Mat DCT::generateA(int dimension) {
+Mat DCT::generateA(int dimension) { // OLD
 	Mat mat(dimension);
 	
 	for (int k = 0; k < dimension; ++k) {
