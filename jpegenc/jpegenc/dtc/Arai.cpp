@@ -181,3 +181,87 @@ void Arai::transformOG(float* &values, size_t image_width, size_t image_height) 
 	processRowsOG(values, image_width * image_height);
 	processColumnsOG(values, image_width, image_height);
 }
+
+
+#define ARAI_WITH_TRANSPOSE(_INPUT_, _OUTPUT_, _width_) \
+float a0 = _INPUT_[0] + _INPUT_[7];\
+float a1 = _INPUT_[1] + _INPUT_[6];\
+float a2 = _INPUT_[2] + _INPUT_[5];\
+float a3 = _INPUT_[3] + _INPUT_[4];\
+float a5 = _INPUT_[2] - _INPUT_[5];\
+float a6 = _INPUT_[1] - _INPUT_[6];\
+float a7 = _INPUT_[0] - _INPUT_[7];\
+\
+float b0 = a0 + a3;\
+float b1 = a1 + a2;\
+float b3 = a0 - a3;\
+float b4 = -(_INPUT_[3] - _INPUT_[4]) - a5;\
+float b6 = a6 + a7;\
+\
+float A5_block = (b4 + b6) * A5;\
+\
+float d2 = ((a1 - a2) + b3) * A1;\
+float d4 = -(b4 * A2) - A5_block;\
+float d5 = (a5 + a6) * A3;\
+float d6 = (b6 * A4) - A5_block;\
+\
+float e5 = d5 + a7;\
+float e7 = a7 - d5;\
+\
+_OUTPUT_[0] = (b0 + b1) * S0;\
+_OUTPUT_[_width_] = (e5 + d6) * S1;\
+_OUTPUT_[2 * _width_] = (d2 + b3) * S2;\
+_OUTPUT_[3 * _width_] = (e7 - d4) * S3;\
+_OUTPUT_[4 * _width_] = (b0 - b1) * S4;\
+_OUTPUT_[5 * _width_] = (d4 + e7) * S5;\
+_OUTPUT_[6 * _width_] = (b3 - d2) * S6;\
+_OUTPUT_[7 * _width_] = (e5 - d6) * S7;
+
+
+void Arai::transformInlineTranspose(float* &values, size_t image_width, size_t image_height) {
+	
+	if (image_width % 8 != 0 || image_height % 8 != 0) {
+		fputs("Error: Arai needs an image dimension of an multiple of 8\n", stderr);
+	}
+	const unsigned long numberOfPixel = image_width * image_height;
+	const unsigned short wEighths = image_width / 8;
+	const size_t lineSkip = (image_width * 7) + 1;
+	
+	float *outValues = (float*)malloc(sizeof(float) * numberOfPixel);
+	float *in, *out; // running pointer
+	
+	for (int i = 0; i < 2; i++) { // two times Arai. Over rows, then columns
+		
+		if (i == 0) {
+			in = &values[0];
+			out = &outValues[0];
+		} else {
+			out = &values[0];
+			in = &outValues[0];
+		}
+		
+		unsigned short rowJumpCounter = wEighths;
+		unsigned short colOffset = 8;
+		
+		size_t rowRepeat = numberOfPixel / 8;
+		while (rowRepeat--) {
+			ARAI_WITH_TRANSPOSE(in, out, image_width);
+			in += 8;
+			if (--rowJumpCounter) {
+				out += 8;
+			} else { // end of row
+				rowJumpCounter = wEighths; // reset counter to image width / 8
+				if (--colOffset) {
+					out -= (image_width - 8 - 1);
+				} else {
+					out += lineSkip;
+					colOffset = 8; // reset 8-rows-a-block-counter
+					// and continue with next row (no jump back here)
+				}
+			}
+		}
+	}
+	
+	free(outValues);
+}
+
