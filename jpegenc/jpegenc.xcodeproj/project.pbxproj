@@ -24,9 +24,9 @@
 		546A42FB1DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F21DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp */; };
 		546A42FD1DBA7A8D006C2629 /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F81DBA7A8D006C2629 /* Image.cpp */; };
 		5496ABDD1DCFA97100FED0CF /* Channel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5496ABDB1DCFA97100FED0CF /* Channel.cpp */; };
+		549A49771E172F4F0040B274 /* Performance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 549A49751E172F4F0040B274 /* Performance.cpp */; };
 		54AF12AA1DF8B33B003312B9 /* PackageMerge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54AF12A81DF8B33B003312B9 /* PackageMerge.cpp */; };
 		54B9AA021DF62F9700BB8D0D /* BitMath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54B9AA001DF62F9700BB8D0D /* BitMath.cpp */; };
-		54F366541DD45335004D4AA7 /* Test.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54F366521DD45335004D4AA7 /* Test.cpp */; };
 		950478DA1DDB56AE007C1053 /* Bitstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 950478D91DDB56AE007C1053 /* Bitstream.cpp */; };
 /* End PBXBuildFile section */
 
@@ -68,13 +68,13 @@
 		546A42F91DBA7A8D006C2629 /* Image.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Image.hpp; sourceTree = "<group>"; };
 		5496ABDB1DCFA97100FED0CF /* Channel.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Channel.cpp; sourceTree = "<group>"; };
 		5496ABDC1DCFA97100FED0CF /* Channel.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Channel.hpp; sourceTree = "<group>"; };
+		549A49751E172F4F0040B274 /* Performance.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Performance.cpp; sourceTree = "<group>"; };
+		549A49761E172F4F0040B274 /* Performance.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Performance.hpp; sourceTree = "<group>"; };
 		54A027DD1DB6CFFB0053733A /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = CMakeLists.txt; path = ../CMakeLists.txt; sourceTree = "<group>"; };
 		54AF12A81DF8B33B003312B9 /* PackageMerge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PackageMerge.cpp; sourceTree = "<group>"; };
 		54AF12A91DF8B33B003312B9 /* PackageMerge.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PackageMerge.hpp; sourceTree = "<group>"; };
 		54B9AA001DF62F9700BB8D0D /* BitMath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BitMath.cpp; sourceTree = "<group>"; };
 		54B9AA011DF62F9700BB8D0D /* BitMath.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BitMath.hpp; sourceTree = "<group>"; };
-		54F366521DD45335004D4AA7 /* Test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Test.cpp; sourceTree = "<group>"; };
-		54F366531DD45335004D4AA7 /* Test.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Test.hpp; sourceTree = "<group>"; };
 		950478D81DDB56AE007C1053 /* Bitstream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Bitstream.hpp; sourceTree = "<group>"; };
 		950478D91DDB56AE007C1053 /* Bitstream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Bitstream.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -240,8 +240,8 @@
 		54F366511DD45318004D4AA7 /* helper */ = {
 			isa = PBXGroup;
 			children = (
-				54F366521DD45335004D4AA7 /* Test.cpp */,
-				54F366531DD45335004D4AA7 /* Test.hpp */,
+				549A49751E172F4F0040B274 /* Performance.cpp */,
+				549A49761E172F4F0040B274 /* Performance.hpp */,
 				54B9AA001DF62F9700BB8D0D /* BitMath.cpp */,
 				54B9AA011DF62F9700BB8D0D /* BitMath.hpp */,
 			);
@@ -316,12 +316,12 @@
 				5427976E1E0E835000E702C7 /* OCL_Transpose.cpp in Sources */,
 				546A42FD1DBA7A8D006C2629 /* Image.cpp in Sources */,
 				4066437E1E07D37300F37B1F /* Arai.cpp in Sources */,
+				549A49771E172F4F0040B274 /* Performance.cpp in Sources */,
 				543AF4AE1DFDC241006C8F7D /* Encoding.cpp in Sources */,
 				12B6F1881E00311A006D0182 /* Mat.cpp in Sources */,
 				12B6F1821E002FE3006D0182 /* DCT.cpp in Sources */,
 				54B9AA021DF62F9700BB8D0D /* BitMath.cpp in Sources */,
 				5496ABDD1DCFA97100FED0CF /* Channel.cpp in Sources */,
-				54F366541DD45335004D4AA7 /* Test.cpp in Sources */,
 				5427976F1E0E835000E702C7 /* oclUtils.cpp in Sources */,
 				542797711E0E839600E702C7 /* transpose.cl in Sources */,
 				544ED4991E06247300593D75 /* AraiTest.cpp in Sources */,

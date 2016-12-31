@@ -3,7 +3,7 @@
 #include "io/PPMLoader.hpp"
 #include "converter/RGBToYCbCrConverter.hpp"
 #include "converter/YCbCrToRGBConverter.hpp"
-#include "helper/Test.hpp"
+#include "helper/Performance.hpp"
 #include "Huffman.hpp"
 #include "DCT.hpp"
 #include "Arai.hpp"
@@ -30,7 +30,7 @@ std::vector<int> generateTestHuffman();
 
 void testImage() {
 	std::cout << "Loading image ..." << std::endl;
-	Test::performance([]{
+	Performance::time([]{
 		PPMLoader loader;
 		auto image = loader.load("../data/singapore4k.test.ppm");
 		
@@ -47,7 +47,7 @@ void testImage() {
 		YCbCrToRGBConverter converter2;
 		converter2.convert(image);
 		
-		Test::performance([&loader, &image]{
+		Performance::time([&loader, &image]{
 			loader.write("../data/output.test.ppm", image);
 		});
 	});
@@ -76,7 +76,7 @@ void testJPEGWriter() {
 //	std::cout << "Testing, Bitstream" << std::endl;
 //	
 //	std::cout << "Write single bit: ";
-//	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
+//	Performance::repeat(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
 //		Bitstream bitstream;
 //		while (numberOfElements--) {
 //			bitstream.add(numberOfElements % 2);
@@ -85,7 +85,7 @@ void testJPEGWriter() {
 //	
 //	
 //	std::cout << "Write byte bits: ";
-//	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
+//	Performance::repeat(TEST_ITERATIONS, TEST_REPEAT, [](size_t numberOfElements){
 //		Bitstream bitstream;
 //		// bitstream.add(1);
 //		while (numberOfElements--) {
@@ -102,7 +102,7 @@ void testJPEGWriter() {
 //	
 //	
 //	std::cout << "Read single bit: ";
-//	Test::performance(TEST_ITERATIONS, TEST_REPEAT, [&testStream](size_t numberOfElements){
+//	Performance::repeat(TEST_ITERATIONS, TEST_REPEAT, [&testStream](size_t numberOfElements){
 //		size_t maxRead = testStream.numberOfBits() - 2;
 //		size_t idx = 0;
 //		while (numberOfElements--) {
@@ -114,7 +114,7 @@ void testJPEGWriter() {
 //	
 //	
 //	std::cout << "Write file: ";
-//	Test::performance([&testStream] {
+//	Performance::time([&testStream] {
 //		testStream.saveToFile("../data/writeOleg.txt");
 //	});
 //	
@@ -320,7 +320,7 @@ void testAraiMatrixOG()
 		2, 0, 0, 0, 0, 0, 0, 0
 	};
 	
-	Test::howManyOperationsInSeconds(3, "Marv Arai", [&vls]OPERATIONS_IN_TIME( Arai::transformMT(vls); ));
+	Performance::howManyOperationsInSeconds(3, "Marv Arai", [&vls]{ Arai::transformMT(vls); });
 	
 	// reset matrix to get the same sequence of calculations
 	vls = new float[64] {
@@ -334,7 +334,7 @@ void testAraiMatrixOG()
 		2, 0, 0, 0, 0, 0, 0, 0
 	};
 	
-	Test::howManyOperationsInSeconds(3, "Oleg Arai", [&vls]OPERATIONS_IN_TIME( Arai::transformOG(vls, 8, 8); ));
+	Performance::howManyOperationsInSeconds(3, "Oleg Arai", [&vls]{ Arai::transformOG(vls, 8, 8); });
 	
 //	for (int i = 0; i < 64; ++i) {
 //		printf("%1.3f\t", vls[i]);
@@ -385,7 +385,7 @@ void testTransformations(int digits = 5)
     std::cout << std::endl;
 	
 	
-	Test::howManyOperationsInSeconds(3, "Arai", [&matrix]OPERATIONS_IN_TIME( Arai::transform(matrix); ));
+	Performance::howManyOperationsInSeconds(3, "Arai", [&matrix]{ Arai::transform(matrix); });
 
 	size_t iters = 460000;
 	Timer t;
@@ -456,16 +456,32 @@ void testFloatMatrixArrayDCT() {
 //	float *vls = generateBlockMatrix(width, height);
 //	float *out = new float[width * height];
 //
-	Test::howManyOperationsInSeconds(1, "lambda init", [&vls,&width,&height]OPERATIONS_IN_TIME( DCT::transform2(vls, width, height); ));
+	Performance::howManyOperationsInSeconds(0, "lambda init", [&vls,&width,&height](){ DCT::transform2(vls, width, height); });
 	
-//	Test::howManyOperationsInSeconds(5, "Arai DCT (OLD)", [&matrix]OPERATIONS_IN_TIME( Arai::transform(matrix); ));
-//	Test::howManyOperationsInSeconds(5, "Separated DCT (OLD)", [&matrix]OPERATIONS_IN_TIME( DCT::transform2(matrix); ));
-//	Test::howManyOperationsInSeconds(5, "Normal DCT (OLD)", [&matrix]OPERATIONS_IN_TIME( matrix = DCT::transform(matrix); ));
-//	printf("\n");
-	Test::howManyOperationsInSeconds(5, "Arai DCT (NEW)", [&vls,&width,&height]OPERATIONS_IN_TIME( Arai::transformOG(vls, width, height); ));
-	Test::howManyOperationsInSeconds(5, "Separated DCT (NEW)", [&vls,&width,&height]OPERATIONS_IN_TIME( DCT::transform2(vls, width, height); ));
-	Test::howManyOperationsInSeconds(5, "Normal DCT (NEW)", [&vls,&out,&width,&height]OPERATIONS_IN_TIME( DCT::transform(vls, out, width, height); ));
-//	printf("\n");
+//	printf("\nOld implementation:\n");
+//	Performance::howManyOperationsInSeconds(5, "Arai DCT (OLD)", [&matrix]{ Arai::transform(matrix); });
+//	Performance::howManyOperationsInSeconds(5, "Separated DCT (OLD)", [&matrix]{ DCT::transform2(matrix); });
+//	Performance::howManyOperationsInSeconds(5, "Normal DCT (OLD)", [&matrix]{ matrix = DCT::transform(matrix); });
+	
+	printf("\nSingle-Threaded:\n");
+	Performance::howManyOperationsInSeconds(5, "Arai DCT (NEW)", [&vls,&width,&height]{ Arai::transformOG(vls, width, height); });
+	Performance::howManyOperationsInSeconds(5, "Separated DCT (NEW)", [&vls,&width,&height]{ DCT::transform2(vls, width, height); });
+	Performance::howManyOperationsInSeconds(5, "Normal DCT (NEW)", [&vls,&out,&width,&height]{ DCT::transform(vls, out, width, height); });
+	
+	
+	printf("\nMulti-Threading:\n");
+	Performance::howManyOperationsInSeconds(5, "Arai DCT (multi-thread)", [&vls,&width,&height]{
+		Arai::transformOG(vls, width, height);
+	}, true);
+	
+	Performance::howManyOperationsInSeconds(5, "Separated DCT (multi-thread)", [&vls,&width,&height]{
+		DCT::transform2(vls, width, height);
+	}, true);
+	
+	Performance::howManyOperationsInSeconds(5, "Normal DCT (multi-thread)", [&vls,&out,&width,&height]{
+		DCT::transform(vls, out, width, height);
+	}, true);
+	
 }
 
 // ################################################################
