@@ -320,7 +320,7 @@ void testAraiMatrixOG()
 		2, 0, 0, 0, 0, 0, 0, 0
 	};
 	
-	Performance::howManyOperationsInSeconds(3, "Marv Arai", [&vls]{ Arai::transformMT(vls); });
+	Performance::howManyOperationsInSeconds(3, "Marv Arai", [&]{ Arai::transformMT(vls); });
 	
 	// reset matrix to get the same sequence of calculations
 	vls = new float[64] {
@@ -334,7 +334,7 @@ void testAraiMatrixOG()
 		2, 0, 0, 0, 0, 0, 0, 0
 	};
 	
-	Performance::howManyOperationsInSeconds(3, "Oleg Arai", [&vls]{ Arai::transformOG(vls, 8, 8); });
+	Performance::howManyOperationsInSeconds(3, "Oleg Arai", [&]{ Arai::transformOG(vls, 8, 8); });
 	
 //	for (int i = 0; i < 64; ++i) {
 //		printf("%1.3f\t", vls[i]);
@@ -385,7 +385,7 @@ void testTransformations(int digits = 5)
     std::cout << std::endl;
 	
 	
-	Performance::howManyOperationsInSeconds(3, "Arai", [&matrix]{ Arai::transform(matrix); });
+	Performance::howManyOperationsInSeconds(3, "Arai", [&]{ Arai::transform(matrix); });
 
 	size_t iters = 460000;
 	Timer t;
@@ -464,34 +464,34 @@ void testFloatMatrixArrayDCT() {
 //	float *out = new float[width * height];
 	
 	
-	Performance::howManyOperationsInSeconds(0, "lambda init", [&vls,&width,&height](){ DCT::transform2(vls, width, height); });
+	Performance::howManyOperationsInSeconds(0, "lambda init", [&](){ DCT::transform2(vls, width, height); });
 	
 //	printf("\nOld implementation:\n");
-//	Performance::howManyOperationsInSeconds(5, "Arai DCT (OLD)", [&matrix]{ Arai::transform(matrix); });
-//	Performance::howManyOperationsInSeconds(5, "Separated DCT (OLD)", [&matrix]{ DCT::transform2(matrix); });
-//	Performance::howManyOperationsInSeconds(5, "Normal DCT (OLD)", [&matrix]{ matrix = DCT::transform(matrix); });
+//	Performance::howManyOperationsInSeconds(5, "Arai DCT (OLD)", [&]{ Arai::transform(matrix); });
+//	Performance::howManyOperationsInSeconds(5, "Separated DCT (OLD)", [&]{ DCT::transform2(matrix); });
+//	Performance::howManyOperationsInSeconds(5, "Normal DCT (OLD)", [&]{ matrix = DCT::transform(matrix); });
 	
 	printf("\nSingle-Threaded:\n");
-	Performance::howManyOperationsInSeconds(5, "Arai DCT", [&vls,&width,&height]{ Arai::transformOG(vls, width, height); });
-	Performance::howManyOperationsInSeconds(5, "Arai inline transpose", [&vls,&width,&height]{ Arai::transformInlineTranspose(vls, width, height); });
-	Performance::howManyOperationsInSeconds(5, "Separated DCT", [&vls,&width,&height]{ DCT::transform2(vls, width, height); });
-	Performance::howManyOperationsInSeconds(5, "Normal DCT", [&vls,&out,&width,&height]{ DCT::transform(vls, out, width, height); });
+	Performance::howManyOperationsInSeconds(5, "Arai DCT", [&]{ Arai::transformOG(vls, width, height); });
+	Performance::howManyOperationsInSeconds(5, "Arai inline transpose", [&]{ Arai::transformInlineTranspose(vls, width, height); });
+	Performance::howManyOperationsInSeconds(5, "Separated DCT", [&]{ DCT::transform2(vls, width, height); });
+	Performance::howManyOperationsInSeconds(5, "Normal DCT", [&]{ DCT::transform(vls, out, width, height); });
 	
 	
 	printf("\nMulti-Threading:\n");
-	Performance::howManyOperationsInSeconds(5, "Arai DCT", [&vls,&width,&height]{
+	Performance::howManyOperationsInSeconds(5, "Arai DCT", [&]{
 		Arai::transformOG(vls, width, height);
 	}, true);
 	
-	Performance::howManyOperationsInSeconds(5, "Arai inline transpose", [&vls,&width,&height]{
+	Performance::howManyOperationsInSeconds(5, "Arai inline transpose", [&]{
 		Arai::transformInlineTranspose(vls, width, height);
 	}, true);
 	
-	Performance::howManyOperationsInSeconds(5, "Separated DCT", [&vls,&width,&height]{
+	Performance::howManyOperationsInSeconds(5, "Separated DCT", [&]{
 		DCT::transform2(vls, width, height);
 	}, true);
 	
-	Performance::howManyOperationsInSeconds(5, "Normal DCT", [&vls,&out,&width,&height]{
+	Performance::howManyOperationsInSeconds(5, "Normal DCT", [&]{
 		DCT::transform(vls, out, width, height);
 	}, true);
 	

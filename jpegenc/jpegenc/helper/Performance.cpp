@@ -16,6 +16,7 @@
 void Performance::howManyOperationsInSeconds(size_t seconds, const char* description, std::function<void()> func, bool multiThreadingEnabled) {
 	bool runWhile = true;
 	std::atomic<unsigned long> iters(0); // Use GCC 4.7+ (GCC 4.6 atomics are not lock free)
+	std::atomic<unsigned int> threadsRunning(0);
 	
 	std::thread([seconds, &runWhile]() {
 		std::this_thread::sleep_for(std::chrono::seconds(seconds));
@@ -25,11 +26,17 @@ void Performance::howManyOperationsInSeconds(size_t seconds, const char* descrip
 	Timer t;
 	if (multiThreadingEnabled)
 	{
+		static const unsigned int threadCount = std::thread::hardware_concurrency();
+		
 		while (runWhile) {
-			std::thread([&func, &iters]{
-				func();
-				++iters;
-			}).detach();
+			if (threadsRunning < threadCount) {
+				++threadsRunning;
+				std::thread([&]{
+					func();
+					++iters;
+					--threadsRunning;
+				}).detach();
+			}
 		}
 	}
 	else // single core (And single thread? Or does C++ optimize for multi-thread automatically?)
@@ -39,9 +46,14 @@ void Performance::howManyOperationsInSeconds(size_t seconds, const char* descrip
 			++iters;
 		}
 	}
-	
+	double time = t.elapsed();
 	unsigned long numberOfIterations = iters;
-	printf("Testing <%s> took %lf seconds with %lu iterations (%lfms per operation)\n", description, t.elapsed(), numberOfIterations, t.elapsed() / numberOfIterations * 1000);
+	printf("Testing <%s> took %lf seconds with %lu iterations (%lfms per operation)\n", description, time, numberOfIterations, (time / numberOfIterations) * 1000);
+	
+	// wait till all previous threads are finished
+	while (threadsRunning) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	}
 }
 
 /**
