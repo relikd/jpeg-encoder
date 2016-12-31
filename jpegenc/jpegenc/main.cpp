@@ -440,7 +440,7 @@ void testFloatMatrixArrayDCT() {
 	
 //	Arai::transformInlineTranspose(vls, width, height);
 //	printFloatMatrix(vls, width, height);
-	
+//	return;
 	
 	// ----
 	
