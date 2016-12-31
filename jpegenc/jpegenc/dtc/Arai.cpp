@@ -218,49 +218,43 @@ _OUTPUT_[6 * _width_] = (b3 - d2) * S6;\
 _OUTPUT_[7 * _width_] = (e5 - d6) * S7;
 
 
+void araiWithInlineTranspose(float* &input, float* &output, size_t w, size_t h) {
+	const unsigned short wDivided8 = w / 8;
+	const unsigned short wMinus1 = w - 1;
+	const unsigned long lineSkip = (w * 8) - 8;
+	
+	float *in = &input[w * h];
+	float *out = &output[w * h];
+	unsigned short yb, ya, x;
+	
+	yb = h / 8; // jump blockwise over rows
+	while (yb--) {
+		out -= lineSkip;
+		
+		ya = 8; // then those 8 rows per block
+		while (ya--) {
+			out += wMinus1;
+			
+			x = wDivided8; // finally process a single row
+			while (x--) {
+				in -= 8;
+				out -= 8;
+				ARAI_WITH_TRANSPOSE(in, out, w);
+			}
+		}
+	}
+}
+
 void Arai::transformInlineTranspose(float* &values, size_t image_width, size_t image_height) {
 	
 	if (image_width % 8 != 0 || image_height % 8 != 0) {
 		fputs("Error: Arai needs an image dimension of an multiple of 8\n", stderr);
 	}
-	const unsigned long numberOfPixel = image_width * image_height;
-	const unsigned short wEighths = image_width / 8;
-	const size_t lineSkip = (image_width * 7) + 1;
 	
-	float *outValues = (float*)malloc(sizeof(float) * numberOfPixel);
-	float *in, *out; // running pointer
+	float *outValues = (float*)malloc(sizeof(float) * image_width * image_height);
 	
-	for (int i = 0; i < 2; i++) { // two times Arai. Over rows, then columns
-		
-		if (i == 0) {
-			in = &values[0];
-			out = &outValues[0];
-		} else {
-			out = &values[0];
-			in = &outValues[0];
-		}
-		
-		unsigned short rowJumpCounter = wEighths;
-		unsigned short colOffset = 8;
-		
-		size_t rowRepeat = numberOfPixel / 8;
-		while (rowRepeat--) {
-			ARAI_WITH_TRANSPOSE(in, out, image_width);
-			in += 8;
-			if (--rowJumpCounter) {
-				out += 8;
-			} else { // end of row
-				rowJumpCounter = wEighths; // reset counter to image width / 8
-				if (--colOffset) {
-					out -= (image_width - 8 - 1);
-				} else {
-					out += lineSkip;
-					colOffset = 8; // reset 8-rows-a-block-counter
-					// and continue with next row (no jump back here)
-				}
-			}
-		}
-	}
+	araiWithInlineTranspose(values, outValues, image_width, image_height);
+	araiWithInlineTranspose(outValues, values, image_width, image_height);
 	
 	free(outValues);
 }
