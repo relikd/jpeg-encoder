@@ -103,3 +103,50 @@ __kernel void shared_copy(__global float *odata, __global float *idata, int offs
 		odata[index_in] = block[get_local_id(1) * (BLOCK_DIM + 1) + get_local_id(0)];
 	}
 }
+
+__kernel void arai_separated(__global float *odata, __global float *idata, __global float *matrixA, int offset, int width, int height, __local float* blockA, __local float* blockB)
+{
+	// read the matrix tile into shared memory
+	unsigned int xIndex = get_global_id(0);
+	unsigned int yIndex = get_global_id(1);
+	
+	if ( (xIndex + offset < width) && (yIndex < height) )
+	{
+		unsigned int gIndex = yIndex * width + xIndex + offset;
+		
+		blockA[get_local_id(1) * (BLOCK_DIM + 1) + get_local_id(0)] = matrixA[get_local_id(1) * 8 + get_local_id(0)];
+		blockB[get_local_id(1) * (BLOCK_DIM + 1) + get_local_id(0)] = idata[gIndex];
+		
+		barrier(CLK_LOCAL_MEM_FENCE);
+		
+		unsigned int rowa = get_local_id(1) * (BLOCK_DIM + 1);
+		unsigned int rowb = get_local_id(0);
+		
+		odata[gIndex] =
+		blockA[rowa + 0] * blockB[rowb + 0 * (BLOCK_DIM + 1)] +
+		blockA[rowa + 1] * blockB[rowb + 1 * (BLOCK_DIM + 1)] +
+		blockA[rowa + 2] * blockB[rowb + 2 * (BLOCK_DIM + 1)] +
+		blockA[rowa + 3] * blockB[rowb + 3 * (BLOCK_DIM + 1)] +
+		blockA[rowa + 4] * blockB[rowb + 4 * (BLOCK_DIM + 1)] +
+		blockA[rowa + 5] * blockB[rowb + 5 * (BLOCK_DIM + 1)] +
+		blockA[rowa + 6] * blockB[rowb + 6 * (BLOCK_DIM + 1)] +
+		blockA[rowa + 7] * blockB[rowb + 7 * (BLOCK_DIM + 1)];
+		
+		barrier(CLK_GLOBAL_MEM_FENCE);
+		
+		blockA[get_local_id(1) * (BLOCK_DIM + 1) + get_local_id(0)] = odata[gIndex];
+		blockB[get_local_id(0) * (BLOCK_DIM + 1) + get_local_id(1)] = matrixA[get_local_id(1) * 8 + get_local_id(0)];
+		
+		barrier(CLK_LOCAL_MEM_FENCE);
+		
+		odata[gIndex] =
+		blockA[rowa + 0] * blockB[rowb + 0 * (BLOCK_DIM + 1)] +
+		blockA[rowa + 1] * blockB[rowb + 1 * (BLOCK_DIM + 1)] +
+		blockA[rowa + 2] * blockB[rowb + 2 * (BLOCK_DIM + 1)] +
+		blockA[rowa + 3] * blockB[rowb + 3 * (BLOCK_DIM + 1)] +
+		blockA[rowa + 4] * blockB[rowb + 4 * (BLOCK_DIM + 1)] +
+		blockA[rowa + 5] * blockB[rowb + 5 * (BLOCK_DIM + 1)] +
+		blockA[rowa + 6] * blockB[rowb + 6 * (BLOCK_DIM + 1)] +
+		blockA[rowa + 7] * blockB[rowb + 7 * (BLOCK_DIM + 1)];
+	}
+}

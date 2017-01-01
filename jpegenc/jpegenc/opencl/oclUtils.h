@@ -12,6 +12,8 @@
 #ifndef OCL_UTILS_H
 #define OCL_UTILS_H
 
+#undef DEBUG
+
 #ifdef DEBUG
 #define DebugLog(...) printf(__VA_ARGS__)
 #else
