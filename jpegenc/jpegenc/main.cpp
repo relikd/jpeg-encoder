@@ -8,7 +8,7 @@
 #include "DCT.hpp"
 #include "Arai.hpp"
 #include "AraiTest.hpp"
-#include "OCL_Transpose.h"
+#include "OCL_DCT.h"
 #include <math.h>
 
 #include "bitstream/Bitstream.hpp"
@@ -37,8 +37,6 @@ void testImage() {
 		RGBToYCbCrConverter converter1;
 		converter1.convert(image);
 		
-		OCL_Transpose ocl_trans;
-		ocl_trans.transpose8x8(image->channel1);
 		//image->print();
 		
 //		image->channel2->reduceBySubSampling(32, 32);
@@ -433,6 +431,8 @@ void testFloatMatrixArrayDCT() {
 	vls[8] = 0;
 	vls[8+1] = 4;
 	vls[8+width] = 4;
+	vls[2*width + 1] = 8;
+	vls[12*width + 1] = 1;
 	float *out = new float[width * height];
 	
 //	DCT::transform(vls, out, width, height);
@@ -476,6 +476,9 @@ void testFloatMatrixArrayDCT() {
 	Performance::howManyOperationsInSeconds(5, "Arai inline transpose", [&]{ Arai::transformInlineTranspose(vls, width, height); });
 	Performance::howManyOperationsInSeconds(5, "Separated DCT", [&]{ DCT::transform2(vls, width, height); });
 	Performance::howManyOperationsInSeconds(5, "Normal DCT", [&]{ DCT::transform(vls, out, width, height); });
+	OCL_DCT ocl;
+	ocl.separated(vls, width, height); // once to compile GPU kernel
+	Performance::howManyOperationsInSeconds(5, "Separated on GPU", [&]{ ocl.separated(vls, width, height); });
 	
 	
 	printf("\nMulti-Threading:\n");
@@ -495,6 +498,9 @@ void testFloatMatrixArrayDCT() {
 		DCT::transform(vls, out, width, height);
 	}, true);
 	
+	Performance::howManyOperationsInSeconds(5, "Separated on GPU", [&]{
+		ocl.separated(vls, width, height);
+	}, true);
 }
 
 // ################################################################
