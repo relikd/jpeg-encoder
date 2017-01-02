@@ -27,6 +27,7 @@
 		549A49771E172F4F0040B274 /* Performance.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 549A49751E172F4F0040B274 /* Performance.cpp */; };
 		54AF12AA1DF8B33B003312B9 /* PackageMerge.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54AF12A81DF8B33B003312B9 /* PackageMerge.cpp */; };
 		54B9AA021DF62F9700BB8D0D /* BitMath.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54B9AA001DF62F9700BB8D0D /* BitMath.cpp */; };
+		54DD29AF1E19EAAF00F7D1D4 /* GPUComposer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54DD29AD1E19EAAF00F7D1D4 /* GPUComposer.cpp */; };
 		950478DA1DDB56AE007C1053 /* Bitstream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 950478D91DDB56AE007C1053 /* Bitstream.cpp */; };
 /* End PBXBuildFile section */
 
@@ -75,6 +76,8 @@
 		54AF12A91DF8B33B003312B9 /* PackageMerge.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PackageMerge.hpp; sourceTree = "<group>"; };
 		54B9AA001DF62F9700BB8D0D /* BitMath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BitMath.cpp; sourceTree = "<group>"; };
 		54B9AA011DF62F9700BB8D0D /* BitMath.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BitMath.hpp; sourceTree = "<group>"; };
+		54DD29AD1E19EAAF00F7D1D4 /* GPUComposer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GPUComposer.cpp; sourceTree = "<group>"; };
+		54DD29AE1E19EAAF00F7D1D4 /* GPUComposer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GPUComposer.h; sourceTree = "<group>"; };
 		950478D81DDB56AE007C1053 /* Bitstream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Bitstream.hpp; sourceTree = "<group>"; };
 		950478D91DDB56AE007C1053 /* Bitstream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Bitstream.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -158,6 +161,8 @@
 				54508B451E199A5900843873 /* OCL_DCT.h */,
 				5427976C1E0E835000E702C7 /* oclUtils.cpp */,
 				5427976D1E0E835000E702C7 /* oclUtils.h */,
+				54DD29AD1E19EAAF00F7D1D4 /* GPUComposer.cpp */,
+				54DD29AE1E19EAAF00F7D1D4 /* GPUComposer.h */,
 			);
 			name = opencl;
 			path = jpegenc/opencl;
@@ -312,6 +317,7 @@
 				5412EC191DF4E062007604E9 /* Node.cpp in Sources */,
 				54AF12AA1DF8B33B003312B9 /* PackageMerge.cpp in Sources */,
 				40F5AE7D1DE3589100ECF256 /* JPEGSegments.cpp in Sources */,
+				54DD29AF1E19EAAF00F7D1D4 /* GPUComposer.cpp in Sources */,
 				546A42FB1DBA7A8D006C2629 /* YCbCrToRGBConverter.cpp in Sources */,
 				546A42FA1DBA7A8D006C2629 /* RGBToYCbCrConverter.cpp in Sources */,
 				546A42FD1DBA7A8D006C2629 /* Image.cpp in Sources */,
