@@ -9,9 +9,9 @@
 
 
 // max GPU's to manage for multi-GPU parallel compute
-const static size_t MAX_GPU_COUNT = 8;
+//const static size_t MAX_GPU_COUNT = 8;
 
-inline size_t shrRoundUp(int group_size, int global_size) {
+inline size_t shrRoundUp(int group_size, size_t global_size) {
 	int r = global_size % group_size;
 	if (r == 0)
 		return global_size;
@@ -83,7 +83,7 @@ inline cl_program loadProgram(const char *path, cl_context &theContext) {
 	return prog;
 }
 
-void computeOnGPU(const char* kernelName, float* h_idata, unsigned int size_x, unsigned int size_y) {
+void computeOnGPU(const char* kernelName, float* h_idata, size_t size_x, size_t size_y) {
 	// Setup Context
 	cl_int errcode = CL_SUCCESS;
 	cl_context clGPUContext;
@@ -155,9 +155,9 @@ void computeOnGPU(const char* kernelName, float* h_idata, unsigned int size_x, u
 		errcode  = clSetKernelArg(clKernel[i], 0, sizeof(cl_mem), (void *) &d_odata[i]);
 		errcode |= clSetKernelArg(clKernel[i], 1, sizeof(cl_mem), (void *) &d_idata[i]);
 		errcode |= clSetKernelArg(clKernel[i], 2, sizeof(cl_mem), (void *) &matrix_a[i]);
-		errcode |= clSetKernelArg(clKernel[i], 3, sizeof(int), &offset);
-		errcode |= clSetKernelArg(clKernel[i], 4, sizeof(int), &size_x);
-		errcode |= clSetKernelArg(clKernel[i], 5, sizeof(int), &size_y);
+		errcode |= clSetKernelArg(clKernel[i], 3, sizeof(size_t), &offset);
+		errcode |= clSetKernelArg(clKernel[i], 4, sizeof(size_t), &size_x);
+		errcode |= clSetKernelArg(clKernel[i], 5, sizeof(size_t), &size_y);
 		errcode |= clSetKernelArg(clKernel[i], 6, (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float), 0 );
 		errcode |= clSetKernelArg(clKernel[i], 7, (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float), 0 );
 		oclAssert(errcode);
@@ -209,6 +209,6 @@ void computeOnGPU(const char* kernelName, float* h_idata, unsigned int size_x, u
 	oclAssert(errcode);
 }
 
-void OCL_DCT::separated(float* &matrix, unsigned short width, unsigned short height) {
+void OCL_DCT::separated(float* &matrix, size_t width, size_t height) {
 	computeOnGPU("arai_separated", matrix, width, height);
 }

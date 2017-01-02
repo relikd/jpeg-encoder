@@ -198,7 +198,7 @@ void DCT::transform2(float* &input, const size_t width, const size_t height) {
 		ptIn += lineJump;
 	}
 	
-	free(temp);
+	delete[] temp;
 }
 
 

@@ -9,6 +9,7 @@
 #include "Arai.hpp"
 #include "AraiTest.hpp"
 #include "OCL_DCT.h"
+#include "GPUComposer.h"
 #include <math.h>
 
 #include "bitstream/Bitstream.hpp"
@@ -476,10 +477,18 @@ void testFloatMatrixArrayDCT() {
 	Performance::howManyOperationsInSeconds(5, "Arai inline transpose", [&]{ Arai::transformInlineTranspose(vls, width, height); });
 	Performance::howManyOperationsInSeconds(5, "Separated DCT", [&]{ DCT::transform2(vls, width, height); });
 	Performance::howManyOperationsInSeconds(5, "Normal DCT", [&]{ DCT::transform(vls, out, width, height); });
-	OCL_DCT ocl;
-	ocl.separated(vls, width, height); // once to compile GPU kernel
-	Performance::howManyOperationsInSeconds(5, "Separated on GPU", [&]{ ocl.separated(vls, width, height); });
+	OCL_DCT::separated(vls, width, height); // once to compile GPU kernel
+	Performance::howManyOperationsInSeconds(5, "Separated on GPU", [&]{ OCL_DCT::separated(vls, width, height); });
 	
+	GPUComposer comp = GPUComposer(OCL_DCT::separated);
+	Performance::howManyOperationsInSeconds(5, "Separated on GPU (Composer)", [&]{
+		if (comp.add(vls, width, height)) {
+//			printf("processing %lu simultaniously\n",comp.cacheInfo.size());
+			// do something with the data
+			//comp.cacheInfo[i]
+			//comp.cache
+		}
+	});
 	
 	printf("\nMulti-Threading:\n");
 	Performance::howManyOperationsInSeconds(5, "Arai DCT", [&]{
@@ -496,10 +505,6 @@ void testFloatMatrixArrayDCT() {
 	
 	Performance::howManyOperationsInSeconds(5, "Normal DCT", [&]{
 		DCT::transform(vls, out, width, height);
-	}, true);
-	
-	Performance::howManyOperationsInSeconds(5, "Separated on GPU", [&]{
-		ocl.separated(vls, width, height);
 	}, true);
 }
 

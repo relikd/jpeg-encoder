@@ -5,7 +5,7 @@
 
 class OCL_DCT {
 public:
-	void separated(float* &matrix, unsigned short width, unsigned short height);
+	static void separated(float* &matrix, size_t width, size_t height);
 	
 private:
 };
