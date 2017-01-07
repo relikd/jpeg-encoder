@@ -1,9 +1,12 @@
 #include "GPUComposer.h"
 
+#define RESTRUCTURE_DATA 1 // can be 0 if all images have the same size
+
+#if RESTRUCTURE_DATA
 /**
  * Copy data with 8-float width alignment. Make one image with width = 8 and height = very very long
  */
-void copyToCacheWith8Width(float* cachePtr, float* dataPtr, size_t w, size_t h) {
+void prepareData(float* cachePtr, float* dataPtr, size_t w, size_t h) {
 	const unsigned char copySize = 8 * sizeof(float);
 	size_t x, y, eight;
 	y = h / 8;
@@ -23,12 +26,12 @@ void copyToCacheWith8Width(float* cachePtr, float* dataPtr, size_t w, size_t h) 
 	}
 }
 
-void restoreCachedData(float* &cache, std::vector<DATA_INFO> meta) {
+void reconstructData(float* &data, std::vector<DATA_INFO> &meta) {
 	float *tmp = new float[cacheSizeMax];
 	size_t imageCount =  meta.size();
 	while (imageCount--) {
 		DATA_INFO info = meta[imageCount];
-		float *source = &cache[ info.offset ];
+		float *source = &data[ info.offset ];
 		float *dest = &tmp[ info.offset ];
 		
 		size_t width = info.width;
@@ -53,9 +56,10 @@ void restoreCachedData(float* &cache, std::vector<DATA_INFO> meta) {
 			dest += 7 * width;
 		}
 	}
-	delete [] cache;
-	cache = tmp;
+	delete [] data;
+	data = tmp;
 }
+#endif
 
 bool GPUComposer::add(float* &matrix, size_t width, size_t height)
 {
@@ -72,7 +76,11 @@ bool GPUComposer::add(float* &matrix, size_t width, size_t height)
 	}
 	
 	// add data to cache first, then update internal counters
-	copyToCacheWith8Width(&cache[cachedSize], matrix, width, height);
+#if RESTRUCTURE_DATA
+	prepareData(&cache[cachedSize], matrix, width, height);
+#else
+	memcpy(&cache[cachedSize], matrix, sizeof(float) * width * height);
+#endif
 	
 	size_t px = width * height;
 	cacheInfo.push_back(DATA_INFO(cachedSize, width, height)); // add before increase
@@ -80,16 +88,17 @@ bool GPUComposer::add(float* &matrix, size_t width, size_t height)
 	
 	// if cache full, copy to GPU
 	if (cachedSize > cachedSizeThreshold) {
-		flush();
-		return true;
+		return true; // you have to flush manually
 	}
 	return false;
 }
 
 void GPUComposer::flush() {
 	if (cachedSize > 0) {
-		func(cache,  8, cachedSize / 8); // at this point always a multiple of 8
-		restoreCachedData(cache, cacheInfo);
+		func(cache, 8, cachedSize / 8); // at this point always a multiple of 8
+#if RESTRUCTURE_DATA
+		reconstructData(cache, cacheInfo);
+#endif
 		shouldClearStoredData = true;
 	}
 }

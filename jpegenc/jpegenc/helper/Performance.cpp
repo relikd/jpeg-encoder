@@ -14,21 +14,14 @@
  * @param multiThreadingEnabled If \b true automatically detach new threads for all iterations (default: false)
  */
 void Performance::howManyOperationsInSeconds(size_t seconds, const char* description, std::function<void()> func, bool multiThreadingEnabled) {
-	bool runWhile = true;
 	std::atomic<unsigned long> iters(0); // Use GCC 4.7+ (GCC 4.6 atomics are not lock free)
 	std::atomic<unsigned int> threadsRunning(0);
-	
-	std::thread([seconds, &runWhile]() {
-		std::this_thread::sleep_for(std::chrono::seconds(seconds));
-		runWhile = false;
-	}).detach();
+	static const unsigned int threadCount = std::thread::hardware_concurrency();
 	
 	Timer t;
 	if (multiThreadingEnabled)
 	{
-		static const unsigned int threadCount = std::thread::hardware_concurrency();
-		
-		while (runWhile) {
+		while (t.elapsed() < seconds) {
 			if (threadsRunning < threadCount) {
 				++threadsRunning;
 				std::thread([&]{
@@ -41,7 +34,7 @@ void Performance::howManyOperationsInSeconds(size_t seconds, const char* descrip
 	}
 	else // single core (And single thread? Or does C++ optimize for multi-thread automatically?)
 	{
-		while (runWhile) {
+		while (t.elapsed() < seconds) {
 			func();
 			++iters;
 		}

@@ -15,6 +15,8 @@
 		540D8CAF1DD0BE4D00A4E4C9 /* PPMLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 540D8CAD1DD0BE4D00A4E4C9 /* PPMLoader.cpp */; };
 		5412EC191DF4E062007604E9 /* Node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5412EC171DF4E062007604E9 /* Node.cpp */; };
 		5427976F1E0E835000E702C7 /* oclUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5427976C1E0E835000E702C7 /* oclUtils.cpp */; };
+		543444891E21133700C32785 /* SpeedContest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 543444871E21133700C32785 /* SpeedContest.cpp */; };
+		5434448A1E21133700C32785 /* SpeedContest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 543444871E21133700C32785 /* SpeedContest.cpp */; };
 		543AF4AE1DFDC241006C8F7D /* Encoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 543AF4AD1DFDC241006C8F7D /* Encoding.cpp */; };
 		544ED4991E06247300593D75 /* AraiTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544ED4971E06247300593D75 /* AraiTest.cpp */; };
 		54508B431E199A4F00843873 /* arai.cl in Sources */ = {isa = PBXBuildFile; fileRef = 54508B421E199A4F00843873 /* arai.cl */; };
@@ -72,6 +74,8 @@
 		542797671E0E831900E702C7 /* very_small.ppm */ = {isa = PBXFileReference; lastKnownFileType = text; path = very_small.ppm; sourceTree = "<group>"; };
 		5427976C1E0E835000E702C7 /* oclUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = oclUtils.cpp; sourceTree = "<group>"; };
 		5427976D1E0E835000E702C7 /* oclUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oclUtils.h; sourceTree = "<group>"; };
+		543444871E21133700C32785 /* SpeedContest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpeedContest.cpp; sourceTree = "<group>"; };
+		543444881E21133700C32785 /* SpeedContest.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SpeedContest.hpp; sourceTree = "<group>"; };
 		543AF4AB1DFDBF56006C8F7D /* Encoding.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Encoding.hpp; sourceTree = "<group>"; };
 		543AF4AD1DFDC241006C8F7D /* Encoding.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Encoding.cpp; sourceTree = "<group>"; };
 		544ED4971E06247300593D75 /* AraiTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AraiTest.cpp; sourceTree = "<group>"; };
@@ -207,6 +211,15 @@
 			name = "CL files";
 			sourceTree = "<group>";
 		};
+		543444861E21132300C32785 /* speedcontest */ = {
+			isa = PBXGroup;
+			children = (
+				543444871E21133700C32785 /* SpeedContest.cpp */,
+				543444881E21133700C32785 /* SpeedContest.hpp */,
+			);
+			path = speedcontest;
+			sourceTree = "<group>";
+		};
 		545A4D3C1DB6471500B5E365 = {
 			isa = PBXGroup;
 			children = (
@@ -234,6 +247,7 @@
 				12B6F17F1E002FE3006D0182 /* dct */,
 				123881151DEC446E0017A619 /* huffmann */,
 				40F5AE7A1DE3589100ECF256 /* segments */,
+				543444861E21132300C32785 /* speedcontest */,
 				545A4D481DB6471500B5E365 /* main.cpp */,
 				549E8DD21DD299540032006B /* bitstream */,
 				546A42EF1DBA7A8D006C2629 /* converter */,
@@ -398,6 +412,7 @@
 				4066437E1E07D37300F37B1F /* Arai.cpp in Sources */,
 				549A49771E172F4F0040B274 /* Performance.cpp in Sources */,
 				543AF4AE1DFDC241006C8F7D /* Encoding.cpp in Sources */,
+				543444891E21133700C32785 /* SpeedContest.cpp in Sources */,
 				12B6F1881E00311A006D0182 /* Mat.cpp in Sources */,
 				12B6F1821E002FE3006D0182 /* DCT.cpp in Sources */,
 				54B9AA021DF62F9700BB8D0D /* BitMath.cpp in Sources */,
@@ -414,6 +429,7 @@
 				95DD80441E1BFE3300C92112 /* Encoding.cpp in Sources */,
 				95DD803D1E1BFD4A00C92112 /* main.cpp in Sources */,
 				95DD803C1E1BFD4A00C92112 /* TestHuffman.cpp in Sources */,
+				5434448A1E21133700C32785 /* SpeedContest.cpp in Sources */,
 				95DD80461E1BFE3C00C92112 /* PackageMerge.cpp in Sources */,
 				95DD80431E1BFE0900C92112 /* Huffman.cpp in Sources */,
 				95DD80481E1BFE5400C92112 /* BitMath.cpp in Sources */,

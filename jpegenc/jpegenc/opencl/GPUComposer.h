@@ -6,7 +6,7 @@
 
 typedef std::function<void(float*&,size_t,size_t)> gpu_function;
 
-static const size_t cachedSizeThreshold = 512 * 1024 * 1024 / sizeof(float);
+static const size_t cachedSizeThreshold = 500 * 1024 * 1024 / sizeof(float);
 static const size_t cacheSizeMax = cachedSizeThreshold + 67108864; // alloc enough space for an additional 8192 x 8192 px image
 
 /**
