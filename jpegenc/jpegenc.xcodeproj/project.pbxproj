@@ -520,7 +520,6 @@
 				ARCHS = "$(ARCHS_STANDARD)";
 				BUNDLE_LOADER = "";
 				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/build";
-				GCC_OPTIMIZATION_LEVEL = fast;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "";
 			};
@@ -580,6 +579,7 @@
 				95DD80371E1BFD1C00C92112 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
