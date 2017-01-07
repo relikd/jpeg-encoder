@@ -4,17 +4,10 @@
 #include "converter/RGBToYCbCrConverter.hpp"
 #include "converter/YCbCrToRGBConverter.hpp"
 #include "helper/Performance.hpp"
-#include "Huffman.hpp"
-#include "DCT.hpp"
-#include "Arai.hpp"
-#include "AraiTest.hpp"
-#include "OCL_DCT.h"
-#include "GPUComposer.h"
-#include <math.h>
-
+#include "huffmann/Huffman.hpp"
 #include "bitstream/Bitstream.hpp"
-
 #include "segments/JPEGSegments.hpp"
+#include "speedcontest/SpeedContest.hpp"
 
 using namespace JPEGSegments;
 
@@ -197,203 +190,6 @@ void testhuffmann() {
 	bitsteam.print();
 }
 
-void testDirectDCT() {
-	Mat input;
-	input.initiate((float[]){
-		2, 2,
-		2, 2
-	}, 2, 2);
-	
-	Mat out = DCT::transform(input);
-	
-	out.print();
-}
-
-void testIDCT() {
-	Mat input;
-	input.initiate((float[]){
-		2, 2, 2,
-		2, 2, 2,
-		2, 2, 2
-	}, 3, 3);
-	
-	Mat out = DCT::transform2(input);
-	std::cout << "DCT Mat:" << std::endl;
-	out.print();
-	
-	Mat inverse = DCT::inverse(out);
-	std::cout << "Inverse Mat:" << std::endl;
-	inverse.print();
-}
-
-void testMat() {
-	Mat a;
-	a.initiate((float[]){
-		1, 0, 0,
-		0, 1, 0,
-		0, 0, 1}, 3 , 3);
-	
-	Mat b;
-	b.initiate((float[]){
-		1, 2, 3,
-		0, 1, 4,
-		0, 5, 1}, 3 , 3);
-	
-	Mat c = a * b;
-	c.print();
-}
-
-void testAraiLine()
-{
-    float *values = new float[8];
-    
-    values[0] = 1;
-    values[1] = 7;
-    values[2] = 3;
-    values[3] = 4;
-    values[4] = 5;
-    values[5] = 4;
-    values[6] = 3;
-    values[7] = 2;
-
-//    Arai::transformLineOG(values);
-
-    bool test = true;
-    float tolerance = 0.0001;
-    
-    test = test && (fabsf(values[0] - (10.253f))     < tolerance);
-    test = test && (fabsf(values[1] - (0.797218f))   < tolerance);
-    test = test && (fabsf(values[2] - (-2.19761f))   < tolerance);
-    test = test && (fabsf(values[3] - (-0.0377379f)) < tolerance);
-    test = test && (fabsf(values[4] - (-1.76777f))   < tolerance);
-    test = test && (fabsf(values[5] - (-2.75264f))   < tolerance);
-    test = test && (fabsf(values[6] - (-2.53387f))   < tolerance);
-    test = test && (fabsf(values[7] - (-1.13403f))   < tolerance);
-    
-    if ( test )
-    {
-        std::cout << "All values are correct." << std::endl;
-    }
-    else
-    {
-        std::cout << "Something went wrong." << std::endl;
-    }
-}
-
-void testAraiMatrix()
-{
-    Mat matrix;
-    
-    matrix.initiate((float[]) {
-        1, 7, 3, 4, 5, 4, 3, 2,
-        7, 0, 0, 0, 0, 0, 0, 0,
-        3, 0, 0, 0, 0, 0, 0, 0,
-        4, 0, 0, 0, 0, 0, 0, 0,
-        5, 0, 0, 0, 0, 0, 0, 0,
-        4, 0, 0, 0, 0, 0, 0, 0,
-        3, 0, 0, 0, 0, 0, 0, 0,
-        2, 0, 0, 0, 0, 0, 0, 0
-    }, 8, 8);
-
-    matrix = Arai::transform(matrix);
-    matrix.print();
-	
-    std::cout << std::endl;
-
-    matrix = DCT::inverse(matrix);
-    matrix.print();
-}
-
-
-
-void testAraiMatrixOG()
-{
-	float* vls = new float[64] {
-		1, 7, 3, 4, 5, 4, 3, 2,
-		7, 0, 0, 0, 0, 0, 0, 0,
-		3, 0, 0, 0, 0, 0, 0, 0,
-		4, 0, 0, 0, 0, 0, 0, 0,
-		5, 0, 0, 0, 0, 0, 0, 0,
-		4, 0, 0, 0, 0, 0, 0, 0,
-		3, 0, 0, 0, 0, 0, 0, 0,
-		2, 0, 0, 0, 0, 0, 0, 0
-	};
-	
-	Performance::howManyOperationsInSeconds(3, "Marv Arai", [&]{ Arai::transformMT(vls); });
-	
-	// reset matrix to get the same sequence of calculations
-	vls = new float[64] {
-		1, 7, 3, 4, 5, 4, 3, 2,
-		7, 0, 0, 0, 0, 0, 0, 0,
-		3, 0, 0, 0, 0, 0, 0, 0,
-		4, 0, 0, 0, 0, 0, 0, 0,
-		5, 0, 0, 0, 0, 0, 0, 0,
-		4, 0, 0, 0, 0, 0, 0, 0,
-		3, 0, 0, 0, 0, 0, 0, 0,
-		2, 0, 0, 0, 0, 0, 0, 0
-	};
-	
-	Performance::howManyOperationsInSeconds(3, "Oleg Arai", [&]{ Arai::transformOG(vls, 8, 8); });
-	
-//	for (int i = 0; i < 64; ++i) {
-//		printf("%1.3f\t", vls[i]);
-//		if (i % 8 == 7)
-//			printf("\n");
-//	}
-	
-	std::cout << std::endl;
-}
-
-void testTransformations(int digits = 5)
-{
-    Mat matrix;
-	
-    matrix.initiate((float[]) {
-        1, 7, 3, 4, 5, 4, 3, 2,
-        7, 0, 0, 0, 0, 0, 0, 0,
-        3, 0, 0, 0, 0, 0, 0, 0,
-        4, 0, 0, 0, 0, 0, 0, 0,
-        5, 0, 0, 0, 0, 0, 0, 0,
-        4, 0, 0, 0, 0, 0, 0, 0,
-        3, 0, 0, 0, 0, 0, 0, 0,
-        2, 0, 0, 0, 0, 0, 0, 0
-    }, 8, 8);
-    
-    matrix = DCT::transform(matrix);
-    matrix.print(digits);
-    std::cout << std::endl;
-    
-    matrix = DCT::inverse(matrix);
-    matrix.print(digits);
-    std::cout << std::endl;
-
-    matrix = DCT::transform2(matrix);
-    matrix.print(digits);
-    std::cout << std::endl;
-    
-    matrix = DCT::inverse(matrix);
-    matrix.print(digits);
-    std::cout << std::endl;
-
-    matrix = Arai::transform(matrix);
-    matrix.print(digits);
-    std::cout << std::endl;
-    
-    matrix = DCT::inverse(matrix);
-    matrix.print(digits);
-    std::cout << std::endl;
-	
-	
-	Performance::howManyOperationsInSeconds(3, "Arai", [&]{ Arai::transform(matrix); });
-
-	size_t iters = 460000;
-	Timer t;
-	while (iters--) {
-		Arai::transform(matrix);
-	}
-	printf("Testing <Arai> took %lf seconds with %lu iterations (%lfms per operation)\n", t.elapsed(), 460000L, t.elapsed() / 460000 * 1000);
-}
-
 float* generateBlockMatrix(size_t w, size_t h) {
 	float data[8] = {1, 7, 3, 4, 5, 4, 3, 2}; // generate our well known test matrix
 	float *vls = new float[w * h];
@@ -433,7 +229,7 @@ void testFloatMatrixArrayDCT() {
 	vls[8+1] = 4;
 	vls[8+width] = 4;
 	vls[2*width + 1] = 8;
-	vls[12*width + 1] = 1;
+	vls[12*width + 1] = 1; // modify some valuesto get different results
 	float *out = new float[width * height];
 	
 //	DCT::transform(vls, out, width, height);
@@ -441,71 +237,8 @@ void testFloatMatrixArrayDCT() {
 	
 //	Arai::transformInlineTranspose(vls, width, height);
 //	printFloatMatrix(vls, width, height);
-//	return;
 	
-	// ----
-	
-//	Mat matrix;
-//	matrix.initiate((float[]) {
-//		1, 7, 3, 4, 5, 4, 3, 2,
-//		7, 0, 0, 0, 0, 0, 0, 0,
-//		3, 0, 0, 0, 0, 0, 0, 0,
-//		4, 0, 0, 0, 0, 0, 0, 0,
-//		5, 0, 0, 0, 0, 0, 0, 0,
-//		4, 0, 0, 0, 0, 0, 0, 0,
-//		3, 0, 0, 0, 0, 0, 0, 0,
-//		2, 0, 0, 0, 0, 0, 0, 0
-//	}, 8, 8);
-//	Arai::transform(matrix);
-//	std::cout << matrix.get(0) << std::endl;
-//	return;
-//
-//	size_t width = 8, height = 8;
-//	float *vls = generateBlockMatrix(width, height);
-//	float *out = new float[width * height];
-	
-	
-	Performance::howManyOperationsInSeconds(0, "lambda init", [&](){ DCT::transform2(vls, width, height); });
-	
-//	printf("\nOld implementation:\n");
-//	Performance::howManyOperationsInSeconds(5, "Arai DCT (OLD)", [&]{ Arai::transform(matrix); });
-//	Performance::howManyOperationsInSeconds(5, "Separated DCT (OLD)", [&]{ DCT::transform2(matrix); });
-//	Performance::howManyOperationsInSeconds(5, "Normal DCT (OLD)", [&]{ matrix = DCT::transform(matrix); });
-	
-	printf("\nSingle-Threaded:\n");
-	Performance::howManyOperationsInSeconds(5, "Arai DCT", [&]{ Arai::transformOG(vls, width, height); });
-	Performance::howManyOperationsInSeconds(5, "Arai inline transpose", [&]{ Arai::transformInlineTranspose(vls, width, height); });
-	Performance::howManyOperationsInSeconds(5, "Separated DCT", [&]{ DCT::transform2(vls, width, height); });
-	Performance::howManyOperationsInSeconds(5, "Normal DCT", [&]{ DCT::transform(vls, out, width, height); });
-	OCL_DCT::separated(vls, width, height); // once to compile GPU kernel
-	Performance::howManyOperationsInSeconds(5, "Separated on GPU", [&]{ OCL_DCT::separated(vls, width, height); });
-	
-	GPUComposer comp = GPUComposer(OCL_DCT::separated);
-	Performance::howManyOperationsInSeconds(5, "Separated on GPU (Composer)", [&]{
-		if (comp.add(vls, width, height)) {
-//			printf("processing %lu simultaniously\n",comp.cacheInfo.size());
-			// do something with the data
-			//comp.cacheInfo[i]
-			//comp.cache
-		}
-	});
-	
-	printf("\nMulti-Threading:\n");
-	Performance::howManyOperationsInSeconds(5, "Arai DCT", [&]{
-		Arai::transformOG(vls, width, height);
-	}, true);
-	
-	Performance::howManyOperationsInSeconds(5, "Arai inline transpose", [&]{
-		Arai::transformInlineTranspose(vls, width, height);
-	}, true);
-	
-	Performance::howManyOperationsInSeconds(5, "Separated DCT", [&]{
-		DCT::transform2(vls, width, height);
-	}, true);
-	
-	Performance::howManyOperationsInSeconds(5, "Normal DCT", [&]{
-		DCT::transform(vls, out, width, height);
-	}, true);
+	SpeedContest::run(1, vls, width, height); // 1 second
 }
 
 // ################################################################
@@ -518,13 +251,7 @@ int main(int argc, const char *argv[]) {
 	
 	//testhuffmann();
     //testJPEGWriter();
-	//testDirectDCT();
-    //testIDCT();
-	//testMat();
 //	testImage();
-//    testAraiLine();
-//	testAraiMatrixOG();
-//	testTransformations(3);
 	testFloatMatrixArrayDCT();
 	
 	return 0;
