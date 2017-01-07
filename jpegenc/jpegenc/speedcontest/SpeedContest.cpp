@@ -34,7 +34,7 @@ void runCPUSingleCore(float* &matrix, size_t width, size_t height, size_t second
 	
 	memcpy(vls, matrix, copySize);
 	Performance::howManyOperationsInSeconds(seconds, "Arai DCT", [&]{
-		Arai::transformOG(vls, width, height);
+		Arai::transform(vls, width, height);
 	});
 }
 
@@ -62,7 +62,7 @@ void runCPUMultiCore(float* &matrix, size_t width, size_t height, size_t seconds
 	
 	memcpy(vls, matrix, copySize);
 	Performance::howManyOperationsInSeconds(seconds, "Arai DCT", [&]{
-		Arai::transformOG(vls, width, height);
+		Arai::transform(vls, width, height);
 	}, true);
 }
 
