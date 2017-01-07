@@ -1,5 +1,4 @@
 #include "DCT.hpp"
-#include <math.h> // OLD
 
 //  ---------------------------------------------------------------
 // |
@@ -8,12 +7,6 @@
 //  ---------------------------------------------------------------
 
 #define N 8
-
-inline float getC(size_t i) { // OLD
-	if (i == 0)
-		return 0.7071067811865475244008443621048490392848359376884740;  //1/sqrt(2)
-	return 1;
-}
 
 inline float getConstantC(unsigned char x, unsigned char y) { // (2.0F / N) * getC(i) * getC(j)
 	if (x != 0 && y != 0)
@@ -57,29 +50,6 @@ static const float* matrixA = new float[64] {
 // |  Naive Sum DCT
 // |
 //  ---------------------------------------------------------------
-
-Mat DCT::transform(Mat input) { // OLD
-	// As mat has to be quadratic we can just work with the rows
-	Mat newMat(input.rows);
-	for (int i = 0; i < input.rows; ++i) {
-		for (int j = 0; j < input.rows; ++j) {
-		
-			float outer = 2.0F / input.rows * getC(i) * getC(j);
-			float inner = 0;
-	
-			for (int x = 0; x < input.rows; ++x) {
-				for (int y = 0; y < input.rows; ++y) {
-					float firstCos = cos(((2 * x + 1) * i * M_PI) / (2.0 * input.rows));
-					float secondCos = cos(((2 * y + 1) * j * M_PI) / (2.0 * input.rows));
-					inner += input.get(x, y) * firstCos * secondCos;
-				}
-			}
-			newMat.set(i , j , outer * inner);
-		}
-	}
-	
-	return newMat;
-}
 
 void transform8x8_normal(float* &input, float* &output, size_t width) {
 	unsigned char i,j,x,y;
@@ -132,14 +102,6 @@ void DCT::transform(float* &input, float* &output, const size_t width, const siz
 // |  Separated Matrix Multiplication
 // |
 //  ---------------------------------------------------------------
-
-Mat DCT::transform2(Mat input) { // OLD
-	Mat a = generateA(input.rows);
-	Mat temp = a * input;
-	a.transpose();
-	
-	return temp * a;
-}
 
 void multiplyMatrixAWith(float* &b, float* &result, const size_t width) {
 	unsigned char x,y, i;
@@ -209,31 +171,6 @@ void DCT::transform2(float* &input, const size_t width, const size_t height) {
 // |
 //  ---------------------------------------------------------------
 
-Mat DCT::inverse(Mat input) { // OLD
-	// As mat has to be quadratic we can just work with the rows
-	Mat newMat(input.rows);
-	
-	for (int x = 0; x < input.rows; ++x) {
-		for (int y = 0; y < input.rows; ++y) {
-			
-			float inner = 0;
-			
-			for (int i = 0; i < input.rows; ++i) {
-				for (int j = 0; j < input.rows; ++j) {
-					float präfix = 2.0 /input.rows * getC(i) * getC(j) * input.get(i, j);
-					float firstCos = cos(((2 * x + 1) * i * M_PI) / (2.0 * input.rows));
-					float secondCos = cos(((2 * y + 1) * j * M_PI) / (2.0 * input.rows));
-					inner += präfix * firstCos * secondCos;
-					
-				}
-			}
-			newMat.set(x, y, inner);
-		}
-	}
-	
-	return newMat;
-}
-
 void DCT::inverse(float* &input, float* &output) {
 	unsigned char i,j,x,y;
 	x = N;
@@ -252,17 +189,4 @@ void DCT::inverse(float* &input, float* &output) {
 			output[y + x * N] = inner;
 		}
 	}
-}
-
-Mat DCT::generateA(int dimension) { // OLD
-	Mat mat(dimension);
-	
-	for (int k = 0; k < dimension; ++k) {
-		for (int n = 0; n < dimension; ++n) {
-			float value = getC(k) * sqrt(2.0F / dimension) * cos((2 * n + 1) * ((k * M_PI) / (2 * dimension)));
-			mat.set(k, n, value);
-		}
-	}
-	
-	return mat;
 }

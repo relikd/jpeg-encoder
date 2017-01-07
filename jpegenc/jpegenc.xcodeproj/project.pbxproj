@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		123881181DEC446E0017A619 /* Huffman.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 123881161DEC446E0017A619 /* Huffman.cpp */; };
 		12B6F1821E002FE3006D0182 /* DCT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12B6F1801E002FE3006D0182 /* DCT.cpp */; };
-		12B6F1881E00311A006D0182 /* Mat.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12B6F1861E00311A006D0182 /* Mat.cpp */; };
 		4066437E1E07D37300F37B1F /* Arai.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4066437C1E07D37300F37B1F /* Arai.cpp */; };
 		40F5AE7D1DE3589100ECF256 /* JPEGSegments.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40F5AE7B1DE3589100ECF256 /* JPEGSegments.cpp */; };
 		540D8CAF1DD0BE4D00A4E4C9 /* PPMLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 540D8CAD1DD0BE4D00A4E4C9 /* PPMLoader.cpp */; };
@@ -18,7 +17,6 @@
 		543444891E21133700C32785 /* SpeedContest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 543444871E21133700C32785 /* SpeedContest.cpp */; };
 		5434448A1E21133700C32785 /* SpeedContest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 543444871E21133700C32785 /* SpeedContest.cpp */; };
 		543AF4AE1DFDC241006C8F7D /* Encoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 543AF4AD1DFDC241006C8F7D /* Encoding.cpp */; };
-		544ED4991E06247300593D75 /* AraiTest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 544ED4971E06247300593D75 /* AraiTest.cpp */; };
 		54508B431E199A4F00843873 /* arai.cl in Sources */ = {isa = PBXBuildFile; fileRef = 54508B421E199A4F00843873 /* arai.cl */; };
 		54508B461E199A5900843873 /* OCL_DCT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54508B441E199A5900843873 /* OCL_DCT.cpp */; };
 		545A4D491DB6471500B5E365 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 545A4D481DB6471500B5E365 /* main.cpp */; };
@@ -58,8 +56,6 @@
 		123881171DEC446E0017A619 /* Huffman.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Huffman.hpp; sourceTree = "<group>"; };
 		12B6F1801E002FE3006D0182 /* DCT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = DCT.cpp; sourceTree = "<group>"; };
 		12B6F1811E002FE3006D0182 /* DCT.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DCT.hpp; sourceTree = "<group>"; };
-		12B6F1861E00311A006D0182 /* Mat.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Mat.cpp; sourceTree = "<group>"; };
-		12B6F1871E00311A006D0182 /* Mat.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Mat.hpp; sourceTree = "<group>"; };
 		4066437C1E07D37300F37B1F /* Arai.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Arai.cpp; sourceTree = "<group>"; };
 		4066437D1E07D37300F37B1F /* Arai.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Arai.hpp; sourceTree = "<group>"; };
 		40F5AE7B1DE3589100ECF256 /* JPEGSegments.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = JPEGSegments.cpp; sourceTree = "<group>"; };
@@ -78,8 +74,6 @@
 		543444881E21133700C32785 /* SpeedContest.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SpeedContest.hpp; sourceTree = "<group>"; };
 		543AF4AB1DFDBF56006C8F7D /* Encoding.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Encoding.hpp; sourceTree = "<group>"; };
 		543AF4AD1DFDC241006C8F7D /* Encoding.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Encoding.cpp; sourceTree = "<group>"; };
-		544ED4971E06247300593D75 /* AraiTest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AraiTest.cpp; sourceTree = "<group>"; };
-		544ED4981E06247300593D75 /* AraiTest.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = AraiTest.hpp; sourceTree = "<group>"; };
 		54508B421E199A4F00843873 /* arai.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = arai.cl; sourceTree = "<group>"; };
 		54508B441E199A5900843873 /* OCL_DCT.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OCL_DCT.cpp; sourceTree = "<group>"; };
 		54508B451E199A5900843873 /* OCL_DCT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OCL_DCT.h; sourceTree = "<group>"; };
@@ -148,10 +142,6 @@
 			children = (
 				12B6F1801E002FE3006D0182 /* DCT.cpp */,
 				12B6F1811E002FE3006D0182 /* DCT.hpp */,
-				12B6F1861E00311A006D0182 /* Mat.cpp */,
-				12B6F1871E00311A006D0182 /* Mat.hpp */,
-				544ED4971E06247300593D75 /* AraiTest.cpp */,
-				544ED4981E06247300593D75 /* AraiTest.hpp */,
 				4066437C1E07D37300F37B1F /* Arai.cpp */,
 				4066437D1E07D37300F37B1F /* Arai.hpp */,
 			);
@@ -413,12 +403,10 @@
 				549A49771E172F4F0040B274 /* Performance.cpp in Sources */,
 				543AF4AE1DFDC241006C8F7D /* Encoding.cpp in Sources */,
 				543444891E21133700C32785 /* SpeedContest.cpp in Sources */,
-				12B6F1881E00311A006D0182 /* Mat.cpp in Sources */,
 				12B6F1821E002FE3006D0182 /* DCT.cpp in Sources */,
 				54B9AA021DF62F9700BB8D0D /* BitMath.cpp in Sources */,
 				5496ABDD1DCFA97100FED0CF /* Channel.cpp in Sources */,
 				5427976F1E0E835000E702C7 /* oclUtils.cpp in Sources */,
-				544ED4991E06247300593D75 /* AraiTest.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

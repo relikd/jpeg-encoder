@@ -1,5 +1,4 @@
 #include "Arai.hpp"
-#include <math.h>
 
 #define A1 0.707106781186547524400844362104849039284835937688474036588
 #define A2 0.541196100146196984399723205366389420061072063378015444681
@@ -28,83 +27,6 @@
   8 x schreibender Zugriff auf Array
 
 */
-
-void Arai::transformLine(float **x) {
-	float a0 = *x[0] + *x[7];
-	float a1 = *x[1] + *x[6];
-	float a2 = *x[2] + *x[5];
-	float a3 = *x[3] + *x[4];
-	float a5 = *x[2] - *x[5];
-	float a6 = *x[1] - *x[6];
-	float a7 = *x[0] - *x[7];
-	
-	float b0 = a0 + a3;
-	float b1 = a1 + a2;
-	float b3 = a0 - a3;
-	float b4 = -(*x[3] - *x[4]) - a5;
-	float b6 = a6 + a7;
-	
-	float A5_block = (b4 + b6) * A5;
-	
-	float d2 = ((a1 - a2) + b3) * A1;
-	float d4 = -(b4 * A2) - A5_block;
-	float d5 = (a5 + a6) * A3;
-	float d6 = (b6 * A4) - A5_block;
-	
-	float e5 = d5 + a7;
-	float e7 = a7 - d5;
-	
-	*x[0] = (b0 + b1) * S0;
-	*x[1] = (e5 + d6) * S1;
-	*x[2] = (d2 + b3) * S2;
-	*x[3] = (e7 - d4) * S3;
-	*x[4] = (b0 - b1) * S4;
-	*x[5] = (d4 + e7) * S5;
-	*x[6] = (b3 - d2) * S6;
-	*x[7] = (e5 - d6) * S7;
-}
-
-Mat Arai::transform(Mat matrix) {
-	processRows(matrix.values);
-	processColumns(matrix.values);
-	return matrix;
-}
-
-void Arai::transformMT(float* values) {
-	processRows(values);
-	processColumns(values);
-}
-
-void Arai::processRows(float *values) {
-	for (int row = 0; row < 8; ++row)
-	{
-		float **currentLine = new float*[8];
-		
-		for (int column = 0; column < 8; ++column)
-		{
-			currentLine[column] = &values[row * 8 + column];
-		}
-		transformLine(currentLine);
-		
-		delete[] currentLine;
-	}
-}
-
-void Arai::processColumns(float *values) {
-	for (int column = 0; column < 8; ++column)
-	{
-		float **currentLine = new float*[8];
-		
-		for (int row = 0; row < 8; ++row)
-		{
-			currentLine[row] = &values[row * 8 + column];
-		}
-		transformLine(currentLine);
-		
-		delete[] currentLine;
-	}
-}
-
 
 #define ARAI(_0_, _1_, _2_, _3_, _4_, _5_, _6_, _7_) \
 float a0 = _0_ + _7_;\
@@ -146,7 +68,7 @@ _7_ = (e5 - d6) * S7;
 #define ARAI_COL(data, width) ARAI( data[0], data[width], data[2 * width], data[3 * width], data[4 * width], data[5 * width], data[6 * width], data[7 * width] );
 
 
-void Arai::processRowsOG(float* &values, size_t numberOfPixels) {
+void Arai::processRows(float* &values, size_t numberOfPixels) {
 	float *rowPointer = &values[0];
 	size_t rowRepeat = numberOfPixels / 8;
 	
@@ -156,7 +78,7 @@ void Arai::processRowsOG(float* &values, size_t numberOfPixels) {
 	}
 }
 
-void Arai::processColumnsOG(float* &values, size_t image_width, size_t image_height) {
+void Arai::processColumns(float* &values, size_t image_width, size_t image_height) {
 	float *colPointer = &values[0];
 	size_t lineSkip = image_width * 7; // 7 because one line was already processed
 	
@@ -172,16 +94,22 @@ void Arai::processColumnsOG(float* &values, size_t image_width, size_t image_hei
 	}
 }
 
-void Arai::transformOG(float* &values, size_t image_width, size_t image_height) {
+void Arai::transform(float* &values, size_t image_width, size_t image_height) {
 	
 	if (image_width % 8 != 0 || image_height % 8 != 0) {
 		fputs("Error: Arai needs an image dimension of an multiple of 8\n", stderr);
 	}
 	
-	processRowsOG(values, image_width * image_height);
-	processColumnsOG(values, image_width, image_height);
+	processRows(values, image_width * image_height);
+	processColumns(values, image_width, image_height);
 }
 
+
+// ################################################################
+// #
+// #  Inline Transpose
+// #
+// ################################################################
 
 #define ARAI_WITH_TRANSPOSE(_INPUT_, _OUTPUT_, _width_) \
 float a0 = _INPUT_[0] + _INPUT_[7];\
@@ -251,11 +179,11 @@ void Arai::transformInlineTranspose(float* &values, size_t image_width, size_t i
 		fputs("Error: Arai needs an image dimension of an multiple of 8\n", stderr);
 	}
 	
-	float *outValues = (float*)malloc(sizeof(float) * image_width * image_height);
+	float *outValues = new float[image_width * image_height];
 	
 	araiWithInlineTranspose(values, outValues, image_width, image_height);
 	araiWithInlineTranspose(outValues, values, image_width, image_height);
 	
-	free(outValues);
+	delete[] outValues;
 }
 
