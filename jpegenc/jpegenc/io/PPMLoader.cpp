@@ -1,8 +1,16 @@
 #include "PPMLoader.hpp"
+#include "BitMath.hpp"
+
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+// Windows System
+#else
+
+#define USE_UNIX_MMAP_FILE 1
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/mman.h>
-#include "BitMath.hpp"
+
+#endif
 
 
 std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
@@ -115,9 +123,24 @@ void PPMLoader::readFileToMemory(const char *pathToImage) {
 	FILE *fl = fopen(pathToImage, "r");
 	fseek(fl, 0, SEEK_END);
 	filesize = ftell(fl);
+	
+#ifndef USE_UNIX_MMAP_FILE // use the slower C fread()
+	rewind(fl);
+	
+	// allocate memory to contain the whole file:
+	buffer = new char[filesize];
+	// copy the file into the buffer:
+	size_t result = fread(buffer, 1, filesize, fl);
+	if (result != filesize) {
+		fputs("Reading error", stderr);
+		exit(3);
+	}
+#endif
+	
 	fclose(fl);
 	
-	// start actual file reading with mmap
+#ifdef USE_UNIX_MMAP_FILE
+	// blazing fast file to memory read with mmap
 	int fd = open(pathToImage, O_RDONLY);
 	if (fd == -1) {
 		perror("Error opening file for reading");
@@ -131,6 +154,7 @@ void PPMLoader::readFileToMemory(const char *pathToImage) {
 		exit(EXIT_FAILURE);
 	}
 	close(fd);
+#endif
 	/* the whole file is now loaded in the memory buffer. */
 }
 
