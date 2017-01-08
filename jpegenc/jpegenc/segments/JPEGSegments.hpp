@@ -95,7 +95,7 @@ namespace JPEGSegments {
 			this->htInfoType = 0; // hardcoded
 			this->htInfoRest = 0; // hardcoded
 			
-			for (std::pair<Symbol, Encoding> enc : encodingTable) {
+			for (const std::pair<Symbol, Encoding> &enc : encodingTable) {
 				unsigned short numberOfBits = enc.second.numberOfBits;
 				symbolsPerLevel[numberOfBits - 1] += 1;
 			}
