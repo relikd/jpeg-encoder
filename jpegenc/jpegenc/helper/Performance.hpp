@@ -4,6 +4,10 @@
 #include <functional>
 #include <chrono>
 
+#define PerformancePrintOperationsPerSecond(__desc, __time, __count) \
+printf("Testing <%s> took %lf seconds with %lu iterations (%lfms per operation)\n", __desc, __time, __count, (__time / __count) * 1000);
+
+
 class Timer {
 public:
 	Timer() : beg_(clock_::now()) {}
