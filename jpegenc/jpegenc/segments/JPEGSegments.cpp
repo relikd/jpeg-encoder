@@ -60,7 +60,7 @@ void DefineHuffmanTable::addToStream(Bitstream &stream) {
         stream.add(symbolsPerLevel[i], 8);
     }
 	
-    for (std::pair<Symbol, Encoding> enc : encodingTable) {
+    for (const std::pair<Symbol, Encoding> &enc : encodingTable) {
         stream.add(enc.first, 8);
     }
 }

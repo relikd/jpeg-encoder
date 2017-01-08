@@ -24,7 +24,7 @@ void Huffman::addSymbols(std::vector<Symbol> input) {
 /** Prepare list with symbols and correlating frequencies */
 void Huffman::generateNodeList() {
 	singleLeafNodes.clear();
-	for (std::pair<Symbol, Frequency> entry : symbolBook) {
+	for (const std::pair<Symbol, Frequency> &entry : symbolBook) {
 		singleLeafNodes.push_back( new Node(entry.first, entry.second) );
 	}
 	std::sort(singleLeafNodes.begin(), singleLeafNodes.end(), sortNode);
@@ -93,7 +93,7 @@ Node* Huffman::standardTree() {
 /** Create Huffman Tree from an given encoding table */
 Node* Huffman::treeFromEncodingTable(const EncodingTable &encodingTable) {
 	Node* root = new Node();
-	for (std::pair<Symbol, Encoding> pair : encodingTable) {
+	for (const std::pair<Symbol, Encoding> &pair : encodingTable) {
 		Node* runningNode = root;
 		Level remainingLevel = pair.second.numberOfBits;
 		

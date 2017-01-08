@@ -7,7 +7,7 @@
  */
 void PackageNode::combine(PackageNode other) {
 	frequency += other.frequency;
-	for (Symbol s : other.symbols)
+	for (const Symbol &s : other.symbols)
 		symbols.push_back(s);
 }
 
@@ -23,7 +23,7 @@ const std::vector<Level> PackageMerge::generate(const std::vector<Node*> &input,
 	nodesListOriginal.reserve(input.size());
 	nodesListPackaged.reserve(input.size()*2); // can never be larger than 2*input
 	
-	for (Node *n : input)
+	for (const Node *n : input)
 		nodesListOriginal.push_back( PackageNode(n->symbol, n->frequency) );
 	
 	// start off with the original list and evolve package list with each level
@@ -67,13 +67,13 @@ void PackageMerge::merge() {
 /** Sum all symbols in all packages to create a level list */
 std::vector<Level> PackageMerge::calculateLevelList() {
 	std::map<Symbol, Level> levelMap;
-	for (PackageNode pn : nodesListPackaged)
-		for (Symbol s : pn.symbols)
+	for (const PackageNode &pn : nodesListPackaged)
+		for (const Symbol &s : pn.symbols)
 			levelMap[s] += 1;
 	
 	std::vector<Level> levelList;
 	levelList.reserve(nodesListOriginal.size());
-	for (PackageNode on : nodesListOriginal)
+	for (const PackageNode &on : nodesListOriginal)
 		levelList.push_back( levelMap[on.symbols[0]] );
 	
 	return levelList;
