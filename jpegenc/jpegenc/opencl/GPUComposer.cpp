@@ -1,26 +1,26 @@
 #include "GPUComposer.h"
 
-#define RESTRUCTURE_DATA 1 // can be 0 if all images have the same size
-
-#if RESTRUCTURE_DATA
 /**
  * Copy data with 8-float width alignment. Make one image with width = 8 and height = very very long
  */
 void prepareData(float* cachePtr, float* dataPtr, size_t w, size_t h) {
-	const unsigned char copySize = 8 * sizeof(float);
-	size_t x, y, eight;
+	size_t x, y, rows, cols;
+	const size_t smallSkip = (w - 8);
+	const size_t largeSkip = (8 * w) - 8;
+	
 	y = h / 8;
 	while (y--) {
 		x = w / 8;
 		while (x--) {
-			eight = 8;
-			while (eight--) {
-				memcpy(cachePtr, dataPtr, copySize);
-				cachePtr += 8;
-				dataPtr += w;
+			rows = 8;
+			while (rows--) {
+				cols = 8;
+				while (cols--) {
+					*(cachePtr++) = *(dataPtr++);
+				}
+				dataPtr += smallSkip;
 			}
-			dataPtr -= 8 * w;
-			dataPtr += 8;
+			dataPtr -= largeSkip;
 		}
 		dataPtr += 7 * w;
 	}
@@ -37,21 +37,23 @@ void reconstructData(float* &data, std::vector<DATA_INFO> &meta) {
 		size_t width = info.width;
 		
 		// copy data
-		size_t x, y, eight;
-		const unsigned char copySize = 8 * sizeof(float);
+		size_t x, y, rows, cols;
+		const size_t smallSkip = (width - 8);
+		const size_t largeSkip = (8 * width) - 8;
 		
 		y = info.height / 8;
 		while (y--) {
 			x = width / 8;
 			while (x--) {
-				eight = 8;
-				while (eight--) {
-					memcpy(dest, source, copySize);
-					source += 8;
-					dest += width;
+				rows = 8;
+				while (rows--) {
+					cols = 8;
+					while (cols--) {
+						*(dest++) = *(source++); // notice subtle difference here, compared to prepareData();
+					}
+					dest += smallSkip;
 				}
-				dest -= 8 * width;
-				dest += 8;
+				dest -= largeSkip;
 			}
 			dest += 7 * width;
 		}
@@ -59,7 +61,6 @@ void reconstructData(float* &data, std::vector<DATA_INFO> &meta) {
 	delete [] data;
 	data = tmp;
 }
-#endif
 
 bool GPUComposer::add(float* &matrix, size_t width, size_t height)
 {
@@ -76,11 +77,17 @@ bool GPUComposer::add(float* &matrix, size_t width, size_t height)
 	}
 	
 	// add data to cache first, then update internal counters
-#if RESTRUCTURE_DATA
-	prepareData(&cache[cachedSize], matrix, width, height);
-#else
-	memcpy(&cache[cachedSize], matrix, sizeof(float) * width * height);
-#endif
+	if (shouldRestructureData) {
+		prepareData(&cache[cachedSize], matrix, width, height);
+	} else {
+		// copy data without modification
+		float *ptrC = &cache[cachedSize];
+		float *ptrM = &matrix[0];
+		size_t repeatPx = width * height;
+		while (repeatPx--) {
+			*(ptrC++) = *(ptrM++);
+		}
+	}
 	
 	size_t px = width * height;
 	cacheInfo.push_back(DATA_INFO(cachedSize, width, height)); // add before increase
@@ -95,10 +102,13 @@ bool GPUComposer::add(float* &matrix, size_t width, size_t height)
 
 void GPUComposer::flush() {
 	if (cachedSize > 0) {
-		func(cache, 8, cachedSize / 8); // at this point always a multiple of 8
-#if RESTRUCTURE_DATA
-		reconstructData(cache, cacheInfo);
-#endif
+		if (shouldRestructureData) {
+			func(cache, 8, cachedSize / 8); // 8-float width alignment
+			reconstructData(cache, cacheInfo);
+		} else {
+			// since all sizes are equal, just take the first one
+			func(cache, cacheInfo.front().width, cacheInfo.front().height);
+		}
 		shouldClearStoredData = true;
 	}
 }

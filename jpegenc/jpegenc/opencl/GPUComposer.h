@@ -25,13 +25,14 @@ struct DATA_INFO {
 class GPUComposer {
 	size_t cachedSize = 0;
 	bool shouldClearStoredData = true;
+	const bool shouldRestructureData = false; // massive performance increase if true!
 	
 public:
 	float *cache = new float[cacheSizeMax];
 	std::vector<DATA_INFO> cacheInfo;
 	gpu_function func;
 	
-	GPUComposer(gpu_function f) : func(f) {};
+	GPUComposer(gpu_function f, bool allImagesHaveSameSize = false) : func(f), shouldRestructureData(!allImagesHaveSameSize) {};
 	~GPUComposer() {
 		delete[] cache;
 	};

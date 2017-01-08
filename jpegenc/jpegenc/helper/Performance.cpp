@@ -41,7 +41,7 @@ void Performance::howManyOperationsInSeconds(size_t seconds, const char* descrip
 	}
 	double time = t.elapsed();
 	unsigned long numberOfIterations = iters;
-	printf("Testing <%s> took %lf seconds with %lu iterations (%lfms per operation)\n", description, time, numberOfIterations, (time / numberOfIterations) * 1000);
+	PerformancePrintOperationsPerSecond(description, time, numberOfIterations);
 	
 	// wait till all previous threads are finished
 	while (threadsRunning) {
