@@ -1,9 +1,9 @@
 #include "SpeedContest.hpp"
-#include "Performance.hpp"
-#include "Arai.hpp"
-#include "DCT.hpp"
-#include "OCL_DCT.h"
-#include "GPUComposer.h"
+#include "../helper/Performance.hpp"
+#include "../dtc/Arai.hpp"
+#include "../dtc/DCT.hpp"
+#include "../opencl/OCL_DCT.h"
+#include "../opencl/GPUComposer.h"
 #include <thread>
 
 // 1, 7, 3, 4, 5, 4, 3, 2

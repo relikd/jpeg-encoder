@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <float.h>
 #include <thread>
+#include <atomic>
 
 /**
  * Repeat the same lambda expression for a defined amout of seconds and print out
