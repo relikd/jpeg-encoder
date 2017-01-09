@@ -5,7 +5,7 @@
 
 class OCL_DCT {
 public:
-	static void prepareOpenCL();
+	static void printDevices();
 	static void separated(float* &matrix, size_t width, size_t height);
 	static void arai(float* &matrix, size_t width, size_t height);
 	
