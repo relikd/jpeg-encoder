@@ -239,6 +239,7 @@ void testFloatMatrixArrayDCT() {
 //	printFloatMatrix(vls, width, height);
 	
 	SpeedContest::run(1, vls, width, height); // 1 second
+	delete [] out;
 }
 
 // ################################################################
