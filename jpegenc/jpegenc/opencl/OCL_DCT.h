@@ -1,7 +1,7 @@
 #ifndef OCL_DCT_hpp
 #define OCL_DCT_hpp
 
-#include "Channel.hpp"
+#include <stdlib.h>
 
 class OCL_DCT {
 public:

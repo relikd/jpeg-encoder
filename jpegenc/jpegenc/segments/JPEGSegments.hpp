@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <memory>
 #include "../bitstream/Bitstream.hpp"
 #include "../model/Image.hpp"
 #include "../huffmann/Huffman.hpp"
