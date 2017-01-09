@@ -5,15 +5,15 @@
 // than the naive kernel below.  Note that the shared memory array is sized to 
 // (BLOCK_DIM+1)*BLOCK_DIM.  This pads each row of the 2D block in shared memory 
 // so that bank conflicts do not occur when threads address the array column-wise.
-__kernel void dct_separated(__global float *odata, __global float *idata, __global float *matrixA, int offset, int width, int height, __local float* blockA, __local float* blockB)
+__kernel void dct_separated(__global float *odata, __global float *idata, __global float *matrixA, int width, int height, __local float* blockA, __local float* blockB)
 {
 	// read the matrix tile into shared memory
 	unsigned int xIndex = get_global_id(0);
 	unsigned int yIndex = get_global_id(1);
 	
-	if ( (xIndex + offset < width) && (yIndex < height) )
+	if ( (xIndex < width) && (yIndex < height) )
 	{
-		unsigned int gIndex = yIndex * width + xIndex + offset;
+		unsigned int gIndex = yIndex * width + xIndex;
 		
 		blockA[get_local_id(1) * (BLOCK_DIM + 1) + get_local_id(0)] = matrixA[get_local_id(1) * 8 + get_local_id(0)];
 		blockB[get_local_id(1) * (BLOCK_DIM + 1) + get_local_id(0)] = idata[gIndex];
@@ -68,16 +68,16 @@ __constant float S5 = 0.44998811156820785231925477047094419776900086370642249261
 __constant float S6 = 0.653281482438188263928321586713593576791880594174634763774F;
 __constant float S7 = 1.281457723870753089398043148088849954507561675693672456063F;
 
-__kernel void dct_arai(__global float *odata, __global float *idata, __global float *matrixA, int offset, int width, int height, __local float* blockA, __local float* blockB)
+__kernel void dct_arai(__global float *odata, __global float *idata, int width, int height, __local float* block)
 {
 	// read the matrix tile into shared memory
 	unsigned int xIndex = get_global_id(0);
 	unsigned int yIndex = get_global_id(1);
 	
-	if ( get_local_id(0) == 0 && (xIndex + offset < width) && (yIndex < height))
+	if ( get_local_id(0) == 0 && (xIndex < width) && (yIndex < height))
 	{
 		{ // {} to limit variable scope
-			unsigned int inIndex = yIndex * width + xIndex + offset;
+			unsigned int inIndex = yIndex * width + xIndex;
 			
 			float a0 = idata[inIndex] + idata[inIndex + 7];
 			float a7 = idata[inIndex] - idata[inIndex + 7];
@@ -105,14 +105,14 @@ __kernel void dct_arai(__global float *odata, __global float *idata, __global fl
 			
 			unsigned int row = get_local_id(1);
 			// put transposed result to local memory
-			blockA[                       row ] = (b0 + b1) * S0;
-			blockA[ 1 * (BLOCK_DIM + 1) + row ] = (e5 + d6) * S1;
-			blockA[ 2 * (BLOCK_DIM + 1) + row ] = (d2 + b3) * S2;
-			blockA[ 3 * (BLOCK_DIM + 1) + row ] = (e7 - d4) * S3;
-			blockA[ 4 * (BLOCK_DIM + 1) + row ] = (b0 - b1) * S4;
-			blockA[ 5 * (BLOCK_DIM + 1) + row ] = (d4 + e7) * S5;
-			blockA[ 6 * (BLOCK_DIM + 1) + row ] = (b3 - d2) * S6;
-			blockA[ 7 * (BLOCK_DIM + 1) + row ] = (e5 - d6) * S7;
+			block[                       row ] = (b0 + b1) * S0;
+			block[ 1 * (BLOCK_DIM + 1) + row ] = (e5 + d6) * S1;
+			block[ 2 * (BLOCK_DIM + 1) + row ] = (d2 + b3) * S2;
+			block[ 3 * (BLOCK_DIM + 1) + row ] = (e7 - d4) * S3;
+			block[ 4 * (BLOCK_DIM + 1) + row ] = (b0 - b1) * S4;
+			block[ 5 * (BLOCK_DIM + 1) + row ] = (d4 + e7) * S5;
+			block[ 6 * (BLOCK_DIM + 1) + row ] = (b3 - d2) * S6;
+			block[ 7 * (BLOCK_DIM + 1) + row ] = (e5 - d6) * S7;
 		}
 	
 		barrier(CLK_LOCAL_MEM_FENCE); // wait till finished
@@ -120,15 +120,15 @@ __kernel void dct_arai(__global float *odata, __global float *idata, __global fl
 		{
 			unsigned int localOffset = get_local_id(1) * (BLOCK_DIM + 1);
 			
-			float a0 = blockA[localOffset] + blockA[localOffset + 7];
-			float a7 = blockA[localOffset] - blockA[localOffset + 7];
-			float a1 = blockA[localOffset + 1] + blockA[localOffset + 6];
-			float a6 = blockA[localOffset + 1] - blockA[localOffset + 6];
-			float a2 = blockA[localOffset + 2] + blockA[localOffset + 5];
-			float a5 = blockA[localOffset + 2] - blockA[localOffset + 5];
-			float a3 = blockA[localOffset + 3] + blockA[localOffset + 4];
+			float a0 = block[localOffset] + block[localOffset + 7];
+			float a7 = block[localOffset] - block[localOffset + 7];
+			float a1 = block[localOffset + 1] + block[localOffset + 6];
+			float a6 = block[localOffset + 1] - block[localOffset + 6];
+			float a2 = block[localOffset + 2] + block[localOffset + 5];
+			float a5 = block[localOffset + 2] - block[localOffset + 5];
+			float a3 = block[localOffset + 3] + block[localOffset + 4];
 			
-			float b4 = -(blockA[localOffset + 3] - blockA[localOffset + 4]) - a5;
+			float b4 = -(block[localOffset + 3] - block[localOffset + 4]) - a5;
 			float b0 = a0 + a3;
 			float b1 = a1 + a2;
 			float b3 = a0 - a3;
@@ -144,7 +144,7 @@ __kernel void dct_arai(__global float *odata, __global float *idata, __global fl
 			float e5 = d5 + a7;
 			float e7 = a7 - d5;
 			
-			unsigned int outIndex = (yIndex - get_local_id(1)) * width + (xIndex + get_local_id(1)) + offset;
+			unsigned int outIndex = (yIndex - get_local_id(1)) * width + (xIndex + get_local_id(1));
 			odata[outIndex] = (b0 + b1) * S0;
 			odata[outIndex + 1 * width] = (e5 + d6) * S1;
 			odata[outIndex + 2 * width] = (d2 + b3) * S2;

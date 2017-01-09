@@ -90,7 +90,7 @@ inline cl_program loadProgram(const char *path, cl_context &theContext) {
 	return prog;
 }
 
-void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t size_y) {
+void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t size_y, const bool isSeparated) {
 	// Setup Context
 	cl_int errcode = CL_SUCCESS;
 	cl_context clGPUContext;
@@ -103,9 +103,8 @@ void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t
 	
 	// Create a command-queue
 	cl_command_queue commandQueue = clCreateCommandQueue(clGPUContext, devIDs[0], CL_QUEUE_PROFILING_ENABLE, &errcode); // CL_QUEUE_PROFILING_ENABLE
-	oclAssert(errcode);
-	
 	free(devIDs);
+	oclAssert(errcode);
 	
 	// Create Program / Kernel
 	cl_program clProgram = loadProgram("../jpegenc/opencl/arai.cl", clGPUContext);
@@ -118,7 +117,6 @@ void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t
 	cl_kernel clKernel;
 	
 	size_t sizePerGPU = shrRoundUp(BLOCK_DIM, size_x);
-	size_t offset = 0;
 	
 	const size_t mem_size_in = sizeof(float) * size_x * size_y;
 	const size_t mem_size_out = sizeof(float) * size_y * sizePerGPU;
@@ -137,14 +135,21 @@ void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t
 	oclAssert(errcode);
 	
 	// Launch OpenCL kernel
-	errcode  = clSetKernelArg(clKernel, 0, sizeof(cl_mem), (void *) &d_odata);
-	errcode |= clSetKernelArg(clKernel, 1, sizeof(cl_mem), (void *) &d_idata);
-	errcode |= clSetKernelArg(clKernel, 2, sizeof(cl_mem), (void *) &matrix_a);
-	errcode |= clSetKernelArg(clKernel, 3, sizeof(size_t), &offset);
-	errcode |= clSetKernelArg(clKernel, 4, sizeof(size_t), &size_x);
-	errcode |= clSetKernelArg(clKernel, 5, sizeof(size_t), &size_y);
-	errcode |= clSetKernelArg(clKernel, 6, (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float), 0 );
-	errcode |= clSetKernelArg(clKernel, 7, (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float), 0 );
+	if (isSeparated) {
+		errcode  = clSetKernelArg(clKernel, 0, sizeof(cl_mem), (void *) &d_odata);
+		errcode |= clSetKernelArg(clKernel, 1, sizeof(cl_mem), (void *) &d_idata);
+		errcode |= clSetKernelArg(clKernel, 2, sizeof(cl_mem), (void *) &matrix_a);
+		errcode |= clSetKernelArg(clKernel, 3, sizeof(size_t), &size_x);
+		errcode |= clSetKernelArg(clKernel, 4, sizeof(size_t), &size_y);
+		errcode |= clSetKernelArg(clKernel, 5, (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float), 0 );
+		errcode |= clSetKernelArg(clKernel, 6, (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float), 0 );
+	} else {
+		errcode  = clSetKernelArg(clKernel, 0, sizeof(cl_mem), (void *) &d_odata);
+		errcode |= clSetKernelArg(clKernel, 1, sizeof(cl_mem), (void *) &d_idata);
+		errcode |= clSetKernelArg(clKernel, 2, sizeof(size_t), &size_x);
+		errcode |= clSetKernelArg(clKernel, 3, sizeof(size_t), &size_y);
+		errcode |= clSetKernelArg(clKernel, 4, (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float), 0 );
+	}
 	oclAssert(errcode);
 	
 	
@@ -163,8 +168,8 @@ void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t
 	
 	// Retrieve result from device
 	
-	size_t size = MIN(size_x - offset, sizePerGPU) * size_y * sizeof(float);
-	oclAssert(clEnqueueReadBuffer(commandQueue, d_odata, CL_TRUE, 0, size, &h_idata[offset * size_y], 0, NULL, NULL));
+	size_t size = MIN(size_x, sizePerGPU) * size_y * sizeof(float);
+	oclAssert(clEnqueueReadBuffer(commandQueue, d_odata, CL_TRUE, 0, size, &h_idata[0], 0, NULL, NULL));
 	
 	// Cleanup Open CL
 	clReleaseContext(clGPUContext);
@@ -197,9 +202,9 @@ void OCL_DCT::printDevices() {
 }
 
 void OCL_DCT::separated(float* &matrix, size_t width, size_t height) {
-	computeOnGPU("dct_separated", matrix, width, height);
+	computeOnGPU("dct_separated", matrix, width, height, true);
 }
 
 void OCL_DCT::arai(float* &matrix, size_t width, size_t height) {
-	computeOnGPU("dct_arai", matrix, width, height);
+	computeOnGPU("dct_arai", matrix, width, height, false);
 }

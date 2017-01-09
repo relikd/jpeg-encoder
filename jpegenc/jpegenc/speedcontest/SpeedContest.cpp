@@ -151,56 +151,55 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 	
 	// BEGIN: "Separated (Composer, var. Size)"
 	copyArray(vls, matrix, size);
-	GPUComposer composer = GPUComposer(OCL_DCT::separated, false);
+	GPUComposer c1 = GPUComposer(OCL_DCT::separated, false);
 	iterations = 0;
 	t.reset();
 	while (t.elapsed() < seconds) {
-		if (composer.add(vls, width, height)) {
-			composer.flush(); // send to GPU
-			iterations += composer.cacheInfo.size();
+		if (c1.add(vls, width, height)) {
+			c1.flush(); // send to GPU
+			iterations += c1.cacheInfo.size();
 			// do something with the data
-			//composer.cacheInfo[i]
-			//composer.cache
+			// c1.cacheInfo[i], c1.cache
 		}
 	}
-	composer.flush(); // send remaining images to GPU
-	iterations += composer.cacheInfo.size();
+	c1.flush(); // send remaining images to GPU
+	iterations += c1.cacheInfo.size();
 	time = t.elapsed();
 	PerformancePrintOperationsPerSecond("Separated (Composer, var. Size)", time, iterations);
 	
 	
 	// BEGIN: "Separated (Composer, Same Size)"
 	copyArray(vls, matrix, size);
-	GPUComposer composerSameSize = GPUComposer(OCL_DCT::separated, true);
+	GPUComposer c2 = GPUComposer(OCL_DCT::separated, true);
 	iterations = 0;
 	t.reset();
 	while (t.elapsed() < seconds) {
-		if (composerSameSize.add(vls, width, height)) {
-			composerSameSize.flush(); // send to GPU
-			iterations += composerSameSize.cacheInfo.size();
+		if (c2.add(vls, width, height)) {
+			c2.flush(); // send to GPU
+			iterations += c2.cacheInfo.size();
 			// do something with the data
 		}
 	}
-	composerSameSize.flush(); // send remaining images to GPU
-	iterations += composerSameSize.cacheInfo.size();
+	c2.flush(); // send remaining images to GPU
+	iterations += c2.cacheInfo.size();
 	time = t.elapsed();
 	PerformancePrintOperationsPerSecond("Separated (Composer, Same Size)", time, iterations);
 	
 	
 	// BEGIN: "Arai (Composer, Same Size)"
 	copyArray(vls, matrix, size);
-	GPUComposer composerSameSizeArai = GPUComposer(OCL_DCT::arai, true);
+	GPUComposer c3 = GPUComposer(OCL_DCT::arai, true);
 	iterations = 0;
 	t.reset();
 	while (t.elapsed() < seconds) {
-		if (composerSameSizeArai.add(vls, width, height)) {
-			composerSameSizeArai.flush(); // send to GPU
-			iterations += composerSameSize.cacheInfo.size();
+		if (c3.add(vls, width, height)) {
+			c3.flush(); // send to GPU
+			iterations += c3.cacheInfo.size();
 			// do something with the data
 		}
 	}
-	composerSameSizeArai.flush(); // send remaining images to GPU
-	iterations += composerSameSize.cacheInfo.size();
+	c3.flush(); // send remaining images to GPU
+	iterations += c3.cacheInfo.size();
 	time = t.elapsed();
 	PerformancePrintOperationsPerSecond("Arai (Composer, Same Size)", time, iterations);
 	
@@ -220,13 +219,14 @@ void SpeedContest::run(double seconds)
 	size_t width = 256, height = 256;
 	float *matrix = createTestMatrix(width, height);
 	
-	printf("\nSingle-Threaded:\n");
+	printf("\n== Single-Threaded ==\n");
 	runCPUSingleCore(matrix, width, height, seconds);
 	
-	printf("\nMulti-Threading:\n");
+	printf("\n== Multi-Threading ==\n");
+	printf("Threads: %d\n", std::thread::hardware_concurrency());
 	runCPUMultiCore(matrix, width, height, seconds);
 	
-	printf("\nGPU:\n");
+	printf("\n== GPU ==\n");
 	runGPU(matrix, width, height, seconds);
 	
 #else
