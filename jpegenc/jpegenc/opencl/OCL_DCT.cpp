@@ -178,27 +178,22 @@ void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t
 	oclAssert(errcode);
 }
 
-void OCL_DCT::prepareOpenCL() {
+void OCL_DCT::printDevices() {
 	cl_context context;
 	cl_device_id* devIDs;
 	
 	const cl_uint gpu_count = getContextAndDevices(context, devIDs);
 	
 	// print all devices
-	printf("OpenCL Devices:\n");
+	printf("Devices:\n");
 	char device_string[1024];
 	for (int i = 0; i < gpu_count; i++) {
 		clGetDeviceInfo(devIDs[i], CL_DEVICE_NAME, sizeof(device_string), &device_string, NULL);
-		printf("[%d]: %s\n", i, device_string);
+		printf(" [%d]: %s\n", i, device_string);
 	}
 	clReleaseContext(context);
 	free(devIDs);
-	printf("Using Device [0]\n");
-	
-	float* dump = new float[256 * 256];
-	computeOnGPU("dct_separated", dump, 256, 256); // this call will compile the kernel
-	computeOnGPU("dct_arai", dump, 256, 256);
-	delete [] dump;
+	printf("Using Device [0]\n\n");
 }
 
 void OCL_DCT::separated(float* &matrix, size_t width, size_t height) {

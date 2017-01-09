@@ -11,13 +11,6 @@
 // one way transform gets:
 // 10.253, 0.797218, -2.19761, -0.0377379, -1.76777, -2.75264, -2.53387, -1.13403
 
-#define PerformancePerSecond(__sec, __desc, __timer, __time, __count, __block) \
-__count = 0; \
-__timer.reset(); \
-while (__timer.elapsed() < __sec) { __block; } \
-__time = __timer.elapsed(); \
-PerformancePrintOperationsPerSecond(__desc, __time, __count);
-
 //  ---------------------------------------------------------------
 // |
 // |  Helper
@@ -81,33 +74,25 @@ void runCPUSingleCore(float* &matrix, size_t width, size_t height, double second
 	float* vls = new float[size];
 	float* out = new float[size];
 	
-	Timer t;
-	double time;
-	size_t iterations;
-	
 	copyArray(vls, matrix, size);
-	PerformancePerSecond(seconds, "Normal DCT", t, time, iterations, {
+	Performance::howManyOperationsInSeconds(seconds, "Normal DCT", [&]{
 		DCT::transform(vls, out, width, height);
-		++iterations;
 	});
 	delete [] out;
 	
 	copyArray(vls, matrix, size);
-	PerformancePerSecond(seconds, "Separated DCT", t, time, iterations, {
+	Performance::howManyOperationsInSeconds(seconds, "Separated DCT", [&]{
 		DCT::transform2(vls, width, height);
-		++iterations;
 	});
 	
 	copyArray(vls, matrix, size);
-	PerformancePerSecond(seconds, "Arai inline transpose", t, time, iterations, {
+	Performance::howManyOperationsInSeconds(seconds, "Arai inline transpose", [&]{
 		Arai::transformInlineTranspose(vls, width, height);
-		++iterations;
 	});
 	
 	copyArray(vls, matrix, size);
-	PerformancePerSecond(seconds, "Arai DCT", t, time, iterations, {
+	Performance::howManyOperationsInSeconds(seconds, "Arai DCT", [&]{
 		Arai::transform(vls, width, height);
-		++iterations;
 	});
 	
 	delete [] vls;
@@ -146,21 +131,30 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 	size_t size = width * height;
 	float* vls = new float[size];
 	
-	OCL_DCT::prepareOpenCL();
+	OCL_DCT::printDevices();
 	
 	Timer t;
 	double time;
 	size_t iterations;
 	
+	// BEGIN: "Separated (Single Image)"
 	copyArray(vls, matrix, size);
-	PerformancePerSecond(seconds, "Separated (Single Image)", t, time, iterations, {
+	iterations = 0;
+	t.reset();
+	while (t.elapsed() < seconds) {
 		OCL_DCT::separated(vls, width, height);
 		++iterations;
-	});
+	}
+	time = t.elapsed();
+	PerformancePrintOperationsPerSecond("Separated (Single Image)", time, iterations);
 	
+	
+	// BEGIN: "Separated (Composer, var. Size)"
 	copyArray(vls, matrix, size);
-	GPUComposer composer = GPUComposer(OCL_DCT::separated);
-	PerformancePerSecond(seconds, "Separated (Composer, var. Size)", t, time, iterations, {
+	GPUComposer composer = GPUComposer(OCL_DCT::separated, false);
+	iterations = 0;
+	t.reset();
+	while (t.elapsed() < seconds) {
 		if (composer.add(vls, width, height)) {
 			composer.flush(); // send to GPU
 			iterations += composer.cacheInfo.size();
@@ -168,27 +162,47 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 			//composer.cacheInfo[i]
 			//composer.cache
 		}
-	});
+	}
+	composer.flush(); // send remaining images to GPU
+	iterations += composer.cacheInfo.size();
+	time = t.elapsed();
+	PerformancePrintOperationsPerSecond("Separated (Composer, var. Size)", time, iterations);
 	
+	
+	// BEGIN: "Separated (Composer, Same Size)"
 	copyArray(vls, matrix, size);
 	GPUComposer composerSameSize = GPUComposer(OCL_DCT::separated, true);
-	PerformancePerSecond(seconds, "Separated (Composer, Same Size)", t, time, iterations, {
+	iterations = 0;
+	t.reset();
+	while (t.elapsed() < seconds) {
 		if (composerSameSize.add(vls, width, height)) {
 			composerSameSize.flush(); // send to GPU
 			iterations += composerSameSize.cacheInfo.size();
 			// do something with the data
 		}
-	});
+	}
+	composerSameSize.flush(); // send remaining images to GPU
+	iterations += composerSameSize.cacheInfo.size();
+	time = t.elapsed();
+	PerformancePrintOperationsPerSecond("Separated (Composer, Same Size)", time, iterations);
 	
+	
+	// BEGIN: "Arai (Composer, Same Size)"
 	copyArray(vls, matrix, size);
 	GPUComposer composerSameSizeArai = GPUComposer(OCL_DCT::arai, true);
-	PerformancePerSecond(seconds, "Arai (Same Size)", t, time, iterations, {
+	iterations = 0;
+	t.reset();
+	while (t.elapsed() < seconds) {
 		if (composerSameSizeArai.add(vls, width, height)) {
 			composerSameSizeArai.flush(); // send to GPU
 			iterations += composerSameSize.cacheInfo.size();
 			// do something with the data
 		}
-	});
+	}
+	composerSameSizeArai.flush(); // send remaining images to GPU
+	iterations += composerSameSize.cacheInfo.size();
+	time = t.elapsed();
+	PerformancePrintOperationsPerSecond("Arai (Composer, Same Size)", time, iterations);
 	
 	delete [] vls;
 }

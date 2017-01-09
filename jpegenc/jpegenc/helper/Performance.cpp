@@ -14,16 +14,17 @@
  *
  * @param multiThreadingEnabled If \b true automatically detach new threads for all iterations (default: false)
  */
-void Performance::howManyOperationsInSeconds(double seconds, const char* description, std::function<void()> func, bool multiThreadingEnabled) {
-	std::atomic<unsigned long> iters(0); // Use GCC 4.7+ (GCC 4.6 atomics are not lock free)
-	std::atomic<unsigned int> threadsRunning(0);
-	static const unsigned int threadCount = std::thread::hardware_concurrency();
-	
-	Timer t;
+void Performance::howManyOperationsInSeconds(double seconds, const char* description, std::function<void()> func, bool multiThreadingEnabled)
+{
 	if (multiThreadingEnabled)
 	{
+		static const unsigned int hwThreadCount = std::thread::hardware_concurrency();
+		std::atomic<unsigned long> iters(0); // Use GCC 4.7+ (GCC 4.6 atomics are not lock free)
+		std::atomic<unsigned int> threadsRunning(0);
+		
+		Timer t;
 		while (t.elapsed() < seconds) {
-			if (threadsRunning < threadCount) {
+			if (threadsRunning < hwThreadCount) {
 				++threadsRunning;
 				std::thread([&]{
 					func();
@@ -32,21 +33,27 @@ void Performance::howManyOperationsInSeconds(double seconds, const char* descrip
 				}).detach();
 			}
 		}
+		double time = t.elapsed();
+		unsigned long numberOfIterations = iters;
+		
+		PerformancePrintOperationsPerSecond(description, time, numberOfIterations);
+		
+		// wait till all previous threads are finished
+		while (threadsRunning) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		}
 	}
 	else // single core (And single thread? Or does C++ optimize for multi-thread automatically?)
 	{
+		unsigned long numberOfIterations = 0;
+		Timer t;
 		while (t.elapsed() < seconds) {
 			func();
-			++iters;
+			++numberOfIterations;
 		}
-	}
-	double time = t.elapsed();
-	unsigned long numberOfIterations = iters;
-	PerformancePrintOperationsPerSecond(description, time, numberOfIterations);
-	
-	// wait till all previous threads are finished
-	while (threadsRunning) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		double time = t.elapsed();
+		
+		PerformancePrintOperationsPerSecond(description, time, numberOfIterations);
 	}
 }
 
