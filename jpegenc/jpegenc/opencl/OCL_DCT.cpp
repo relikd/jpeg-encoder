@@ -102,7 +102,7 @@ void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t
 	}
 	
 	// Create a command-queue
-	cl_command_queue commandQueue = clCreateCommandQueue(clGPUContext, devIDs[0], CL_QUEUE_PROFILING_ENABLE, &errcode); // CL_QUEUE_PROFILING_ENABLE
+	cl_command_queue commandQueue = clCreateCommandQueue(clGPUContext, devIDs[GPU_COUNT - 1], CL_QUEUE_PROFILING_ENABLE, &errcode); // CL_QUEUE_PROFILING_ENABLE
 	free(devIDs);
 	oclAssert(errcode);
 	
@@ -200,7 +200,7 @@ void OCL_DCT::printDevices() {
 	}
 	clReleaseContext(context);
 	free(devIDs);
-	printf("Using Device [0]\n\n");
+	printf("Using Device [%d]\n\n", gpu_count - 1);
 }
 
 void OCL_DCT::separated(float* &matrix, size_t width, size_t height) {
