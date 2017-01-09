@@ -192,9 +192,11 @@ void OCL_DCT::printDevices() {
 	// print all devices
 	printf("Devices:\n");
 	char device_string[1024];
+	cl_uint compute_units;
 	for (int i = 0; i < gpu_count; i++) {
 		clGetDeviceInfo(devIDs[i], CL_DEVICE_NAME, sizeof(device_string), &device_string, NULL);
-		printf(" [%d]: %s\n", i, device_string);
+		clGetDeviceInfo(devIDs[i], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &compute_units, NULL);
+		printf(" [%d]: %s (%d cores)\n", i, device_string, compute_units);
 	}
 	clReleaseContext(context);
 	free(devIDs);
