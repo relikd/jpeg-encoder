@@ -64,9 +64,10 @@ void printFloatMatrix(float* &mat, size_t w, size_t h) {
 }
 
 inline void copyArray(float* dst, float* src, size_t size) {
-	while (size--) {
-		*(dst++) = *(src++);
-	}
+	memcpy(dst, src, size * sizeof(float));
+//	while (size--) {
+//		*(dst++) = *(src++);
+//	}
 }
 
 //  ---------------------------------------------------------------
@@ -159,7 +160,7 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 	
 	copyArray(vls, matrix, size);
 	GPUComposer composer = GPUComposer(OCL_DCT::separated);
-	PerformancePerSecond(seconds, "Separated (Multi Image Composer)", t, time, iterations, {
+	PerformancePerSecond(seconds, "Separated (Composer, var. Size)", t, time, iterations, {
 		if (composer.add(vls, width, height)) {
 			composer.flush(); // send to GPU
 			iterations += composer.cacheInfo.size();
@@ -179,6 +180,16 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 		}
 	});
 	
+	copyArray(vls, matrix, size);
+	GPUComposer composerSameSizeArai = GPUComposer(OCL_DCT::arai, true);
+	PerformancePerSecond(seconds, "Arai (Same Size)", t, time, iterations, {
+		if (composerSameSizeArai.add(vls, width, height)) {
+			composerSameSizeArai.flush(); // send to GPU
+			iterations += composerSameSize.cacheInfo.size();
+			// do something with the data
+		}
+	});
+	
 	delete [] vls;
 }
 
@@ -187,24 +198,13 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 // |  Main
 // |
 //  ---------------------------------------------------------------
-
-void SpeedContest::run(double seconds) {
+#define CONTEST_MODE 1
+void SpeedContest::run(double seconds)
+{
+#if CONTEST_MODE
+	
 	size_t width = 256, height = 256;
 	float *matrix = createTestMatrix(width, height);
-//	float *matrix = generateBlockMatrix(width, height);
-//	matrix[8] = 0;
-//	matrix[8+1] = 4;
-//	matrix[8+width] = 4;
-//	matrix[2*width + 1] = 8;
-//	matrix[12*width + 1] = 1; // modify some values to get different results
-//	float *out = new float[width * height];
-	
-	// TEST for correctness
-//	DCT::transform(matrix, out, width, height);
-//	printFloatMatrix(out, width, height);
-
-//	Arai::transformInlineTranspose(matrix, width, height);
-//	printFloatMatrix(matrix, width, height);
 	
 	printf("\nSingle-Threaded:\n");
 	runCPUSingleCore(matrix, width, height, seconds);
@@ -215,8 +215,25 @@ void SpeedContest::run(double seconds) {
 	printf("\nGPU:\n");
 	runGPU(matrix, width, height, seconds);
 	
+#else
+	
+	size_t width = 16, height = 16;
+	float *matrix = createOurTestMatrix(width, height);
+	matrix[8] = 0;
+	matrix[8+1] = 4;
+	matrix[8+width] = 4;
+	matrix[2*width + 1] = 8;
+	matrix[12*width + 1] = 1; // modify some values to get different results
+	float *out = new float[width * height];
+	DCT::transform(matrix, out, width, height);
+	printFloatMatrix(out, width, height);
+	delete [] out;
+	OCL_DCT::arai(matrix, width, height);
+	printFloatMatrix(matrix, width, height);
+	
+#endif
+	
 	printf("\n\n");
 	
 	delete [] matrix;
-//	delete [] out;
 }

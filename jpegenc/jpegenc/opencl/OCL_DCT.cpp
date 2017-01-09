@@ -68,7 +68,7 @@ inline cl_program loadProgram(const char *path, cl_context &theContext) {
 	size_t program_length;
 	char *source = oclLoadProgSource(path, "", &program_length);
 	if (source == NULL) {
-		DebugLog("Couldn't open OpenCL source file\n\n");
+		fputs("Couldn't open OpenCL source file\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -82,7 +82,7 @@ inline cl_program loadProgram(const char *path, cl_context &theContext) {
 	errcode = clBuildProgram(prog, 0, NULL, "-cl-fast-relaxed-math", NULL, NULL);
 	if (errcode != CL_SUCCESS) {
 		// write out standard error, Build Log and PTX, then return error
-		DebugLog("file %s, line %i\n\n" , __FILE__ , __LINE__);
+		printf("file %s, line %i\n\n" , __FILE__ , __LINE__);
 		oclLogBuildInfo(prog, oclGetFirstDev(theContext));
 		oclLogPtx(prog, oclGetFirstDev(theContext), "temporaryDebug.ptx");
 		return 0;
@@ -101,35 +101,28 @@ void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t
 		return;
 	}
 	
-	// get and print the device for this queue
-	DebugLog("Device %d: ", id);
-	oclPrintDevName(devIDs[0]);
-	DebugLog("\n");
-	
 	// Create a command-queue
 	cl_command_queue commandQueue = clCreateCommandQueue(clGPUContext, devIDs[0], CL_QUEUE_PROFILING_ENABLE, &errcode); // CL_QUEUE_PROFILING_ENABLE
 	oclAssert(errcode);
 	
 	free(devIDs);
 	
-	
 	// Create Program / Kernel
 	cl_program clProgram = loadProgram("../jpegenc/opencl/arai.cl", clGPUContext);
-	
-	
-	cl_mem matrix_a;
-	const size_t mem_size_matrix_a = sizeof(float) * 64;
 	
 	
 	// Setup Memory
 	cl_mem d_idata;
 	cl_mem d_odata;
+	cl_mem matrix_a;
 	cl_kernel clKernel;
 	
-	const size_t mem_size_in = sizeof(float) * size_x * size_y;
 	size_t sizePerGPU = shrRoundUp(BLOCK_DIM, size_x);
 	size_t offset = 0;
+	
+	const size_t mem_size_in = sizeof(float) * size_x * size_y;
 	const size_t mem_size_out = sizeof(float) * size_y * sizePerGPU;
+	const size_t mem_size_matrix_a = sizeof(float) * 64;
 	
 	// Setup device memory
 	d_idata = clCreateBuffer(clGPUContext, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, mem_size_in, h_idata, &errcode);
@@ -185,25 +178,33 @@ void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t
 	oclAssert(errcode);
 }
 
-void printDeviceName() {
-	cl_context clGPUContext;
+void OCL_DCT::prepareOpenCL() {
+	cl_context context;
 	cl_device_id* devIDs;
 	
-	getContextAndDevices(clGPUContext, devIDs);
-	char device_string[1024];
-	clGetDeviceInfo(devIDs[0], CL_DEVICE_NAME, sizeof(device_string), &device_string, NULL);
+	const cl_uint gpu_count = getContextAndDevices(context, devIDs);
 	
-	printf("OpenCL Plattform: %s\n", device_string);
-	clReleaseContext(clGPUContext);
-}
-
-void OCL_DCT::prepareOpenCL() {
-	printDeviceName();
+	// print all devices
+	printf("OpenCL Devices:\n");
+	char device_string[1024];
+	for (int i = 0; i < gpu_count; i++) {
+		clGetDeviceInfo(devIDs[i], CL_DEVICE_NAME, sizeof(device_string), &device_string, NULL);
+		printf("[%d]: %s\n", i, device_string);
+	}
+	clReleaseContext(context);
+	free(devIDs);
+	printf("Using Device [0]\n");
+	
 	float* dump = new float[256 * 256];
-	computeOnGPU("arai_separated", dump, 256, 256); // this call will compile the kernel
+	computeOnGPU("dct_separated", dump, 256, 256); // this call will compile the kernel
+	computeOnGPU("dct_arai", dump, 256, 256);
 	delete [] dump;
 }
 
 void OCL_DCT::separated(float* &matrix, size_t width, size_t height) {
-	computeOnGPU("arai_separated", matrix, width, height);
+	computeOnGPU("dct_separated", matrix, width, height);
+}
+
+void OCL_DCT::arai(float* &matrix, size_t width, size_t height) {
+	computeOnGPU("dct_arai", matrix, width, height);
 }
