@@ -25,7 +25,7 @@ private:
 
 class Performance {
 public:
-	static void howManyOperationsInSeconds(size_t seconds, const char* description, std::function<void()> func, bool multiThreadingEnabled = false);
+	static void howManyOperationsInSeconds(double seconds, const char* description, std::function<void()> func, bool multiThreadingEnabled = false);
 	static void compareExecutionTime(size_t iterations, const char* description, std::function<void()> funcA, std::function<void()> funcB);
 	static void time(std::function<void()> func);
 	static void repeat(const size_t iterations, const size_t rounds, std::function<void(size_t numberOfElements)> func);

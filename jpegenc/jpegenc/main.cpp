@@ -190,57 +190,6 @@ void testhuffmann() {
 	bitsteam.print();
 }
 
-float* generateBlockMatrix(size_t w, size_t h) {
-	float data[8] = {1, 7, 3, 4, 5, 4, 3, 2}; // generate our well known test matrix
-	float *vls = new float[w * h];
-	for (int y = 0; y < h; y++) {
-		for (int x = 0; x < w; x++) {
-			float &u = vls[y*w + x];
-			if (y % 8 == 0) {
-				u = data[x%8];
-			} else {
-				if (x % 8 == 0) {
-					u = data[y%8];
-				} else {
-					u = 0;
-				}
-			}
-		}
-	}
-	return vls;
-}
-
-void printFloatMatrix(float* &mat, size_t w, size_t h) {
-	for (int i = 0; i < w * h; ++i) {
-		if (i % (w*8) == 0)
-			printf("\n");
-		printf("%1.3f  ", mat[i]);
-		if (i % w == 7)
-			printf("   ");
-		if (i % w == w-1)
-			printf("\n");
-	}
-}
-
-void testFloatMatrixArrayDCT() {
-	size_t width = 256, height = 256;
-	float *vls = generateBlockMatrix(width, height);
-	vls[8] = 0;
-	vls[8+1] = 4;
-	vls[8+width] = 4;
-	vls[2*width + 1] = 8;
-	vls[12*width + 1] = 1; // modify some valuesto get different results
-	float *out = new float[width * height];
-	
-//	DCT::transform(vls, out, width, height);
-//	printFloatMatrix(out, width, height);
-	
-//	Arai::transformInlineTranspose(vls, width, height);
-//	printFloatMatrix(vls, width, height);
-	
-	SpeedContest::run(1, vls, width, height); // 1 second
-	delete [] out;
-}
 
 // ################################################################
 // #
@@ -253,7 +202,7 @@ int main(int argc, const char *argv[]) {
 	//testhuffmann();
     //testJPEGWriter();
 //	testImage();
-	testFloatMatrixArrayDCT();
+	SpeedContest::run(1.0); // 1 second
 	
 	return 0;
 }

@@ -1,10 +1,11 @@
 #include "SpeedContest.hpp"
+#include <stdlib.h>
+#include <thread>
 #include "../helper/Performance.hpp"
 #include "../dtc/Arai.hpp"
 #include "../dtc/DCT.hpp"
 #include "../opencl/OCL_DCT.h"
 #include "../opencl/GPUComposer.h"
-#include <thread>
 
 // 1, 7, 3, 4, 5, 4, 3, 2
 // one way transform gets:
@@ -17,13 +18,64 @@ while (__timer.elapsed() < __sec) { __block; } \
 __time = __timer.elapsed(); \
 PerformancePrintOperationsPerSecond(__desc, __time, __count);
 
+//  ---------------------------------------------------------------
+// |
+// |  Helper
+// |
+//  ---------------------------------------------------------------
+
+float* createTestMatrix(size_t width, size_t height) {
+	float *data = new float[width * height];
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			data[y * width + x]= (x+y*8) % 256;
+		}
+	}
+	return data; // remember to delete[]
+}
+
+float* createOurTestMatrix(size_t w, size_t h) {
+	float data[8] = {1, 7, 3, 4, 5, 4, 3, 2}; // generate our well known test matrix
+	float *vls = new float[w * h];
+	for (int y = 0; y < h; y++) {
+		for (int x = 0; x < w; x++) {
+			float &u = vls[y * w + x];
+			if (y % 8 == 0) {
+				u = data[x % 8];
+			} else {
+				if (x % 8 == 0) {
+					u = data[y % 8];
+				} else {
+					u = 0;
+				}
+			}
+		}
+	}
+	return vls;
+}
+
+void printFloatMatrix(float* &mat, size_t w, size_t h) {
+	for (int i = 0; i < w * h; ++i) {
+		if (i % (w*8) == 0) printf("\n");
+		printf("%1.3f  ", mat[i]);
+		if (i % 8 == 7)   printf("   ");
+		if (i % w == w-1) printf("\n");
+	}
+}
+
 inline void copyArray(float* dst, float* src, size_t size) {
 	while (size--) {
 		*(dst++) = *(src++);
 	}
 }
 
-void runCPUSingleCore(float* &matrix, size_t width, size_t height, size_t seconds) {
+//  ---------------------------------------------------------------
+// |
+// |  Performance
+// |
+//  ---------------------------------------------------------------
+
+void runCPUSingleCore(float* &matrix, size_t width, size_t height, double seconds) {
 	size_t size = width * height;
 	float* vls = new float[size];
 	float* out = new float[size];
@@ -60,7 +112,7 @@ void runCPUSingleCore(float* &matrix, size_t width, size_t height, size_t second
 	delete [] vls;
 }
 
-void runCPUMultiCore(float* &matrix, size_t width, size_t height, size_t seconds) {
+void runCPUMultiCore(float* &matrix, size_t width, size_t height, double seconds) {
 	size_t size = width * height;
 	float* vls = new float[size];
 	float* out = new float[size];
@@ -89,7 +141,7 @@ void runCPUMultiCore(float* &matrix, size_t width, size_t height, size_t seconds
 	delete [] vls;
 }
 
-void runGPU(float* &matrix, size_t width, size_t height, size_t seconds) {
+void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 	size_t size = width * height;
 	float* vls = new float[size];
 	
@@ -132,7 +184,30 @@ void runGPU(float* &matrix, size_t width, size_t height, size_t seconds) {
 	delete [] vls;
 }
 
-void SpeedContest::run(size_t seconds, float* &matrix, size_t width, size_t height) {
+//  ---------------------------------------------------------------
+// |
+// |  Main
+// |
+//  ---------------------------------------------------------------
+
+void SpeedContest::run(double seconds) {
+	size_t width = 256, height = 256;
+	float *matrix = createTestMatrix(width, height);
+//	float *matrix = generateBlockMatrix(width, height);
+//	matrix[8] = 0;
+//	matrix[8+1] = 4;
+//	matrix[8+width] = 4;
+//	matrix[2*width + 1] = 8;
+//	matrix[12*width + 1] = 1; // modify some values to get different results
+//	float *out = new float[width * height];
+	
+	// TEST for correctness
+//	DCT::transform(matrix, out, width, height);
+//	printFloatMatrix(out, width, height);
+
+//	Arai::transformInlineTranspose(matrix, width, height);
+//	printFloatMatrix(matrix, width, height);
+	
 	printf("\nSingle-Threaded:\n");
 	runCPUSingleCore(matrix, width, height, seconds);
 	
@@ -143,4 +218,6 @@ void SpeedContest::run(size_t seconds, float* &matrix, size_t width, size_t heig
 	runGPU(matrix, width, height, seconds);
 	
 	printf("\n\n");
+	
+//	delete [] out;
 }

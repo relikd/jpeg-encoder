@@ -14,7 +14,7 @@
  *
  * @param multiThreadingEnabled If \b true automatically detach new threads for all iterations (default: false)
  */
-void Performance::howManyOperationsInSeconds(size_t seconds, const char* description, std::function<void()> func, bool multiThreadingEnabled) {
+void Performance::howManyOperationsInSeconds(double seconds, const char* description, std::function<void()> func, bool multiThreadingEnabled) {
 	std::atomic<unsigned long> iters(0); // Use GCC 4.7+ (GCC 4.6 atomics are not lock free)
 	std::atomic<unsigned int> threadsRunning(0);
 	static const unsigned int threadCount = std::thread::hardware_concurrency();
