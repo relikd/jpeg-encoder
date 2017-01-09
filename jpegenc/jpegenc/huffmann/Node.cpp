@@ -1,4 +1,5 @@
 #include "Node.hpp"
+#include <algorithm>
 
 /** Create new Node by combining two existent ones
  * @param l Left Node
