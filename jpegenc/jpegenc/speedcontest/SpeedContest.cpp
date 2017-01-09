@@ -145,9 +145,7 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 	size_t size = width * height;
 	float* vls = new float[size];
 	
-	copyArray(vls, matrix, size);
-	OCL_DCT::separated(vls, width, height); // once to compile GPU kernel
-	
+	OCL_DCT::prepareOpenCL();
 	
 	Timer t;
 	double time;
@@ -219,5 +217,6 @@ void SpeedContest::run(double seconds) {
 	
 	printf("\n\n");
 	
+	delete [] matrix;
 //	delete [] out;
 }
