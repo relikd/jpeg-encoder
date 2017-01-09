@@ -102,7 +102,7 @@ void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t
 	}
 	
 	// Create a command-queue
-	cl_command_queue commandQueue = clCreateCommandQueue(clGPUContext, devIDs[0], CL_QUEUE_PROFILING_ENABLE, &errcode); // CL_QUEUE_PROFILING_ENABLE
+	cl_command_queue commandQueue = clCreateCommandQueue(clGPUContext, devIDs[0], CL_QUEUE_PROFILING_ENABLE, &errcode);
 	free(devIDs);
 	oclAssert(errcode);
 	
@@ -192,11 +192,22 @@ void OCL_DCT::printDevices() {
 	// print all devices
 	printf("Devices:\n");
 	char device_string[1024];
-	cl_uint compute_units;
 	for (int i = 0; i < gpu_count; i++) {
+		cl_uint compute_units, clock_frequency, samplers;
+		cl_ulong gpu_mem_size;
+		size_t group_size;
+		
 		clGetDeviceInfo(devIDs[i], CL_DEVICE_NAME, sizeof(device_string), &device_string, NULL);
 		clGetDeviceInfo(devIDs[i], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &compute_units, NULL);
-		printf(" [%d]: %s (%d cores)\n", i, device_string, compute_units);
+		clGetDeviceInfo(devIDs[i], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &gpu_mem_size, NULL);
+		clGetDeviceInfo(devIDs[i], CL_DEVICE_MAX_CLOCK_FREQUENCY, sizeof(cl_uint), &clock_frequency, NULL);
+		
+		clGetDeviceInfo(devIDs[i], CL_DEVICE_MAX_SAMPLERS, sizeof(cl_uint), &samplers, NULL);
+		clGetDeviceInfo(devIDs[i], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(size_t), &group_size, NULL);
+		
+		//CL_DEVICE_MAX_SAMPLERS
+		printf(" [%d]: %s (%d cores, %llumb, %dMhz) %d samplers %lu group size\n", i,
+			   device_string, compute_units, gpu_mem_size / 1024 / 1024, clock_frequency, samplers, group_size);
 	}
 	clReleaseContext(context);
 	free(devIDs);
