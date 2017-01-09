@@ -138,70 +138,75 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 	size_t iterations;
 	
 	// BEGIN: "Separated (Single Image)"
-	copyArray(vls, matrix, size);
-	iterations = 0;
-	t.reset();
-	while (t.elapsed() < seconds) {
-		OCL_DCT::separated(vls, width, height);
-		++iterations;
+	{
+		copyArray(vls, matrix, size);
+		iterations = 0;
+		t.reset();
+		while (t.elapsed() < seconds) {
+			OCL_DCT::separated(vls, width, height);
+			++iterations;
+		}
+		time = t.elapsed();
+		PerformancePrintOperationsPerSecond("Separated (Single Image)", time, iterations);
 	}
-	time = t.elapsed();
-	PerformancePrintOperationsPerSecond("Separated (Single Image)", time, iterations);
-	
 	
 	// BEGIN: "Separated (Composer, var. Size)"
-	copyArray(vls, matrix, size);
-	GPUComposer c1 = GPUComposer(OCL_DCT::separated, false);
-	iterations = 0;
-	t.reset();
-	while (t.elapsed() < seconds) {
-		if (c1.add(vls, width, height)) {
-			c1.flush(); // send to GPU
-			iterations += c1.cacheInfo.size();
-			// do something with the data
-			// c1.cacheInfo[i], c1.cache
+	{
+		copyArray(vls, matrix, size);
+		GPUComposer c1 = GPUComposer(OCL_DCT::separated, false);
+		iterations = 0;
+		t.reset();
+		while (t.elapsed() < seconds) {
+			if (c1.add(vls, width, height)) {
+				c1.flush(); // send to GPU
+				iterations += c1.cacheInfo.size();
+				// do something with the data
+				// c1.cacheInfo[i], c1.cache
+			}
 		}
+		c1.flush(); // send remaining images to GPU
+		iterations += c1.cacheInfo.size();
+		time = t.elapsed();
+		PerformancePrintOperationsPerSecond("Separated (Composer, var. Size)", time, iterations);
 	}
-	c1.flush(); // send remaining images to GPU
-	iterations += c1.cacheInfo.size();
-	time = t.elapsed();
-	PerformancePrintOperationsPerSecond("Separated (Composer, var. Size)", time, iterations);
-	
 	
 	// BEGIN: "Separated (Composer, Same Size)"
-	copyArray(vls, matrix, size);
-	GPUComposer c2 = GPUComposer(OCL_DCT::separated, true);
-	iterations = 0;
-	t.reset();
-	while (t.elapsed() < seconds) {
-		if (c2.add(vls, width, height)) {
-			c2.flush(); // send to GPU
-			iterations += c2.cacheInfo.size();
-			// do something with the data
+	{
+		copyArray(vls, matrix, size);
+		GPUComposer c2 = GPUComposer(OCL_DCT::separated, true);
+		iterations = 0;
+		t.reset();
+		while (t.elapsed() < seconds) {
+			if (c2.add(vls, width, height)) {
+				c2.flush(); // send to GPU
+				iterations += c2.cacheInfo.size();
+				// do something with the data
+			}
 		}
+		c2.flush(); // send remaining images to GPU
+		iterations += c2.cacheInfo.size();
+		time = t.elapsed();
+		PerformancePrintOperationsPerSecond("Separated (Composer, Same Size)", time, iterations);
 	}
-	c2.flush(); // send remaining images to GPU
-	iterations += c2.cacheInfo.size();
-	time = t.elapsed();
-	PerformancePrintOperationsPerSecond("Separated (Composer, Same Size)", time, iterations);
-	
 	
 	// BEGIN: "Arai (Composer, Same Size)"
-	copyArray(vls, matrix, size);
-	GPUComposer c3 = GPUComposer(OCL_DCT::arai, true);
-	iterations = 0;
-	t.reset();
-	while (t.elapsed() < seconds) {
-		if (c3.add(vls, width, height)) {
-			c3.flush(); // send to GPU
-			iterations += c3.cacheInfo.size();
-			// do something with the data
+	{
+		copyArray(vls, matrix, size);
+		GPUComposer c3 = GPUComposer(OCL_DCT::arai, true);
+		iterations = 0;
+		t.reset();
+		while (t.elapsed() < seconds) {
+			if (c3.add(vls, width, height)) {
+				c3.flush(); // send to GPU
+				iterations += c3.cacheInfo.size();
+				// do something with the data
+			}
 		}
+		c3.flush(); // send remaining images to GPU
+		iterations += c3.cacheInfo.size();
+		time = t.elapsed();
+		PerformancePrintOperationsPerSecond("Arai (Composer, Same Size)", time, iterations);
 	}
-	c3.flush(); // send remaining images to GPU
-	iterations += c3.cacheInfo.size();
-	time = t.elapsed();
-	PerformancePrintOperationsPerSecond("Arai (Composer, Same Size)", time, iterations);
 	
 	delete [] vls;
 }
