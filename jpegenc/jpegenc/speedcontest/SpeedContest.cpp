@@ -56,6 +56,8 @@ void runCPUSingleCore(float* &matrix, size_t width, size_t height, size_t second
 		Arai::transform(vls, width, height);
 		++iterations;
 	});
+	
+	delete [] vls;
 }
 
 void runCPUMultiCore(float* &matrix, size_t width, size_t height, size_t seconds) {
@@ -83,6 +85,8 @@ void runCPUMultiCore(float* &matrix, size_t width, size_t height, size_t seconds
 	Performance::howManyOperationsInSeconds(seconds, "Arai DCT", [&]{
 		Arai::transform(vls, width, height);
 	}, true);
+	
+	delete [] vls;
 }
 
 void runGPU(float* &matrix, size_t width, size_t height, size_t seconds) {
@@ -98,13 +102,13 @@ void runGPU(float* &matrix, size_t width, size_t height, size_t seconds) {
 	size_t iterations;
 	
 	copyArray(vls, matrix, size);
-	GPUComposer composer = GPUComposer(OCL_DCT::separated);
 	PerformancePerSecond(seconds, "Separated (Single Image)", t, time, iterations, {
 		OCL_DCT::separated(vls, width, height);
 		++iterations;
 	});
 	
 	copyArray(vls, matrix, size);
+	GPUComposer composer = GPUComposer(OCL_DCT::separated);
 	PerformancePerSecond(seconds, "Separated (Multi Image Composer)", t, time, iterations, {
 		if (composer.add(vls, width, height)) {
 			composer.flush(); // send to GPU
@@ -124,6 +128,8 @@ void runGPU(float* &matrix, size_t width, size_t height, size_t seconds) {
 			// do something with the data
 		}
 	});
+	
+	delete [] vls;
 }
 
 void SpeedContest::run(size_t seconds, float* &matrix, size_t width, size_t height) {

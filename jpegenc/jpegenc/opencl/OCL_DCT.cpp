@@ -83,7 +83,7 @@ inline cl_program loadProgram(const char *path, cl_context &theContext) {
 	return prog;
 }
 
-void computeOnGPU(const char* kernelName, float* h_idata, size_t size_x, size_t size_y) {
+void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t size_y) {
 	// Setup Context
 	cl_int errcode = CL_SUCCESS;
 	cl_context clGPUContext;
@@ -91,6 +91,9 @@ void computeOnGPU(const char* kernelName, float* h_idata, size_t size_x, size_t 
 	
 #if ENABLE_MULTI_GPU
 	const cl_uint GPU_COUNT = getContextAndDevices(clGPUContext, devIDs);
+	if (GPU_COUNT == 0) {
+		return;
+	}
 #else
 	const cl_uint GPU_COUNT = 1;
 	getSingleContextAndDevice(clGPUContext, devIDs);
@@ -203,6 +206,7 @@ void computeOnGPU(const char* kernelName, float* h_idata, size_t size_x, size_t 
 	for (unsigned int i = 0; i < GPU_COUNT; ++i) {
 		errcode |= clReleaseMemObject(d_idata[i]);
 		errcode |= clReleaseMemObject(d_odata[i]);
+		errcode |= clReleaseMemObject(matrix_a[i]);
 		errcode |= clReleaseKernel(clKernel[i]);
 		errcode |= clReleaseCommandQueue(commandQueue[i]);
 	}
