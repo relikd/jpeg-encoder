@@ -1,3 +1,4 @@
+#include <bitset>
 #include "Encoding.hpp"
 
 std::ostream& operator<<(std::ostream& os, const Encoding& obj) {

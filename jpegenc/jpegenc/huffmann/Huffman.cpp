@@ -1,6 +1,8 @@
+#include <algorithm>
+#include <functional>
 #include "Huffman.hpp"
 #include "PackageMerge.hpp"
-#include "BitMath.hpp"
+#include "../helper/BitMath.hpp"
 
 //  ---------------------------------------------------------------
 // |
