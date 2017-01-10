@@ -91,7 +91,7 @@ void Performance::compareExecutionTime(size_t iterations, const char* descriptio
  * @param func Lambda expression or Functor class to be profiled (simply use \a[&]{code} )
  */
 void Performance::time(std::function<void()> func) {
-	repeat(1, 1, [&func](size_t numberOfElements){func();});
+	repeat(1, 1, [&func](size_t){func();});
 }
 
 /**
