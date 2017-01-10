@@ -202,7 +202,44 @@ int main(int argc, const char *argv[]) {
 	//testhuffmann();
     //testJPEGWriter();
 //	testImage();
-	SpeedContest::run(1.0); // 1 second
+	
+	double testTime = 10.0F;
+	bool testSkipCPU = false;
+	bool testSkipGPU = false;
+	long specific_gpu = -1; // default = auto select best option
+	
+	bool testForCorrectness = false;
+	long validateParam = 0;
+	
+	int i = argc;
+	while (i--) {
+		const char* param = argv[i];
+		if (param[0] == '-') {
+			
+			if (strncmp(param, "-gpu", 4) == 0) // -gpu0, -gpu1, -gpu-1, -gpu-2
+				specific_gpu = strtol(param + 4, NULL, 10);
+			else if (strcmp(param, "-nocpu") == 0)
+				testSkipCPU = true;
+			else if (strcmp(param, "-nogpu") == 0)
+				testSkipGPU = true;
+			else if (strncmp(param, "-valid", 6) == 0) { // -valid111 (three 1 for three parameter)
+				testForCorrectness = true;
+				validateParam = strtol(param + 6, NULL, 2);
+			}
+			
+		} else {
+			double tmp = strtod(param, NULL); // see if time provided, otherwise default to 10
+			if (tmp > 0.5) testTime = tmp;
+		}
+	}
+	
+	
+	if (testForCorrectness) {
+		SpeedContest::testForCorrectness(validateParam & 1, validateParam & 2, validateParam & 4);
+	} else {
+		printf("Starting Performance Test with %1.1fs\n", testTime);
+		SpeedContest::run(testTime, testSkipCPU, testSkipGPU, specific_gpu);
+	}
 	
 	return 0;
 }

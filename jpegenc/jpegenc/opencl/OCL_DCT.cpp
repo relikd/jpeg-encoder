@@ -30,10 +30,10 @@ static const float* oclMatrixA = new float[64] {
 // |
 //  ---------------------------------------------------------------
 
-int flopsForDevice(cl_device_id dev, cl_uint &compute_units, cl_uint &clock_frequency) {
-	clGetDeviceInfo(dev, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &compute_units, NULL);
-	clGetDeviceInfo(dev, CL_DEVICE_MAX_CLOCK_FREQUENCY, sizeof(cl_uint), &clock_frequency, NULL);
-	return compute_units * clock_frequency;
+int flopsForDevice(cl_device_id dev, cl_uint* compute_units, cl_uint* clock_frequency) {
+	clGetDeviceInfo(dev, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), compute_units, NULL);
+	clGetDeviceInfo(dev, CL_DEVICE_MAX_CLOCK_FREQUENCY, sizeof(cl_uint), clock_frequency, NULL);
+	return (*compute_units) * (*clock_frequency);
 }
 
 #pragma mark - Find Platform and Device
@@ -117,7 +117,7 @@ cl_device_id getMaxFlopsDevice(cl_context context) {
 	size_t i = dataBytes / sizeof(cl_device_id);
 	while (i--) {
 		cl_uint compute_units, clock_frequency;
-		int currentFlops = flopsForDevice(list[i], compute_units, clock_frequency);
+		int currentFlops = flopsForDevice(list[i], &compute_units, &clock_frequency);
 		if (maxFlops < currentFlops) {
 			maxFlops = currentFlops;
 			fastestDevice = list[i];
@@ -127,18 +127,18 @@ cl_device_id getMaxFlopsDevice(cl_context context) {
 	return fastestDevice;
 }
 
-size_t getDevicesList(cl_device_id* &list, cl_device_id &fastest) {
+size_t getDevicesList(cl_device_id** list, cl_device_id* fastest) {
 	cl_int errcode;
 	cl_context context = clCreateContextFromType(0, deviceTypes, NULL, NULL, &errcode);
 	oclAssert(errcode);
 	
-	fastest = getMaxFlopsDevice(context);
+	*fastest = getMaxFlopsDevice(context);
 	
 	size_t dataBytes;
 	clGetContextInfo(context, CL_CONTEXT_DEVICES, 0, NULL, &dataBytes);
 	
-	list = (cl_device_id*) malloc(dataBytes);
-	clGetContextInfo(context, CL_CONTEXT_DEVICES, dataBytes, list, NULL);
+	*list = (cl_device_id*) malloc(dataBytes);
+	clGetContextInfo(context, CL_CONTEXT_DEVICES, dataBytes, *list, NULL);
 	
 	return dataBytes / sizeof(cl_device_id);
 }
@@ -308,7 +308,7 @@ void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t
 void OCL_DCT::printDevices() {
 	cl_device_id* devIDs; // dont forget to free
 	cl_device_id fastDev;
-	size_t device_count = getDevicesList(devIDs, fastDev);
+	size_t device_count = getDevicesList(&devIDs, &fastDev);
 	
 	//cl_context context;
 	//const cl_uint device_count = getContextAndDevices(&context, &devIDs);
@@ -319,12 +319,11 @@ void OCL_DCT::printDevices() {
 	char device_string[1024];
 	for (int i = 0; i < device_count; i++) {
 		cl_uint compute_units, clock_frequency;
-		cl_ulong gpu_mem_size, lsiz;
+		cl_ulong gpu_mem_size;
+		
+		flopsForDevice(devIDs[i], &compute_units, &clock_frequency);
 		clGetDeviceInfo(devIDs[i], CL_DEVICE_NAME, sizeof(device_string), &device_string, NULL);
-		clGetDeviceInfo(devIDs[i], CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), &compute_units, NULL);
 		clGetDeviceInfo(devIDs[i], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &gpu_mem_size, NULL);
-		clGetDeviceInfo(devIDs[i], CL_DEVICE_MAX_CLOCK_FREQUENCY, sizeof(cl_uint), &clock_frequency, NULL);
-		clGetDeviceInfo(devIDs[i], CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(cl_ulong), &lsiz, NULL);
 		
 		if (devIDs[i] == fastDev) {
 			printf("-> ");

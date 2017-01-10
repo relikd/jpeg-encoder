@@ -50,7 +50,8 @@ float* createOurTestMatrix(size_t w, size_t h) {
 void printFloatMatrix(float* &mat, size_t w, size_t h) {
 	for (int i = 0; i < w * h; ++i) {
 		if (i % (w*8) == 0) printf("\n");
-		printf("%1.3f  ", mat[i]);
+		if (mat[i] < 0.0005F && mat[i] > -0.0005F) printf("%8d ", 0);
+		else printf("%8.3f ", mat[i]);
 		if (i % 8 == 7)   printf("   ");
 		if (i % w == w-1) printf("\n");
 	}
@@ -216,43 +217,109 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 // |  Main
 // |
 //  ---------------------------------------------------------------
-#define CONTEST_MODE 1
-void SpeedContest::run(double seconds)
-{
-#if CONTEST_MODE
-	
+
+void SpeedContest::run(double seconds, bool skipCPU, bool skipGPU, long gpu) {
 	size_t width = 256, height = 256;
-	float *matrix = createTestMatrix(width, height);
+	float *matrix = createTestMatrix(width, height); // (x+y*8) % 256;
 	
-	printf("\n== Single-Threaded ==\n");
-	runCPUSingleCore(matrix, width, height, seconds);
+	if (skipCPU == false) {
+		printf("\n== Single-Threaded ==\n");
+		runCPUSingleCore(matrix, width, height, seconds);
+		
+		printf("\n== Multi-Threading ==\n");
+		printf("Threads: %d\n", std::thread::hardware_concurrency());
+		runCPUMultiCore(matrix, width, height, seconds);
+	}
 	
-	printf("\n== Multi-Threading ==\n");
-	printf("Threads: %d\n", std::thread::hardware_concurrency());
-	runCPUMultiCore(matrix, width, height, seconds);
+	if (skipGPU == false) {
+		printf("\n== GPU ==\n");
+		runGPU(matrix, width, height, seconds);
+	}
 	
-	printf("\n== GPU ==\n");
-	runGPU(matrix, width, height, seconds);
-	
-#else
-	
-	size_t width = 16, height = 16;
-	float *matrix = createOurTestMatrix(width, height);
-	matrix[8] = 0;
-	matrix[8+1] = 4;
-	matrix[8+width] = 4;
-	matrix[2*width + 1] = 8;
-	matrix[12*width + 1] = 1; // modify some values to get different results
-	float *out = new float[width * height];
-	DCT::transform(matrix, out, width, height);
-	printFloatMatrix(out, width, height);
-	delete [] out;
-	OCL_DCT::arai(matrix, width, height);
-	printFloatMatrix(matrix, width, height);
-	
-#endif
-	
-	printf("\n\n");
+	printf("\n");
 	
 	delete [] matrix;
+}
+
+void SpeedContest::testForCorrectness(bool ourTestMatrix, bool use16x16, bool modifyData) {
+	size_t width = 8, height = 8;
+	if (use16x16) {
+		width = 16; height = 16;
+	}
+	size_t size = width * height;
+	float* matrix;
+	
+	if (ourTestMatrix) {
+		matrix = createOurTestMatrix(width, height); // 1, 7, 3, 4, 5, 4, 3, 2
+	} else {
+		matrix = createTestMatrix(width, height);
+	}
+	
+	if (use16x16 && modifyData) {
+		// modify some values to get different results, especially for 16 x 16
+		matrix[8] = 0;
+		matrix[8+1] = 4;
+		matrix[8+width] = 4;
+		matrix[2*width + 1] = 8;
+		matrix[12*width + 1] = 1;
+	}
+
+	
+	float *vls = new float[width * height];
+	float *out = new float[width * height];
+	
+	printf("\nInput:\n");
+	printFloatMatrix(matrix, width, height);
+	printf("------------------------------------------------------------------------\n");
+	
+	copyArray(vls, matrix, size);
+	
+	// normal
+	printf("\nDCT Normal:\n");
+	DCT::transform(vls, out, width, height);
+	printFloatMatrix(out, width, height);
+	delete [] out;
+	printf("------------------------------------------------------------------------\n");
+	
+	copyArray(vls, matrix, size);
+	
+	// separated
+	printf("\nDCT Separated:\n");
+	DCT::transform2(vls, width, height);
+	printFloatMatrix(vls, width, height);
+	printf("------------------------------------------------------------------------\n");
+	
+	copyArray(vls, matrix, size);
+	
+	// arai
+	printf("\nArai:\n");
+	Arai::transform(vls, width, height);
+	printFloatMatrix(vls, width, height);
+	printf("------------------------------------------------------------------------\n");
+	
+	copyArray(vls, matrix, size);
+	
+	// arai inline transpose
+	printf("\nArai Inline Transpose:\n");
+	Arai::transformInlineTranspose(vls, width, height);
+	printFloatMatrix(vls, width, height);
+	printf("------------------------------------------------------------------------\n");
+	
+	copyArray(vls, matrix, size);
+	
+	// GPU arai
+	printf("\nGPU Arai:\n");
+	OCL_DCT::arai(vls, width, height);
+	printFloatMatrix(vls, width, height);
+	printf("------------------------------------------------------------------------\n");
+	
+	copyArray(vls, matrix, size);
+	
+	// GPU separated
+	printf("\nGPU Separated:\n");
+	OCL_DCT::separated(vls, width, height);
+	printFloatMatrix(vls, width, height);
+	printf("------------------------------------------------------------------------\n");
+	
+	delete [] vls;
 }
