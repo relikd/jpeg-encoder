@@ -13,7 +13,6 @@
 		40F5AE7D1DE3589100ECF256 /* JPEGSegments.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 40F5AE7B1DE3589100ECF256 /* JPEGSegments.cpp */; };
 		540D8CAF1DD0BE4D00A4E4C9 /* PPMLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 540D8CAD1DD0BE4D00A4E4C9 /* PPMLoader.cpp */; };
 		5412EC191DF4E062007604E9 /* Node.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5412EC171DF4E062007604E9 /* Node.cpp */; };
-		5427976F1E0E835000E702C7 /* oclUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5427976C1E0E835000E702C7 /* oclUtils.cpp */; };
 		543444891E21133700C32785 /* SpeedContest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 543444871E21133700C32785 /* SpeedContest.cpp */; };
 		5434448A1E21133700C32785 /* SpeedContest.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 543444871E21133700C32785 /* SpeedContest.cpp */; };
 		543AF4AE1DFDC241006C8F7D /* Encoding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 543AF4AD1DFDC241006C8F7D /* Encoding.cpp */; };
@@ -68,8 +67,7 @@
 		542797641E0E831900E702C7 /* singapore4k.test.ppm */ = {isa = PBXFileReference; lastKnownFileType = text; path = singapore4k.test.ppm; sourceTree = "<group>"; };
 		542797651E0E831900E702C7 /* Test1.test.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = Test1.test.jpg; sourceTree = "<group>"; };
 		542797671E0E831900E702C7 /* very_small.ppm */ = {isa = PBXFileReference; lastKnownFileType = text; path = very_small.ppm; sourceTree = "<group>"; };
-		5427976C1E0E835000E702C7 /* oclUtils.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = oclUtils.cpp; sourceTree = "<group>"; };
-		5427976D1E0E835000E702C7 /* oclUtils.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oclUtils.h; sourceTree = "<group>"; };
+		5427976D1E0E835000E702C7 /* oclAssert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = oclAssert.h; sourceTree = "<group>"; };
 		543444871E21133700C32785 /* SpeedContest.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SpeedContest.cpp; sourceTree = "<group>"; };
 		543444881E21133700C32785 /* SpeedContest.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SpeedContest.hpp; sourceTree = "<group>"; };
 		543AF4AB1DFDBF56006C8F7D /* Encoding.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Encoding.hpp; sourceTree = "<group>"; };
@@ -184,8 +182,7 @@
 				542797721E0E840C00E702C7 /* CL files */,
 				54508B441E199A5900843873 /* OCL_DCT.cpp */,
 				54508B451E199A5900843873 /* OCL_DCT.h */,
-				5427976C1E0E835000E702C7 /* oclUtils.cpp */,
-				5427976D1E0E835000E702C7 /* oclUtils.h */,
+				5427976D1E0E835000E702C7 /* oclAssert.h */,
 				54DD29AD1E19EAAF00F7D1D4 /* GPUComposer.cpp */,
 				54DD29AE1E19EAAF00F7D1D4 /* GPUComposer.h */,
 			);
@@ -406,7 +403,6 @@
 				12B6F1821E002FE3006D0182 /* DCT.cpp in Sources */,
 				54B9AA021DF62F9700BB8D0D /* BitMath.cpp in Sources */,
 				5496ABDD1DCFA97100FED0CF /* Channel.cpp in Sources */,
-				5427976F1E0E835000E702C7 /* oclUtils.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -524,6 +520,8 @@
 				ARCHS = "$(ARCHS_STANDARD)";
 				BUNDLE_LOADER = "";
 				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/build";
+				GCC_WARN_UNKNOWN_PRAGMAS = YES;
+				GCC_WARN_UNUSED_PARAMETER = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "";
 			};
@@ -536,6 +534,8 @@
 				BUNDLE_LOADER = "";
 				CONFIGURATION_BUILD_DIR = "$(PROJECT_DIR)/build";
 				GCC_OPTIMIZATION_LEVEL = fast;
+				GCC_WARN_UNKNOWN_PRAGMAS = YES;
+				GCC_WARN_UNUSED_PARAMETER = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "";
 			};
