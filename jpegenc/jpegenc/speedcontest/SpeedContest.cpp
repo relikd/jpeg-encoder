@@ -218,7 +218,7 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 // |
 //  ---------------------------------------------------------------
 
-void SpeedContest::run(double seconds, bool skipCPU, bool skipGPU, long gpu) {
+void SpeedContest::run(double seconds, bool skipCPU, bool skipGPU) {
 	size_t width = 256, height = 256;
 	float *matrix = createTestMatrix(width, height); // (x+y*8) % 256;
 	
