@@ -9,6 +9,14 @@
 #include <CL/opencl.h>
 #endif
 
+namespace GPU_SETTINGS {
+	static int preferedGPU = -1;
+	static bool forceNvidiaPlatform = false;
+}
+
+void OCL_DCT::setPreferedGPU(int gpu) { GPU_SETTINGS::preferedGPU = gpu; }
+void OCL_DCT::forceNvidiaPlatform(bool f) { GPU_SETTINGS::forceNvidiaPlatform = f; }
+
 #define BLOCK_DIM 8 // same block size like cl kernel
 
 static const cl_device_type deviceTypes = CL_DEVICE_TYPE_DEFAULT | CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_ACCELERATOR;
@@ -104,7 +112,7 @@ inline cl_uint getContextAndDevices(cl_context* theContext, cl_device_id** theDe
 // |  Generic, find best device no matter if NVIDIA
 //  ---------------------------------------------------------------
 
-cl_device_id getMaxFlopsDevice(cl_context context) {
+cl_device_id getMaxFlopsDevice(cl_context context, int returnInstead = -1) {
 	size_t dataBytes;
 	clGetContextInfo(context, CL_CONTEXT_DEVICES, 0, NULL, &dataBytes);
 	
@@ -116,6 +124,10 @@ cl_device_id getMaxFlopsDevice(cl_context context) {
 	
 	size_t i = dataBytes / sizeof(cl_device_id);
 	while (i--) {
+		if (i == returnInstead) { // override automatic selection with manual sel
+			fastestDevice = list[i];
+			break;
+		}
 		cl_uint compute_units, clock_frequency;
 		int currentFlops = flopsForDevice(list[i], &compute_units, &clock_frequency);
 		if (maxFlops < currentFlops) {
@@ -127,12 +139,12 @@ cl_device_id getMaxFlopsDevice(cl_context context) {
 	return fastestDevice;
 }
 
-size_t getDevicesList(cl_device_id** list, cl_device_id* fastest) {
+size_t getDevicesList(cl_device_id** list, cl_device_id* fastest, int indexInstead = -1) {
 	cl_int errcode;
 	cl_context context = clCreateContextFromType(0, deviceTypes, NULL, NULL, &errcode);
 	oclAssert(errcode);
 	
-	*fastest = getMaxFlopsDevice(context);
+	*fastest = getMaxFlopsDevice(context, indexInstead);
 	
 	size_t dataBytes;
 	clGetContextInfo(context, CL_CONTEXT_DEVICES, 0, NULL, &dataBytes);
@@ -215,11 +227,24 @@ inline cl_program loadProgram(const char *path, cl_context &theContext) {
 void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t size_y, const bool isSeparated) {
 	// Setup Context
 	cl_int errcode = CL_SUCCESS;
-	cl_context clGPUContext = clCreateContextFromType(0, deviceTypes, NULL, NULL, &errcode);
-	cl_device_id fastestDev = getMaxFlopsDevice(clGPUContext);
+	cl_context clGPUContext;
+	cl_device_id selectedDevice;
+	
+	if (GPU_SETTINGS::forceNvidiaPlatform) {
+		cl_device_id* devIDs;
+		getContextAndDevices(&clGPUContext, &devIDs);
+		selectedDevice = devIDs[GPU_SETTINGS::preferedGPU];
+		free(devIDs);
+	}
+	else // auto detect fastest device
+	{
+		clGPUContext = clCreateContextFromType(0, deviceTypes, NULL, NULL, &errcode);
+		selectedDevice = getMaxFlopsDevice(clGPUContext, GPU_SETTINGS::preferedGPU);
+	}
+	
 	
 	// Create a command-queue
-	cl_command_queue commandQueue = clCreateCommandQueue(clGPUContext, fastestDev, CL_QUEUE_PROFILING_ENABLE, &errcode);
+	cl_command_queue commandQueue = clCreateCommandQueue(clGPUContext, selectedDevice, CL_QUEUE_PROFILING_ENABLE, &errcode);
 	oclAssert(errcode);
 	
 	// Create Program / Kernel
@@ -305,14 +330,32 @@ void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t
 // #
 // ################################################################
 
+size_t findPreferredDevice(cl_device_id** allDevices, cl_device_id* selectedDevice) {
+	size_t device_count;
+	if (GPU_SETTINGS::forceNvidiaPlatform) {
+		cl_context context;
+		device_count = getContextAndDevices(&context, allDevices);
+		clReleaseContext(context);
+		
+		if (GPU_SETTINGS::preferedGPU < device_count && GPU_SETTINGS::preferedGPU >= 0) {
+			*selectedDevice = *allDevices[GPU_SETTINGS::preferedGPU];
+		} else {
+			printf("There is no GPU device with id: %d\n", GPU_SETTINGS::preferedGPU);
+			exit(EXIT_FAILURE);
+		}
+	}
+	else // auto detect fastest device
+	{
+		device_count = getDevicesList(allDevices, selectedDevice, GPU_SETTINGS::preferedGPU);
+	}
+	return device_count;
+}
+
 void OCL_DCT::printDevices() {
 	cl_device_id* devIDs; // dont forget to free
-	cl_device_id fastDev;
-	size_t device_count = getDevicesList(&devIDs, &fastDev);
+	cl_device_id selectedDevice;
 	
-	//cl_context context;
-	//const cl_uint device_count = getContextAndDevices(&context, &devIDs);
-	//clReleaseContext(context);
+	size_t device_count = findPreferredDevice(&devIDs, &selectedDevice);
 	
 	// print all devices
 	printf("Devices:\n");
@@ -325,7 +368,7 @@ void OCL_DCT::printDevices() {
 		clGetDeviceInfo(devIDs[i], CL_DEVICE_NAME, sizeof(device_string), &device_string, NULL);
 		clGetDeviceInfo(devIDs[i], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &gpu_mem_size, NULL);
 		
-		if (devIDs[i] == fastDev) {
+		if (devIDs[i] == selectedDevice) {
 			printf("-> ");
 		} else {
 			printf("   ");
