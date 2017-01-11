@@ -15,23 +15,24 @@ bool GPUComposer::add(float* matrix, size_t width, size_t height)
 		shouldClearStoredData = false;
 	}
 	
+	size_t px = width * height;
+	
 	// copy data to internal cache
 	if (shouldRestructureData) {
 		MemoryShifter::squeezeImageToBlockWith(&cache[cachedSize], matrix, width, height);
 	} else {
 		// copy data without modification
+		float *ptrCache = &cache[cachedSize];
 #if USE_MEMCPY
-		memcpy(&cache[cachedSize], matrix, width * height * sizeof(float));
+		memcpy(ptrCache, matrix, px * sizeof(float));
 #else
-		float *ptrC = &cache[cachedSize];
-		size_t repeatPx = width * height;
-		while (repeatPx--) {
-			*(ptrC++) = *(matrix++);
+		size_t i = px;
+		while (i--) {
+			*(ptrCache++) = *(matrix++);
 		}
 #endif
 	}
 	
-	size_t px = width * height;
 	cacheInfo.push_back(DATA_INFO(cachedSize, width, height)); // add before increase
 	cachedSize += px;
 	
@@ -60,7 +61,8 @@ void GPUComposer::flush() {
 			reconstructData(cache, cacheInfo);
 		} else {
 			// since all sizes are equal, just take the first one
-			func(cache, cacheInfo.front().width, cacheInfo.front().height);
+			size_t width = cacheInfo.front().width;
+			func(cache, width, cachedSize / width);
 		}
 		shouldClearStoredData = true;
 	}

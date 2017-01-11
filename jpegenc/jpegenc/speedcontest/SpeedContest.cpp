@@ -278,7 +278,6 @@ void SpeedContest::testForCorrectness(bool ourTestMatrix, bool use16x16, bool mo
 	printf("\nDCT Normal:\n");
 	DCT::transform(vls, out, width, height);
 	printFloatMatrix(out, width, height);
-	delete [] out;
 	printf("------------------------------------------------------------------------\n");
 	
 	copyArray(vls, matrix, size);
@@ -329,8 +328,14 @@ void SpeedContest::testForCorrectness(bool ourTestMatrix, bool use16x16, bool mo
 	c.add(vls, width, height);
 	c.add(vls, width, height);
 	c.flush(); // send to GPU
-	printFloatMatrix(c.cache, c.cacheInfo[1].width, c.cacheInfo[1].height);
+	float* dataPtr = &c.cache[c.cacheInfo[1].offset];
+	printFloatMatrix(dataPtr, c.cacheInfo[1].width, c.cacheInfo[1].height);
 	printf("------------------------------------------------------------------------\n");
 	
+	printf("\nInverse:\n");
+	DCT::inverse(c.cache, out, width, height);
+	printFloatMatrix(out, width, height);
+	
+	delete [] out;
 	delete [] vls;
 }
