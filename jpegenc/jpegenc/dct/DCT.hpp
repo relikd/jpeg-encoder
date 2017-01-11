@@ -6,7 +6,7 @@
 struct DCT {
 	static void transform(float* input, float* output, const size_t width, const size_t height);
 	static void transform2(float* input, const size_t width, const size_t height);
-	static void inverse(float* input, float* output);
+	static void inverse(float* input, float* output, const size_t width, const size_t height);
 };
 
 #endif /* directDCT_hpp */

@@ -74,23 +74,17 @@ void transform8x8_normal(float* input, float* output, size_t width) {
 }
 
 void DCT::transform(float* input, float* output, const size_t width, const size_t height) {
-	float *ptIn = input;
-	float *ptOut = output;
-	
 	unsigned short x, y;
-	const unsigned short numOfCols = width / N; // otherwise will be calculated multiple times
-	const size_t lineJump = width * (N - 1); // only N-1 because one line was already processed
+	const unsigned short width_8 = width / N;
+	const size_t blockLineJump = width * N;
 	
-	x = height / N;
-	while (x--) {
-		y = numOfCols;
-		while (y--) {
-			transform8x8_normal(ptIn, ptOut, width);
-			ptIn += N;
-			ptOut += N;
+	y = height / N;
+	while (y--) {
+		x = width_8;
+		while (x--) {
+			size_t offset = y * blockLineJump + x * N;
+			transform8x8_normal(&input[offset], &output[offset], width);
 		}
-		ptIn += lineJump;
-		ptOut += lineJump;
 	}
 }
 
@@ -135,25 +129,21 @@ void multiplyWithTransposedMatrixA(float* a, float* result, const size_t width) 
 }
 
 void DCT::transform2(float* input, const size_t width, const size_t height) {
-	float *ptIn = input;
-	
-	unsigned short x, y;
-	const unsigned short numOfCols = width / N; // otherwise will be calculated multiple times
-	const size_t lineJump = width * (N - 1); // only N-1 because one line was already processed
+	unsigned short x,y;
+	const unsigned short width_8 = width / N;
+	const size_t blockLineJump = width * N;
 	
 	float* temp = new float[64];
 	
-	x = height / N;
-	while (x--) {
-		y = numOfCols;
-		while (y--) {
-			multiplyMatrixAWith(input, temp, width); // a * input
-			multiplyWithTransposedMatrixA(temp, input, width); // input * a^t
-			ptIn += N;
+	y = height / N;
+	while (y--) {
+		x = width_8;
+		while (x--) {
+			float *ptr = &input[y * blockLineJump + x * N];
+			multiplyMatrixAWith(ptr, temp, width); // a * input
+			multiplyWithTransposedMatrixA(temp, ptr, width); // input * a^t
 		}
-		ptIn += lineJump;
 	}
-	
 	delete[] temp;
 }
 
@@ -165,7 +155,7 @@ void DCT::transform2(float* input, const size_t width, const size_t height) {
 // |
 //  ---------------------------------------------------------------
 
-void DCT::inverse(float* input, float* output) {
+void inverse8x8(float* input, float* output, const size_t width) {
 	unsigned char i,j,x,y;
 	x = N;
 	while (x--) { // outer loop over output
@@ -176,11 +166,26 @@ void DCT::inverse(float* input, float* output) {
 			while (i--) { // inner loop over input
 				j = N;
 				while (j--) {
-					float praefix = getConstantC(i, j) * input[j + i * N];
+					float praefix = getConstantC(i, j) * input[j + i * width];
 					inner += praefix * cos_2x1iPi_2N[x][i] * cos_2x1iPi_2N[y][j];
 				}
 			}
-			output[y + x * N] = inner;
+			output[y + x * width] = inner;
+		}
+	}
+}
+
+void DCT::inverse(float* input, float* output, const size_t width, const size_t height) {
+	unsigned short x, y;
+	const unsigned short width_8 = width / N;
+	const size_t blockLineJump = width * N;
+	
+	y = height / N;
+	while (y--) {
+		x = width_8;
+		while (x--) {
+			size_t offset = y * blockLineJump + x * N;
+			inverse8x8(&input[offset], &output[offset], width);
 		}
 	}
 }
