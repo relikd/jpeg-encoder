@@ -22,15 +22,25 @@ const int ZICK_ZACK_INDEXES[64] = {
 
 struct ImageDataEncoding {
 	const unsigned int width, height;
-	ImageDataEncoding(const unsigned int width, const unsigned int height) : width(width), height(height){}
+	const unsigned int horizontalBlocks, verticalBlocks;
+	float* data;
+	float* sortedData;
 	
-	void encode(float* &input, float* &output);
-	Encoding calculateCategory(int input);
-	unsigned int runLengthEncoding(float* &input, uint8_t* &byteRepresentations, Encoding* &encodings);
-	unsigned int runLengthEncodingSingleBlock(float* &input, uint8_t* &byteRepresentations, Encoding* &encodings, unsigned int offset, unsigned int encodingIndex);
-	uint8_t toSingleByte(char one, char two);
+	ImageDataEncoding(float* data, const unsigned int width, const unsigned int height)
+	:
+ data(data), width(width), height(height),horizontalBlocks(width / BLOCKDIMENSION), verticalBlocks(height / BLOCKDIMENSION), sortedData(new float[width * height]){}
+	
+	
+	static Encoding calculateCategory(int input);
+	static uint8_t toSingleByte(char one, char two);
+
+	void sortZickZack();
+	Encoding* differenceEncoding();
+	unsigned int runLengthEncoding(uint8_t* &byteRepresentations, Encoding* &encodings);
+	unsigned int runLengthEncodingSingleBlock(uint8_t* &byteRepresentations, Encoding* &encodings, unsigned int offset, unsigned int encodingIndex);
 	
 	void addEndOfBlock(uint8_t* &byteRepresentations, Encoding* &encodings, unsigned int index);
+	float getValueOnIndex(long index);
 };
 
 #endif /* ImageDataEncoding_hpp */

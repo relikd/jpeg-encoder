@@ -3,29 +3,15 @@
 #include "../helper/BitMath.hpp"
 #include "../bitstream/Bitstream.hpp"
 
-void ImageDataEncoding::encode(float* &input, float* &output) {
-	const unsigned int horizontalBlocks = width / BLOCKDIMENSION;
-	const unsigned int verticalBlocks = height / BLOCKDIMENSION;
 
-	unsigned int verticalOffset = 0;
-	unsigned int horizontalOffset = 0;
-	unsigned int outputIndex = 0;
-	
-
-	for (int verticalIndex = 0; verticalIndex < verticalBlocks; ++verticalIndex) {
-		verticalOffset = verticalIndex * BLOCKDIMENSION * width;
-		
-		for (int horizontalIndex = 0; horizontalIndex < horizontalBlocks; ++horizontalIndex) {
-			horizontalOffset = horizontalIndex * BLOCKDIMENSION;
-			
-			for (int i = 0; i < TOTAL_BLOCK_SIZE; ++i) {
-				unsigned int innerBlockOffset = (ZICK_ZACK_INDEXES[i] / BLOCKDIMENSION) * (width - BLOCKDIMENSION);
-				unsigned int totalOffset = verticalOffset + horizontalOffset + innerBlockOffset;
-				output[outputIndex++] = input[ZICK_ZACK_INDEXES[i] + totalOffset];
-			}
-		}
-	}
+/**
+ * toSingleByte takes the least 4 bits of one and two and combines them
+ * to 8 bits with one in the front.
+ */
+uint8_t ImageDataEncoding::toSingleByte(char one, char two) {
+	return (one << 4)| two;
 }
+
 
 Encoding ImageDataEncoding::calculateCategory(int input) {
 	if (input == 0) {
@@ -46,41 +32,98 @@ Encoding ImageDataEncoding::calculateCategory(int input) {
 	return Encoding(start + input, bits);
 }
 
+
+void ImageDataEncoding::sortZickZack() {
+	const unsigned int horizontalBlocks = width / BLOCKDIMENSION;
+	const unsigned int verticalBlocks = height / BLOCKDIMENSION;
+
+	unsigned int verticalOffset = 0;
+	unsigned int horizontalOffset = 0;
+	unsigned int outputIndex = 0;
+	
+
+	for (int verticalIndex = 0; verticalIndex < verticalBlocks; ++verticalIndex) {
+		verticalOffset = verticalIndex * BLOCKDIMENSION * width;
+		
+		for (int horizontalIndex = 0; horizontalIndex < horizontalBlocks; ++horizontalIndex) {
+			horizontalOffset = horizontalIndex * BLOCKDIMENSION;
+			
+			for (int i = 0; i < TOTAL_BLOCK_SIZE; ++i) {
+				unsigned int innerBlockOffset = (ZICK_ZACK_INDEXES[i] / BLOCKDIMENSION) * (width - BLOCKDIMENSION);
+				unsigned int totalOffset = verticalOffset + horizontalOffset + innerBlockOffset;
+				sortedData[outputIndex++] = data[ZICK_ZACK_INDEXES[i] + totalOffset];
+			}
+		}
+	}
+}
+
+Encoding* ImageDataEncoding::differenceEncoding() {
+	Encoding* encodings = new Encoding[verticalBlocks * horizontalBlocks];
+	
+	unsigned int blockIndex = 0;
+	// Handling first Block
+	encodings[blockIndex++] = calculateCategory(sortedData[0]);
+	
+	// Handling the first line of blocks separately
+	for (int firstLineBlock = 64 ; firstLineBlock < horizontalBlocks * TOTAL_BLOCK_SIZE; firstLineBlock += TOTAL_BLOCK_SIZE) {
+		encodings[blockIndex++] = calculateCategory(sortedData[firstLineBlock] - TOTAL_BLOCK_SIZE);
+	}
+	
+	// Handling the rest
+	for (int verticalBlockIndex = 1; verticalBlockIndex < verticalBlocks; ++verticalBlockIndex) {
+		unsigned int verticalOffset = verticalBlockIndex * width * BLOCKDIMENSION;
+		
+		for (int horizontalBlockIndex = 0; horizontalBlockIndex < horizontalBlocks; ++horizontalBlockIndex) {
+			unsigned int horizontalOffset = horizontalBlockIndex * TOTAL_BLOCK_SIZE;
+			unsigned int dcIndex =  verticalOffset + horizontalOffset;
+			float leftValue = 0;
+			float upperValue = sortedData[dcIndex - BLOCKDIMENSION * width];
+			
+			if (horizontalBlockIndex != 0) {
+				leftValue = sortedData[dcIndex - TOTAL_BLOCK_SIZE];
+			}
+			
+			encodings[blockIndex++] = calculateCategory(sortedData[dcIndex] - leftValue - upperValue);
+		}
+	}
+	
+	return encodings;
+}
+
 /**
-* @param input represents the cosinus transformed and zick zack sorted image.
 * @param byteRepresentations will be filled with the bytes of the length encoding.
 * @param encodings will be filled with the encodings of the length encoding.
 * byteRepresentations[0] and encodings[0] and so on fit together.
 */
-unsigned int ImageDataEncoding::runLengthEncoding(float* &input, uint8_t* &byteRepresentations, Encoding* &encodings) {
+unsigned int ImageDataEncoding::runLengthEncoding(uint8_t* &byteRepresentations, Encoding* &encodings) {
 	int encodingIndex = 0;
 	
 	for (int i = 1; i < width * height; i += 64) {
-		encodingIndex = runLengthEncodingSingleBlock(input, byteRepresentations, encodings, i, encodingIndex);
+		encodingIndex = runLengthEncodingSingleBlock(byteRepresentations, encodings, i, encodingIndex);
 	}
 	
 	return encodingIndex;
 }
 
-unsigned int ImageDataEncoding::runLengthEncodingSingleBlock(float* &input, uint8_t* &byteRepresentations,
+unsigned int ImageDataEncoding::runLengthEncodingSingleBlock(uint8_t* &byteRepresentations,
 													 Encoding* &encodings, unsigned int offset, unsigned int encodingIndex) {
 	const int maxZerosInARow = 15;
 	int zerosInARow = 0;
 	int lastIndexEOB = INT_MAX;
 	
 	for (int i = offset; i < offset + TOTAL_BLOCK_SIZE - 1; ++i) {
-		if (input[i] == 0 && zerosInARow != maxZerosInARow) {
+		if (sortedData[i] == 0 && zerosInARow != maxZerosInARow) {
 			++zerosInARow;
 			continue;
 		}
 		
-		if (input[i] == 0 && lastIndexEOB > encodingIndex) {
+		if (sortedData[i] == 0 && lastIndexEOB > encodingIndex) {
 			lastIndexEOB = encodingIndex;
 		} else {
 			lastIndexEOB = INT_MAX;
 		}
 		
-		encodings[encodingIndex] = calculateCategory(input[i]);
+		encodings[encodingIndex] = calculateCategory(sortedData[i]);
 		byteRepresentations[encodingIndex] = toSingleByte(zerosInARow, encodings[encodingIndex].code);
 		++encodingIndex;
 		
@@ -99,13 +142,6 @@ unsigned int ImageDataEncoding::runLengthEncodingSingleBlock(float* &input, uint
 	return encodingIndex;
 }
 
-/**
-* toSingleByte takes the least 4 bits of one and two and combines them
-* to 8 bytes with one in the front.
-*/
-uint8_t ImageDataEncoding::toSingleByte(char one, char two) {
-	return (one << 4)| two;
-}
 
 void ImageDataEncoding::addEndOfBlock(uint8_t* &byteRepresentations, Encoding* &encodings, unsigned int index) {
 	encodings[index] = calculateCategory(0);
@@ -113,6 +149,13 @@ void ImageDataEncoding::addEndOfBlock(uint8_t* &byteRepresentations, Encoding* &
 }
 
 
+float ImageDataEncoding::getValueOnIndex(long index) {
+	if (index < 0 || index > width * height) {
+		return 0;
+	} else {
+		return sortedData[index];
+	}
+}
 
 
 
