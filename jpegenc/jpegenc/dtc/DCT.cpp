@@ -113,7 +113,7 @@ void multiplyMatrixAWith(float* &b, float* &result, const size_t width) {
 			while (i--) { // multiplication loop
 				sum += matrixA[y * N + i] * b[i * width + x];
 			}
-			result[y * width + x] = sum;
+			result[y * N + x] = sum;
 		}
 	}
 }
@@ -127,7 +127,7 @@ void multiplyWithTransposedMatrixA(float* &a, float* &result, const size_t width
 			float sum = 0;
 			i = N;
 			while (i--) { // multiplication loop
-				sum += a[y * width + i] * matrixA[x * N + i];
+				sum += a[y * N + i] * matrixA[x * N + i];
 			}
 			result[y * width + x] = sum;
 		}
@@ -147,7 +147,7 @@ void DCT::transform2(float* &input, const size_t width, const size_t height) {
 	const unsigned short numOfCols = width / N; // otherwise will be calculated multiple times
 	const size_t lineJump = width * (N - 1); // only N-1 because one line was already processed
 	
-	float* temp = new float[width * height];
+	float* temp = new float[64];
 	
 	x = height / N;
 	while (x--) {
