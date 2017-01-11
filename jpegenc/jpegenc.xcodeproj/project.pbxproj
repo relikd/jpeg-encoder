@@ -34,7 +34,6 @@
 		95A113771E256B9700F9FA3F /* OCL_DCT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 54508B441E199A5900843873 /* OCL_DCT.cpp */; };
 		95A113781E256B9B00F9FA3F /* Arai.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4066437C1E07D37300F37B1F /* Arai.cpp */; };
 		95A113791E256B9E00F9FA3F /* DCT.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 12B6F1801E002FE3006D0182 /* DCT.cpp */; };
-		95A1137A1E256BBB00F9FA3F /* oclUtils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5427976C1E0E835000E702C7 /* oclUtils.cpp */; };
 		95A1137B1E256BD900F9FA3F /* Channel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 5496ABDB1DCFA97100FED0CF /* Channel.cpp */; };
 		95A1137C1E256BDD00F9FA3F /* Image.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 546A42F81DBA7A8D006C2629 /* Image.cpp */; };
 		95A1137D1E256BE000F9FA3F /* PPMLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 540D8CAD1DD0BE4D00A4E4C9 /* PPMLoader.cpp */; };
@@ -109,6 +108,7 @@
 		54A027DD1DB6CFFB0053733A /* CMakeLists.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = CMakeLists.txt; path = ../CMakeLists.txt; sourceTree = "<group>"; };
 		54AF12A81DF8B33B003312B9 /* PackageMerge.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = PackageMerge.cpp; sourceTree = "<group>"; };
 		54AF12A91DF8B33B003312B9 /* PackageMerge.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PackageMerge.hpp; sourceTree = "<group>"; };
+		54AFD4A41E26556A006B718B /* MemoryShifter.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = MemoryShifter.hpp; sourceTree = "<group>"; };
 		54B9AA001DF62F9700BB8D0D /* BitMath.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = BitMath.cpp; sourceTree = "<group>"; };
 		54B9AA011DF62F9700BB8D0D /* BitMath.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = BitMath.hpp; sourceTree = "<group>"; };
 		54DD29AD1E19EAAF00F7D1D4 /* GPUComposer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GPUComposer.cpp; sourceTree = "<group>"; };
@@ -317,6 +317,7 @@
 				549A49761E172F4F0040B274 /* Performance.hpp */,
 				54B9AA001DF62F9700BB8D0D /* BitMath.cpp */,
 				54B9AA011DF62F9700BB8D0D /* BitMath.hpp */,
+				54AFD4A41E26556A006B718B /* MemoryShifter.hpp */,
 			);
 			path = helper;
 			sourceTree = "<group>";
@@ -469,7 +470,6 @@
 				95A1137E1E256BE300F9FA3F /* Performance.cpp in Sources */,
 				95A1137C1E256BDD00F9FA3F /* Image.cpp in Sources */,
 				95A113831E256C3200F9FA3F /* arai.cl in Sources */,
-				95A1137A1E256BBB00F9FA3F /* oclUtils.cpp in Sources */,
 				95DD80451E1BFE3900C92112 /* Node.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
