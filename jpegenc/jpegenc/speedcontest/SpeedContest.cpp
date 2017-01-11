@@ -306,6 +306,8 @@ void SpeedContest::testForCorrectness(bool ourTestMatrix, bool use16x16, bool mo
 	
 	copyArray(vls, matrix, size);
 	
+	OCL_DCT::printDevices();
+	
 	// GPU arai
 	printf("\nGPU Arai:\n");
 	OCL_DCT::arai(vls, width, height);
@@ -335,6 +337,7 @@ void SpeedContest::testForCorrectness(bool ourTestMatrix, bool use16x16, bool mo
 	printf("\nInverse:\n");
 	DCT::inverse(c.cache, out, width, height);
 	printFloatMatrix(out, width, height);
+	printf("------------------------------------------------------------------------\n");
 	
 	delete [] out;
 	delete [] vls;

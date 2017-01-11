@@ -9,17 +9,14 @@
 #include <CL/opencl.h>
 #endif
 
-namespace GPU_SETTINGS {
-	static int preferedGPU = -1;
-	static bool forceNvidiaPlatform = false;
-}
-
-void OCL_DCT::setPreferedGPU(int gpu) { GPU_SETTINGS::preferedGPU = gpu; }
-void OCL_DCT::forceNvidiaPlatform(bool f) { GPU_SETTINGS::forceNvidiaPlatform = f; }
-
 #define BLOCK_DIM 8 // same block size like cl kernel
 
+static const unsigned short deviceSharedMemorySize = (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float);
 static const cl_device_type deviceTypes = CL_DEVICE_TYPE_DEFAULT | CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_ACCELERATOR;
+static const size_t localWorkSize[2] = {BLOCK_DIM, BLOCK_DIM};
+
+static size_t* precompiledSizes;
+static unsigned char** precompiledBinaries;
 
 static const float* oclMatrixA = new float[64] {
 	0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,
@@ -32,11 +29,21 @@ static const float* oclMatrixA = new float[64] {
 	0.097545161008064151797469776283833198249340057373046875F, -0.277785116509801088824360704165883362293243408203125000F,  0.415734806151272784369155033346032723784446716308593750F, -0.490392640201615326311923581670271232724189758300781250F,  0.490392640201615215289621119154617190361022949218750000F, -0.415734806151272506813398877056897617876529693603515625F,  0.277785116509800755757453316618921235203742980957031250F, -0.097545161008064276697560046613943995907902717590332031F
 };
 
+
 //  ---------------------------------------------------------------
 // |
 // |  Helper
 // |
 //  ---------------------------------------------------------------
+
+namespace GPU_SETTINGS {
+	static int preferedGPU = -1;
+	static bool forceNvidiaPlatform = false;
+}
+
+void OCL_DCT::setPreferedGPU(int gpu) { GPU_SETTINGS::preferedGPU = gpu; }
+void OCL_DCT::forceNvidiaPlatform(bool f) { GPU_SETTINGS::forceNvidiaPlatform = f; }
+
 
 int flopsForDevice(cl_device_id dev, cl_uint* compute_units, cl_uint* clock_frequency) {
 	clGetDeviceInfo(dev, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), compute_units, NULL);
@@ -52,7 +59,7 @@ int flopsForDevice(cl_device_id dev, cl_uint* compute_units, cl_uint* clock_freq
 // #
 // ################################################################
 
-inline cl_int findNvidiaPlatform(cl_platform_id* platform) {
+cl_int findNvidiaPlatform(cl_platform_id* platform) {
 	// Get OpenCL platform count
 	cl_uint platformsCount;
 	oclAssert( clGetPlatformIDs(0, NULL, &platformsCount) );
@@ -84,7 +91,7 @@ inline cl_int findNvidiaPlatform(cl_platform_id* platform) {
 	return CL_SUCCESS;
 }
 
-inline cl_uint getContextAndDevices(cl_context* theContext, cl_device_id** theDevices) {
+cl_uint getContextAndDevices(cl_context* theContext, cl_device_id** theDevices) {
 	cl_platform_id cpPlatform;
 	oclAssert( findNvidiaPlatform(&cpPlatform) );
 	
@@ -139,18 +146,18 @@ cl_device_id getMaxFlopsDevice(cl_context context, int returnInstead = -1) {
 	return fastestDevice;
 }
 
-size_t getDevicesList(cl_device_id** list, cl_device_id* fastest, int indexInstead = -1) {
+size_t getDevicesList(cl_context* context, cl_device_id** list, cl_device_id* fastest, int indexInstead = -1) {
 	cl_int errcode;
-	cl_context context = clCreateContextFromType(0, deviceTypes, NULL, NULL, &errcode);
+	*context = clCreateContextFromType(0, deviceTypes, NULL, NULL, &errcode);
 	oclAssert(errcode);
 	
-	*fastest = getMaxFlopsDevice(context, indexInstead);
+	*fastest = getMaxFlopsDevice(*context, indexInstead);
 	
 	size_t dataBytes;
-	clGetContextInfo(context, CL_CONTEXT_DEVICES, 0, NULL, &dataBytes);
+	clGetContextInfo(*context, CL_CONTEXT_DEVICES, 0, NULL, &dataBytes);
 	
 	*list = (cl_device_id*) malloc(dataBytes);
-	clGetContextInfo(context, CL_CONTEXT_DEVICES, dataBytes, *list, NULL);
+	clGetContextInfo(*context, CL_CONTEXT_DEVICES, dataBytes, *list, NULL);
 	
 	return dataBytes / sizeof(cl_device_id);
 }
@@ -163,7 +170,7 @@ size_t getDevicesList(cl_device_id** list, cl_device_id* fastest, int indexInste
 // #
 // ################################################################
 
-inline char* loadFileContent(const char* path, size_t* fileSize) {
+char* loadFileContent(const char* path, size_t* fileSize) {
 	FILE* file = NULL;
 	
 #ifdef _WIN32
@@ -192,7 +199,25 @@ inline char* loadFileContent(const char* path, size_t* fileSize) {
 	return buffer;
 }
 
-inline cl_program loadProgram(const char *path, cl_context &theContext) {
+void preCompileProgram(cl_program program) {
+	cl_uint n;
+	oclAssert( clGetProgramInfo(program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &n, NULL) );
+	
+	precompiledSizes = new size_t[ n ];
+	oclAssert( clGetProgramInfo(program, CL_PROGRAM_BINARY_SIZES, n * sizeof(size_t), precompiledSizes, NULL) );
+	
+	precompiledBinaries = new unsigned char*[ n ];
+	short i = n;
+	while (i--) {
+		size_t sz = precompiledSizes[i];
+		if (sz < 10)
+			sz = 10;
+		precompiledBinaries[i] = new unsigned char[ sz ];
+	}
+	oclAssert( clGetProgramInfo(program, CL_PROGRAM_BINARIES, n * sizeof(unsigned char*), precompiledBinaries, NULL) );
+}
+
+cl_program loadProgram(const char *path, cl_context &theContext) {
 	// Program setup
 	size_t program_length;
 	char *source = loadFileContent(path, &program_length);
@@ -230,25 +255,22 @@ void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t
 	cl_context clGPUContext;
 	cl_device_id selectedDevice;
 	
+	// create context and device list
+	cl_device_id* deviceList;
+	size_t deviceCount;
 	if (GPU_SETTINGS::forceNvidiaPlatform) {
-		cl_device_id* devIDs;
-		getContextAndDevices(&clGPUContext, &devIDs);
-		selectedDevice = devIDs[GPU_SETTINGS::preferedGPU];
-		free(devIDs);
-	}
-	else // auto detect fastest device
-	{
-		clGPUContext = clCreateContextFromType(0, deviceTypes, NULL, NULL, &errcode);
-		selectedDevice = getMaxFlopsDevice(clGPUContext, GPU_SETTINGS::preferedGPU);
+		deviceCount = getContextAndDevices(&clGPUContext, &deviceList);
+		selectedDevice = deviceList[GPU_SETTINGS::preferedGPU];
+	} else {
+		deviceCount = getDevicesList(&clGPUContext, &deviceList, &selectedDevice, GPU_SETTINGS::preferedGPU);
 	}
 	
 	
-	// Create a command-queue
-	cl_command_queue commandQueue = clCreateCommandQueue(clGPUContext, selectedDevice, CL_QUEUE_PROFILING_ENABLE, &errcode);
+	// make sure program was initialized in findPreferredDevice() first
+	cl_program clProgram = clCreateProgramWithBinary(clGPUContext, (cl_uint)deviceCount, deviceList,
+													 precompiledSizes, (const unsigned char **)precompiledBinaries, NULL, &errcode);
 	oclAssert(errcode);
-	
-	// Create Program / Kernel
-	cl_program clProgram = loadProgram("../jpegenc/opencl/arai.cl", clGPUContext);
+	clBuildProgram(clProgram, 0, NULL, "-cl-fast-relaxed-math", NULL, NULL);
 	
 	
 	// Setup Memory
@@ -274,41 +296,41 @@ void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t
 	clKernel = clCreateKernel(clProgram, kernelName, &errcode);
 	oclAssert(errcode);
 	
-	// Launch OpenCL kernel
+	// Set parameter values on device
 	if (isSeparated) {
-		errcode  = clSetKernelArg(clKernel, 0, sizeof(cl_mem), (void *) &d_odata);
-		errcode |= clSetKernelArg(clKernel, 1, sizeof(cl_mem), (void *) &d_idata);
-		errcode |= clSetKernelArg(clKernel, 2, sizeof(cl_mem), (void *) &matrix_a);
+		errcode  = clSetKernelArg(clKernel, 0, sizeof(cl_mem), &d_odata);
+		errcode |= clSetKernelArg(clKernel, 1, sizeof(cl_mem), &d_idata);
+		errcode |= clSetKernelArg(clKernel, 2, sizeof(cl_mem), &matrix_a);
 		errcode |= clSetKernelArg(clKernel, 3, sizeof(size_t), &size_x);
 		errcode |= clSetKernelArg(clKernel, 4, sizeof(size_t), &size_y);
-		errcode |= clSetKernelArg(clKernel, 5, (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float), 0 );
-		errcode |= clSetKernelArg(clKernel, 6, (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float), 0 );
+		errcode |= clSetKernelArg(clKernel, 5, deviceSharedMemorySize, 0 );
+		errcode |= clSetKernelArg(clKernel, 6, deviceSharedMemorySize, 0 );
 	} else {
-		errcode  = clSetKernelArg(clKernel, 0, sizeof(cl_mem), (void *) &d_odata);
-		errcode |= clSetKernelArg(clKernel, 1, sizeof(cl_mem), (void *) &d_idata);
+		errcode  = clSetKernelArg(clKernel, 0, sizeof(cl_mem), &d_odata);
+		errcode |= clSetKernelArg(clKernel, 1, sizeof(cl_mem), &d_idata);
 		errcode |= clSetKernelArg(clKernel, 2, sizeof(size_t), &size_x);
 		errcode |= clSetKernelArg(clKernel, 3, sizeof(size_t), &size_y);
-		errcode |= clSetKernelArg(clKernel, 4, (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float), 0 );
+		errcode |= clSetKernelArg(clKernel, 4, deviceSharedMemorySize, 0 );
 	}
 	oclAssert(errcode);
 	
 	
 	// set up execution configuration
-	size_t localWorkSize[2], globalWorkSize[2];
-	localWorkSize[0] = BLOCK_DIM;
-	localWorkSize[1] = BLOCK_DIM;
+	size_t globalWorkSize[2];
 	globalWorkSize[0] = size_x;
 	globalWorkSize[1] = size_y;
 	
-	oclAssert(clEnqueueNDRangeKernel(commandQueue, clKernel, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL));
+	// Create a command-queue
+	cl_command_queue commandQueue = clCreateCommandQueue(clGPUContext, selectedDevice, CL_QUEUE_PROFILING_ENABLE, &errcode);
+	oclAssert(errcode);
+	
+	oclAssert( clEnqueueNDRangeKernel(commandQueue, clKernel, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL) );
 	
 	// Block CPU till GPU is done
-	oclAssert(clFinish(commandQueue));
+	oclAssert( clFinish(commandQueue) );
 	
 	// Retrieve result from device
-	
-	size_t size = size_x * size_y * sizeof(float);
-	oclAssert(clEnqueueReadBuffer(commandQueue, d_odata, CL_TRUE, 0, size, &h_idata[0], 0, NULL, NULL));
+	oclAssert( clEnqueueReadBuffer(commandQueue, d_odata, CL_TRUE, 0, size_x * size_y * sizeof(float), h_idata, 0, NULL, NULL) );
 	
 	// Cleanup Open CL
 	clReleaseContext(clGPUContext);
@@ -332,10 +354,10 @@ void computeOnGPU(const char* kernelName, float* &h_idata, size_t size_x, size_t
 
 size_t findPreferredDevice(cl_device_id** allDevices, cl_device_id* selectedDevice) {
 	size_t device_count;
+	cl_context context;
+	
 	if (GPU_SETTINGS::forceNvidiaPlatform) {
-		cl_context context;
 		device_count = getContextAndDevices(&context, allDevices);
-		clReleaseContext(context);
 		
 		if (GPU_SETTINGS::preferedGPU < device_count && GPU_SETTINGS::preferedGPU >= 0) {
 			*selectedDevice = *allDevices[GPU_SETTINGS::preferedGPU];
@@ -346,8 +368,16 @@ size_t findPreferredDevice(cl_device_id** allDevices, cl_device_id* selectedDevi
 	}
 	else // auto detect fastest device
 	{
-		device_count = getDevicesList(allDevices, selectedDevice, GPU_SETTINGS::preferedGPU);
+		device_count = getDevicesList(&context, allDevices, selectedDevice, GPU_SETTINGS::preferedGPU);
 	}
+	
+	// pre compile program
+	cl_program precompile = loadProgram("../jpegenc/opencl/arai.cl", context);
+	preCompileProgram(precompile);
+	clReleaseProgram(precompile);
+	
+	clReleaseContext(context);
+	
 	return device_count;
 }
 
