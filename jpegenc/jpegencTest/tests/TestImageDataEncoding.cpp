@@ -59,17 +59,9 @@ const unsigned int lengthEncodingBitReps[lengthEncodingBitRepsSize] = {
 	0x8, 0x0, 0x8, 0xc, 0x9, 0xb, 0x2b, 0x7, 0x29, 0xa, 0x1c, 0x47, 0x7, 0x4a, 0x28, 0x48,
 	0xc, 0x49, 0x7b, 0x2b, 0x2a, 0x4c, 0x3c, 0x0, 0xa, 0x1b, 0x1b, 0xa, 0x1a, 0x5b, 0x9c, 0x1b, 0x7c, 0x0};
 
-float smallLengthEncodingData[128] = {
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 1, 2, 2, 4, 0, 4, 1, 0, 1, 2, 2, 4, 0, 4, 1,
-	2, 5, 4, 1, 1, 1, 1, 1, 2, 5, 4, 1, 1, 1, 1, 1,
-	0, 5, 3, 2, 5, 0, 0, 0, 0, 5, 3, 2, 5, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 5, 0, 0, 0, 0, 0, 0, 0, 5, 0,
-};
 
+const unsigned int lengthDcEncodingResult = 4;
+const Encoding dcEncodingResult[4] = {Encoding(8, 4), Encoding(2, 6), Encoding(3, 2), Encoding(0, 3)};
 const unsigned int width = 16, height = 16;
 
 
@@ -114,38 +106,35 @@ bool isSortedCorrectly(float* data) {
 
 TEST_CASE("Test image data encoding", "[imageDataEncoding]") {
 	
-	ImageDataEncoding encoding(width, height);
+	
 	
 	SECTION("Test zick zack encoding for image") {
 		float* input = zickZackData;
-		float* output = new float[width * height];
+		ImageDataEncoding encoding(input, width, height);
 		
-		encoding.encode(input, output);
-		REQUIRE(isSortedCorrectly(output));
-		
-		delete [] output;
+		encoding.sortZickZack();
+		REQUIRE(isSortedCorrectly(encoding.sortedData));
 	}
 	
 	SECTION("Test calculate category") {
-		auto result = encoding.calculateCategory(0);
+		auto result = ImageDataEncoding::calculateCategory(0);
 		bool check0 = result.code == 0 && result.numberOfBits == 0;
 		REQUIRE(check0);
 		
-		result = encoding.calculateCategory(32767);
+		result = ImageDataEncoding::calculateCategory(32767);
 		bool check32767 = result.code == 32767 && result.numberOfBits == 15;
 		REQUIRE(check32767);
 		
-		result = encoding.calculateCategory(-32766);
+		result = ImageDataEncoding::calculateCategory(-32766);
 		bool checkNegativ32766 = result.code == 1 && result.numberOfBits == 15;
 		REQUIRE(checkNegativ32766);
 	}
 	
 	SECTION("Test bit combining") {
-		uint8_t byte = 0;
-		byte = encoding.toSingleByte(0, 0);
+		uint8_t byte = ImageDataEncoding::toSingleByte(0, 0);
 		REQUIRE(byte == 0);
 		
-		byte = encoding.toSingleByte(31, 2);
+		byte = ImageDataEncoding::toSingleByte(31, 2);
 		REQUIRE(byte == 242);
 	}
 	
@@ -153,13 +142,36 @@ TEST_CASE("Test image data encoding", "[imageDataEncoding]") {
 		uint8_t* byteReps = new uint8_t[width * height];
 		Encoding* encodings = new Encoding[width * height];
 		float* input = lengthEncodingData;
+		ImageDataEncoding encoding(input, width, height);
 		
-		int length = encoding.runLengthEncoding(input, byteReps, encodings);
+		// Don't do that! Only for testing purposes
+		encoding.sortedData = input;
+		int length = encoding.runLengthEncoding(byteReps, encodings);
 		
 		REQUIRE(length == lengthEncodingBitRepsSize);
 		
 		for(int i = 0; i < length; ++i) {
 			REQUIRE(byteReps[i] == lengthEncodingBitReps[i]);
+		}
+	}
+	
+	SECTION("Test difference encoding") {
+		float* input = lengthEncodingData;
+		ImageDataEncoding encoding(input, width, height);
+		encoding.sortZickZack();
+		
+		auto dcEncodings = encoding.differenceEncoding();
+		
+		int length = encoding.verticalBlocks * encoding.horizontalBlocks;
+		
+		REQUIRE(length == lengthDcEncodingResult);
+		
+		for (int i = 0; i < length; ++i) {
+			bool validEncoding =
+			dcEncodings[i].numberOfBits == dcEncodingResult[i].numberOfBits &&
+			dcEncodings[i].code == dcEncodingResult[i].code;
+			
+			REQUIRE(validEncoding);
 		}
 	}
 }
