@@ -50,7 +50,7 @@ static const float* matrixA = new float[64] {
 // |
 //  ---------------------------------------------------------------
 
-void transform8x8_normal(float* &input, float* &output, size_t width) {
+void transform8x8_normal(float* input, float* output, size_t width) {
 	unsigned char i,j,x,y;
 	
 	// jump through output
@@ -73,9 +73,9 @@ void transform8x8_normal(float* &input, float* &output, size_t width) {
 	}
 }
 
-void DCT::transform(float* &input, float* &output, const size_t width, const size_t height) {
-	float *ptIn = &input[0];
-	float *ptOut = &output[0];
+void DCT::transform(float* input, float* output, const size_t width, const size_t height) {
+	float *ptIn = input;
+	float *ptOut = output;
 	
 	unsigned short x, y;
 	const unsigned short numOfCols = width / N; // otherwise will be calculated multiple times
@@ -102,7 +102,7 @@ void DCT::transform(float* &input, float* &output, const size_t width, const siz
 // |
 //  ---------------------------------------------------------------
 
-void multiplyMatrixAWith(float* &b, float* &result, const size_t width) {
+void multiplyMatrixAWith(float* b, float* result, const size_t width) {
 	unsigned char x,y, i;
 	y = N;
 	while (y--) {
@@ -118,7 +118,7 @@ void multiplyMatrixAWith(float* &b, float* &result, const size_t width) {
 	}
 }
 // two separate loops because its around 300.000 operations per second faster than an if (bool) clause
-void multiplyWithTransposedMatrixA(float* &a, float* &result, const size_t width) {
+void multiplyWithTransposedMatrixA(float* a, float* result, const size_t width) {
 	unsigned char x,y, i;
 	y = N;
 	while (y--) {
@@ -134,14 +134,8 @@ void multiplyWithTransposedMatrixA(float* &a, float* &result, const size_t width
 	}
 }
 
-void transform8x8_separated(float* &input, float* &temp, const size_t width) {
-//	float* temp = new float[64];
-	multiplyMatrixAWith(input, temp, width); // a * input
-	multiplyWithTransposedMatrixA(temp, input, width); // input * a^t
-}
-
-void DCT::transform2(float* &input, const size_t width, const size_t height) {
-	float *ptIn = &input[0];
+void DCT::transform2(float* input, const size_t width, const size_t height) {
+	float *ptIn = input;
 	
 	unsigned short x, y;
 	const unsigned short numOfCols = width / N; // otherwise will be calculated multiple times
@@ -153,7 +147,8 @@ void DCT::transform2(float* &input, const size_t width, const size_t height) {
 	while (x--) {
 		y = numOfCols;
 		while (y--) {
-			transform8x8_separated(ptIn, temp, width);
+			multiplyMatrixAWith(input, temp, width); // a * input
+			multiplyWithTransposedMatrixA(temp, input, width); // input * a^t
 			ptIn += N;
 		}
 		ptIn += lineJump;
@@ -170,7 +165,7 @@ void DCT::transform2(float* &input, const size_t width, const size_t height) {
 // |
 //  ---------------------------------------------------------------
 
-void DCT::inverse(float* &input, float* &output) {
+void DCT::inverse(float* input, float* output) {
 	unsigned char i,j,x,y;
 	x = N;
 	while (x--) { // outer loop over output
