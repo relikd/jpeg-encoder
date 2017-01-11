@@ -37,7 +37,7 @@ public:
 		delete[] cache;
 	};
 	
-	bool add(float* &matrix, size_t width, size_t height);
+	bool add(float* matrix, size_t width, size_t height);
 	void flush();
 };
 

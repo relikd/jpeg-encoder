@@ -321,5 +321,16 @@ void SpeedContest::testForCorrectness(bool ourTestMatrix, bool use16x16, bool mo
 	printFloatMatrix(vls, width, height);
 	printf("------------------------------------------------------------------------\n");
 	
+	copyArray(vls, matrix, size);
+	
+	// GPU Composer
+	printf("\nGPU Composer:\n");
+	GPUComposer c = GPUComposer(OCL_DCT::separated, true); // with different sizes
+	c.add(vls, width, height);
+	c.add(vls, width, height);
+	c.flush(); // send to GPU
+	printFloatMatrix(c.cache, c.cacheInfo[1].width, c.cacheInfo[1].height);
+	printf("------------------------------------------------------------------------\n");
+	
 	delete [] vls;
 }
