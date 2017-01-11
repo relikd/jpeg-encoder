@@ -10,7 +10,7 @@
 #define ImageDataEncoding_hpp
 
 #include <stdio.h>
-#include "../huffmann/Encoding.hpp"
+#include "../huffman/Encoding.hpp"
 
 const int BLOCKDIMENSION = 8;
 const int TOTAL_BLOCK_SIZE = BLOCKDIMENSION * BLOCKDIMENSION;

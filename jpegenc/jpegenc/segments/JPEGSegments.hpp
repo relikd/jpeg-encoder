@@ -14,7 +14,7 @@
 #include <memory>
 #include "../bitstream/Bitstream.hpp"
 #include "../model/Image.hpp"
-#include "../huffmann/Huffman.hpp"
+#include "../huffman/Huffman.hpp"
 
 namespace JPEGSegments {
 	
