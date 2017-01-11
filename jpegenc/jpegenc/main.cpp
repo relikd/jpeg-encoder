@@ -4,7 +4,7 @@
 #include "converter/RGBToYCbCrConverter.hpp"
 #include "converter/YCbCrToRGBConverter.hpp"
 #include "helper/Performance.hpp"
-#include "huffmann/Huffman.hpp"
+#include "huffman/Huffman.hpp"
 #include "bitstream/Bitstream.hpp"
 #include "segments/JPEGSegments.hpp"
 #include "speedcontest/SpeedContest.hpp"
@@ -162,7 +162,7 @@ std::vector<int> generateTestHuffman2() {
 	return input;
 }
 
-void testhuffmann() {
+void testhuffman() {
 	std::vector<Symbol> testData;
 	
 	auto input = generateTestHuffman();
@@ -200,7 +200,7 @@ void testhuffmann() {
 
 int main(int argc, const char *argv[]) {
 	
-	//testhuffmann();
+	//testhuffman();
     //testJPEGWriter();
 //	testImage();
 	

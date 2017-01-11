@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <thread>
 #include "../helper/Performance.hpp"
-#include "../dtc/Arai.hpp"
-#include "../dtc/DCT.hpp"
+#include "../dct/Arai.hpp"
+#include "../dct/DCT.hpp"
 #include "../opencl/OCL_DCT.h"
 #include "../opencl/GPUComposer.h"
 
