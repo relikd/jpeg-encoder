@@ -10,8 +10,10 @@
 #define ImageDataEncoding_hpp
 
 #include <stdio.h>
+#include "../huffmann/Encoding.hpp"
 
 const int BLOCKDIMENSION = 8;
+const int TOTAL_BLOCK_SIZE = BLOCKDIMENSION * BLOCKDIMENSION;
 const int ZICK_ZACK_INDEXES[64] = {
 	0, 1, 8, 16, 9, 2, 3, 10, 17, 24, 32, 25, 18, 11, 4, 5,
 	12, 19, 26, 33, 40, 48, 41, 34, 27, 20, 13, 6, 7, 14, 21, 28,
@@ -19,7 +21,16 @@ const int ZICK_ZACK_INDEXES[64] = {
 	58, 59, 52, 45, 38, 31, 39, 46, 53, 60, 61, 54, 47, 55, 62, 63 };
 
 struct ImageDataEncoding {
-	void encode(float* &input, float* &output, const unsigned int width, const unsigned int height);
+	const unsigned int width, height;
+	ImageDataEncoding(const unsigned int width, const unsigned int height) : width(width), height(height){}
+	
+	void encode(float* &input, float* &output);
+	Encoding calculateCategory(int input);
+	unsigned int runLengthEncoding(float* &input, uint8_t* &byteRepresentations, Encoding* &encodings);
+	unsigned int runLengthEncodingSingleBlock(float* &input, uint8_t* &byteRepresentations, Encoding* &encodings, unsigned int offset, unsigned int encodingIndex);
+	uint8_t toSingleByte(char one, char two);
+	
+	void addEndOfBlock(uint8_t* &byteRepresentations, Encoding* &encodings, unsigned int index);
 };
 
 #endif /* ImageDataEncoding_hpp */
