@@ -33,6 +33,44 @@ Encoding ImageDataEncoding::calculateCategory(int input) {
 }
 
 
+void ImageDataEncoding::init() {
+	sortZickZack();
+}
+
+/**
+* @param byteReps has to be handed in as an empty array with the size of the total image
+* and will be filled with the byte representations of the encodings in the order they appear.
+* @param encodings has to be handed in as an empty array with the size of the total image
+* and will be filled with the encodings for every dct value in the order they appear.
+*/
+EncodingTable ImageDataEncoding::generateACEncodingTable(uint8_t* byteReps, Encoding* encodings) {
+	auto length = runLengthEncoding(byteReps, encodings);
+	Huffman huffman;
+	
+	for (int i = 0; i < length; ++i) {
+		huffman.addSymbol(byteReps[i]);
+	}
+	huffman.generateNodeList();
+	
+	return huffman.canonicalEncoding(16);
+}
+
+/**
+* @param encodings has to be handed in as an empty array with the size of the total image
+* and will be filled with the encodings for every dct value in the order they appear.
+*/
+EncodingTable ImageDataEncoding::generateDCEncodingTable(Encoding* encodings) {
+	encodings = differenceEncoding();
+	Huffman huffman;
+	
+	for(int i = 0; i < verticalBlocks * horizontalBlocks; ++i) {
+		huffman.addSymbol(encodings[i].numberOfBits);
+	}
+	huffman.generateNodeList();
+	
+	return huffman.canonicalEncoding(16);
+}
+
 void ImageDataEncoding::sortZickZack() {
 	const unsigned int horizontalBlocks = width / BLOCKDIMENSION;
 	const unsigned int verticalBlocks = height / BLOCKDIMENSION;
@@ -95,7 +133,7 @@ Encoding* ImageDataEncoding::differenceEncoding() {
 * @param encodings will be filled with the encodings of the length encoding.
 * byteRepresentations[0] and encodings[0] and so on fit together.
 */
-unsigned int ImageDataEncoding::runLengthEncoding(uint8_t* &byteRepresentations, Encoding* &encodings) {
+unsigned int ImageDataEncoding::runLengthEncoding(uint8_t* byteRepresentations, Encoding* encodings) {
 	int encodingIndex = 0;
 	
 	for (int i = 1; i < width * height; i += 64) {
@@ -105,8 +143,8 @@ unsigned int ImageDataEncoding::runLengthEncoding(uint8_t* &byteRepresentations,
 	return encodingIndex;
 }
 
-unsigned int ImageDataEncoding::runLengthEncodingSingleBlock(uint8_t* &byteRepresentations,
-													 Encoding* &encodings, unsigned int offset, unsigned int encodingIndex) {
+unsigned int ImageDataEncoding::runLengthEncodingSingleBlock(uint8_t* byteRepresentations,
+													 Encoding* encodings, unsigned int offset, unsigned int encodingIndex) {
 	const int maxZerosInARow = 15;
 	int zerosInARow = 0;
 	int lastIndexEOB = INT_MAX;
@@ -143,7 +181,7 @@ unsigned int ImageDataEncoding::runLengthEncodingSingleBlock(uint8_t* &byteRepre
 }
 
 
-void ImageDataEncoding::addEndOfBlock(uint8_t* &byteRepresentations, Encoding* &encodings, unsigned int index) {
+void ImageDataEncoding::addEndOfBlock(uint8_t* byteRepresentations, Encoding* encodings, unsigned int index) {
 	encodings[index] = calculateCategory(0);
 	byteRepresentations[index] = toSingleByte(0, encodings[index].code);
 }

@@ -111,8 +111,8 @@ TEST_CASE("Test image data encoding", "[imageDataEncoding]") {
 	SECTION("Test zick zack encoding for image") {
 		float* input = zickZackData;
 		ImageDataEncoding encoding(input, width, height);
+		encoding.init();
 		
-		encoding.sortZickZack();
 		REQUIRE(isSortedCorrectly(encoding.sortedData));
 	}
 	
@@ -153,14 +153,17 @@ TEST_CASE("Test image data encoding", "[imageDataEncoding]") {
 		for(int i = 0; i < length; ++i) {
 			REQUIRE(byteReps[i] == lengthEncodingBitReps[i]);
 		}
+		
+		delete[] byteReps;
+		delete[] encodings;
 	}
 	
 	SECTION("Test difference encoding") {
 		float* input = lengthEncodingData;
 		ImageDataEncoding encoding(input, width, height);
-		encoding.sortZickZack();
-		
+		encoding.init();
 		auto dcEncodings = encoding.differenceEncoding();
+		
 		
 		int length = encoding.verticalBlocks * encoding.horizontalBlocks;
 		
@@ -173,5 +176,33 @@ TEST_CASE("Test image data encoding", "[imageDataEncoding]") {
 			
 			REQUIRE(validEncoding);
 		}
+	}
+	
+	SECTION("Test AC Huffman encoding table") {
+		uint8_t* byteReps = new uint8_t[width * height];
+		Encoding* encodings = new Encoding[width * height];
+		float* input = lengthEncodingData;
+		
+		ImageDataEncoding encoding(input, width, height);
+		encoding.init();
+		
+		auto encodingTable = encoding.generateACEncodingTable(byteReps, encodings);
+		auto root = Huffman::treeFromEncodingTable(encodingTable);
+		
+		delete[] byteReps;
+		delete[] encodings;
+	}
+	
+	SECTION("Test DC Huffman encoding table") {
+		Encoding* encodings = new Encoding[width * height];
+		float* input = lengthEncodingData;
+		
+		ImageDataEncoding encoding(input, width, height);
+		encoding.init();
+		
+		auto encodingTable = encoding.generateDCEncodingTable(encodings);
+		auto root = Huffman::treeFromEncodingTable(encodingTable);
+		
+		delete[] encodings;
 	}
 }
