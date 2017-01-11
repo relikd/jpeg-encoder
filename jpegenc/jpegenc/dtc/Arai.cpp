@@ -1,19 +1,19 @@
 #include "Arai.hpp"
 
-#define A1 0.707106781186547524400844362104849039284835937688474036588F
-#define A2 0.541196100146196984399723205366389420061072063378015444681F
-#define A3 0.707106781186547524400844362104849039284835937688474036588F
-#define A4 1.306562964876376527856643173427187153583761188349269527548F
-#define A5 0.382683432365089771728459984030398866761344562485627041433F
+static const float A1 = 0.707106781186547524400844362104849039284835937688474036588F;
+static const float A2 = 0.541196100146196984399723205366389420061072063378015444681F;
+static const float A3 = 0.707106781186547524400844362104849039284835937688474036588F;
+static const float A4 = 1.306562964876376527856643173427187153583761188349269527548F;
+static const float A5 = 0.382683432365089771728459984030398866761344562485627041433F;
 
-#define S0 0.353553390593273762200422181052424519642417968844237018294F
-#define S1 0.254897789552079584470969901993921956841309245954467684863F
-#define S2 0.270598050073098492199861602683194710030536031689007722340F
-#define S3 0.300672443467522640271860911954610917533627944800336361060F
-#define S4 0.353553390593273762200422181052424519642417968844237018294F
-#define S5 0.449988111568207852319254770470944197769000863706422492617F
-#define S6 0.653281482438188263928321586713593576791880594174634763774F
-#define S7 1.281457723870753089398043148088849954507561675693672456063F
+static const float S0 = 0.353553390593273762200422181052424519642417968844237018294F;
+static const float S1 = 0.254897789552079584470969901993921956841309245954467684863F;
+static const float S2 = 0.270598050073098492199861602683194710030536031689007722340F;
+static const float S3 = 0.300672443467522640271860911954610917533627944800336361060F;
+static const float S4 = 0.353553390593273762200422181052424519642417968844237018294F;
+static const float S5 = 0.449988111568207852319254770470944197769000863706422492617F;
+static const float S6 = 0.653281482438188263928321586713593576791880594174634763774F;
+static const float S7 = 1.281457723870753089398043148088849954507561675693672456063F;
 
 /*
 
@@ -68,8 +68,8 @@ _7_ = (e5 - d6) * S7;
 #define ARAI_COL(data, width) ARAI( data[0], data[width], data[2 * width], data[3 * width], data[4 * width], data[5 * width], data[6 * width], data[7 * width] );
 
 
-void Arai::processRows(float* &values, size_t numberOfPixels) {
-	float *rowPointer = &values[0];
+void Arai::processRows(float* values, size_t numberOfPixels) {
+	float *rowPointer = values;
 	size_t rowRepeat = numberOfPixels / 8;
 	
 	while (rowRepeat--) {
@@ -78,8 +78,8 @@ void Arai::processRows(float* &values, size_t numberOfPixels) {
 	}
 }
 
-void Arai::processColumns(float* &values, size_t image_width, size_t image_height) {
-	float *colPointer = &values[0];
+void Arai::processColumns(float* values, size_t image_width, size_t image_height) {
+	float *colPointer = values;
 	size_t lineSkip = image_width * 7; // 7 because one line was already processed
 	
 	unsigned short colRepeatX;
@@ -94,11 +94,11 @@ void Arai::processColumns(float* &values, size_t image_width, size_t image_heigh
 	}
 }
 
-void Arai::transform(float* &values, size_t image_width, size_t image_height) {
+void Arai::transform(float* values, size_t image_width, size_t image_height) {
 	
-	if (image_width % 8 != 0 || image_height % 8 != 0) {
-		fputs("Error: Arai needs an image dimension of an multiple of 8\n", stderr);
-	}
+//	if (image_width % 8 != 0 || image_height % 8 != 0) {
+//		fputs("Error: Arai needs an image dimension of an multiple of 8\n", stderr);
+//	}
 	
 	processRows(values, image_width * image_height);
 	processColumns(values, image_width, image_height);
@@ -146,7 +146,7 @@ _OUTPUT_[6 * _width_] = (b3 - d2) * S6;\
 _OUTPUT_[7 * _width_] = (e5 - d6) * S7;
 
 
-void araiWithInlineTranspose(float* &input, float* &output, size_t w, size_t h) {
+void araiWithInlineTranspose(float* input, float* output, size_t w, size_t h) {
 	const unsigned short wDivided8 = w / 8;
 	const unsigned short wMinus1 = w - 1;
 	const unsigned long lineSkip = (w * 8) - 8;
@@ -173,11 +173,11 @@ void araiWithInlineTranspose(float* &input, float* &output, size_t w, size_t h) 
 	}
 }
 
-void Arai::transformInlineTranspose(float* &values, size_t image_width, size_t image_height) {
+void Arai::transformInlineTranspose(float* values, size_t image_width, size_t image_height) {
 	
-	if (image_width % 8 != 0 || image_height % 8 != 0) {
-		fputs("Error: Arai needs an image dimension of an multiple of 8\n", stderr);
-	}
+//	if (image_width % 8 != 0 || image_height % 8 != 0) {
+//		fputs("Error: Arai needs an image dimension of an multiple of 8\n", stderr);
+//	}
 	
 	float *outValues = new float[image_width * image_height];
 	
