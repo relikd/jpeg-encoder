@@ -8,7 +8,7 @@
 #include "bitstream/Bitstream.hpp"
 #include "segments/JPEGSegments.hpp"
 #include "speedcontest/SpeedContest.hpp"
-#include "opencl/OCL_DCT.h" // only for GPU_SETTINGS
+#include "opencl/OCLManager.hpp" // only for GPU_SETTINGS
 
 using namespace JPEGSegments;
 
@@ -223,12 +223,12 @@ int main(int argc, const char *argv[]) {
 			{
 				long gpu = -1;
 				if (param[4] == 'N' || param[4] == 'n') {
-					OCL_DCT::forceNvidiaPlatform(true);
+					OCLManager::forceNvidiaPlatform(true);
 					gpu = strtol(param + 5, NULL, 10);
 				} else {
 					gpu = strtol(param + 4, NULL, 10);
 				}
-				OCL_DCT::setPreferedGPU((int)gpu);
+				OCLManager::setPreferedGPU((int)gpu);
 			}
 			else if (strcmp(param, "-nocpu") == 0)
 			{
