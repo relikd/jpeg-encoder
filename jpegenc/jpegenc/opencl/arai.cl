@@ -5,7 +5,7 @@
 // than the naive kernel below.  Note that the shared memory array is sized to 
 // (BLOCK_DIM+1)*BLOCK_DIM.  This pads each row of the 2D block in shared memory 
 // so that bank conflicts do not occur when threads address the array column-wise.
-__kernel void dct_separated(__global float *odata, __global float *idata, __global float *matrixA, int width, int height, __local float* blockA, __local float* blockB)
+__kernel void dct_separated(__global float *odata, __global float *idata, unsigned int width, unsigned int height, __local float* blockA, __local float* blockB, __global float *matrixA)
 {
 	// read the matrix tile into shared memory
 	unsigned int xIndex = get_global_id(0);
@@ -68,7 +68,7 @@ __constant float S5 = 0.44998811156820785231925477047094419776900086370642249261
 __constant float S6 = 0.653281482438188263928321586713593576791880594174634763774F;
 __constant float S7 = 1.281457723870753089398043148088849954507561675693672456063F;
 
-__kernel void dct_arai(__global float *odata, __global float *idata, int width, int height, __local float* block)
+__kernel void dct_arai(__global float *odata, __global float *idata, unsigned int width, unsigned int height, __local float* block)
 {
 	// read the matrix tile into shared memory
 	unsigned int xIndex = get_global_id(0);

@@ -6,6 +6,7 @@
 #include "../dct/DCT.hpp"
 #include "../opencl/OCL_DCT.h"
 #include "../opencl/GPUComposer.h"
+#include "../opencl/OCLManager.hpp"
 
 // 1, 7, 3, 4, 5, 4, 3, 2
 // one way transform gets:
@@ -132,7 +133,9 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 	size_t size = width * height;
 	float* vls = new float[size];
 	
-	OCL_DCT::printDevices();
+	OCLManager().printDevices();
+	copyArray(vls, matrix, size);
+	OCL_DCT::separated(vls, width, height); // once to init static var ocl
 	
 	Timer t;
 	double time;
@@ -305,8 +308,6 @@ void SpeedContest::testForCorrectness(bool ourTestMatrix, bool use16x16, bool mo
 	printf("------------------------------------------------------------------------\n");
 	
 	copyArray(vls, matrix, size);
-	
-	OCL_DCT::printDevices();
 	
 	// GPU arai
 	printf("\nGPU Arai:\n");

@@ -5,12 +5,8 @@
 
 class OCL_DCT {
 public:
-	static void printDevices();
 	static void separated(float* &matrix, size_t width, size_t height);
 	static void arai(float* &matrix, size_t width, size_t height);
-	
-	static void setPreferedGPU(int gpu);
-	static void forceNvidiaPlatform(bool f);
 };
 
 #endif /* OCL_DCT_hpp */
