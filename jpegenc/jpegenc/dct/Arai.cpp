@@ -67,41 +67,32 @@ _7_ = (e5 - d6) * S7;
 
 #define ARAI_COL(data, width) ARAI( data[0], data[width], data[2 * width], data[3 * width], data[4 * width], data[5 * width], data[6 * width], data[7 * width] );
 
-
-void Arai::processRows(float* values, size_t numberOfPixels) {
-	float *rowPointer = values;
-	size_t rowRepeat = numberOfPixels / 8;
-	
-	while (rowRepeat--) {
-		ARAI_ROW(rowPointer);
-		rowPointer += 8;
-	}
-}
-
-void Arai::processColumns(float* values, size_t image_width, size_t image_height) {
-	float *colPointer = values;
-	size_t lineSkip = image_width * 7; // 7 because one line was already processed
-	
-	unsigned short colRepeatX;
-	unsigned short colRepeatY = image_height / 8;
-	while (colRepeatY--) {
-		colRepeatX = image_width;
-		while (colRepeatX--) {
-			ARAI_COL(colPointer, image_width);
-			++colPointer;
-		}
-		colPointer += lineSkip;
-	}
-}
-
 void Arai::transform(float* values, size_t image_width, size_t image_height) {
 	
 //	if (image_width % 8 != 0 || image_height % 8 != 0) {
 //		fputs("Error: Arai needs an image dimension of an multiple of 8\n", stderr);
 //	}
 	
-	processRows(values, image_width * image_height);
-	processColumns(values, image_width, image_height);
+	// Process Rows
+	float *rowPointer = values;
+	size_t rowRepeat = image_width * image_height / 8;
+	while (rowRepeat--) {
+		ARAI_ROW(rowPointer);
+		rowPointer += 8;
+	}
+	
+	// Process Columns
+	float *colPointer = values;
+	size_t lineSkip = image_width * 7; // 7 because one line was already processed
+	size_t y = image_height / 8;
+	while (y--) {
+		size_t x = image_width;
+		while (x--) {
+			ARAI_COL(colPointer, image_width);
+			++colPointer;
+		}
+		colPointer += lineSkip;
+	}
 }
 
 
