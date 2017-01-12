@@ -208,7 +208,6 @@ int main(int argc, const char *argv[]) {
 	bool testSkipCPU = false;
 	bool testSkipGPU = false;
 	
-	
 	int i = argc;
 	while (--i) { // skip the first param, which is the path of this executable
 		const char* param = argv[i];
@@ -219,16 +218,16 @@ int main(int argc, const char *argv[]) {
 				SpeedContest::testForCorrectness(validateParam & 1, validateParam & 2, validateParam & 4);
 				exit(EXIT_SUCCESS);
 			}
-			else if (strncmp(param, "-gpu", 4) == 0) // -gpu0, -gpu1, -gpuN0, -gpuN1
+			else if (strncmp(param, "-gpu", 4) == 0) // -gpu0, -gpu1, -gpu = show list for selection
 			{
-				long gpu = -1;
-				if (param[4] == 'N' || param[4] == 'n') {
-					OCLManager::forceNvidiaPlatform(true);
-					gpu = strtol(param + 5, NULL, 10);
-				} else {
+				char c = param[4];
+				if (c >= '0' && c <= '9') { // select specific gpu
+					long gpu = -1;
 					gpu = strtol(param + 4, NULL, 10);
+					OCLManager::setPreferedGPU((int)gpu);
+				} else {
+					OCLManager::askUserToSelectGPU();
 				}
-				OCLManager::setPreferedGPU((int)gpu);
 			}
 			else if (strcmp(param, "-nocpu") == 0)
 			{
