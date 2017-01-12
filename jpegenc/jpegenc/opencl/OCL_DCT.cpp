@@ -5,6 +5,7 @@
 #define BLOCK_DIM 8 // same block size like cl kernel
 
 static const size_t localWorkSize[2] = {BLOCK_DIM, BLOCK_DIM};
+const size_t local_mem_size = (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float);
 
 static const float* oclMatrixA = new float[64] {
 	0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,
@@ -18,10 +19,22 @@ static const float* oclMatrixA = new float[64] {
 };
 
 static OCLManager* ocl = nullptr;
+static cl_kernel araiKernel;
+static cl_kernel separatedKernel;
 
-void processSomething(const char* kernelName, float* &h_idata, unsigned int size_x, unsigned int size_y, const bool isSeparated) {
+inline void initDCT() {
+	cl_int errcode = CL_SUCCESS;
+	ocl = new OCLManager("../jpegenc/opencl/arai.cl");
+	// Create kernels
+	araiKernel = clCreateKernel(ocl->program, "dct_arai", &errcode);
+	oclAssert(errcode);
+	separatedKernel = clCreateKernel(ocl->program, "dct_separated", &errcode);
+	oclAssert(errcode);
+}
+
+void runOnGPU(const bool isSeparated, float* h_idata, unsigned int size_x, unsigned int size_y) {
 	if (ocl == nullptr) {
-		ocl = new OCLManager("../jpegenc/opencl/arai.cl");
+		initDCT();
 	}
 	
 	cl_int errcode = CL_SUCCESS;
@@ -35,12 +48,8 @@ void processSomething(const char* kernelName, float* &h_idata, unsigned int size
 	cl_mem matrix_a = clCreateBuffer(ocl->context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(float) * 64, (float*)oclMatrixA, &errcode);
 	oclAssert(errcode);
 	
-	// Create kernel
-	cl_kernel clKernel = clCreateKernel(ocl->program, kernelName, &errcode);
-	oclAssert(errcode);
-	
 	// Set parameter values on device
-	const size_t local_mem_size = (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float);
+	cl_kernel clKernel = (isSeparated ? separatedKernel : araiKernel);
 	errcode  = clSetKernelArg(clKernel, 0, sizeof(cl_mem), &d_odata);
 	errcode |= clSetKernelArg(clKernel, 1, sizeof(cl_mem), &d_idata);
 	errcode |= clSetKernelArg(clKernel, 2, sizeof(unsigned int), &size_x);
@@ -65,17 +74,16 @@ void processSomething(const char* kernelName, float* &h_idata, unsigned int size
 	// Retrieve result from device
 	oclAssert( clEnqueueReadBuffer(ocl->commandQueue, d_odata, CL_TRUE, 0, mem_size, h_idata, 0, NULL, NULL) );
 	
-	errcode = clReleaseKernel(clKernel);
 	errcode |= clReleaseMemObject(d_idata);
 	errcode |= clReleaseMemObject(d_odata);
 	errcode |= clReleaseMemObject(matrix_a);
 	oclAssert(errcode);
 }
 
-void OCL_DCT::separated(float* &matrix, size_t width, size_t height) {
-	processSomething("dct_separated", matrix, (unsigned int)width, (unsigned int)height, true);
+void OCL_DCT::separated(float* matrix, size_t width, size_t height) {
+	runOnGPU(true, matrix, (unsigned int)width, (unsigned int)height);
 }
 
-void OCL_DCT::arai(float* &matrix, size_t width, size_t height) {
-	processSomething("dct_arai", matrix, (unsigned int)width, (unsigned int)height, false);
+void OCL_DCT::arai(float* matrix, size_t width, size_t height) {
+	runOnGPU(false, matrix, (unsigned int)width, (unsigned int)height);
 }
