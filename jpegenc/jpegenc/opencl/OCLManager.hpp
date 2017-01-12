@@ -19,7 +19,7 @@ public:
 	cl_program program;
 	cl_command_queue commandQueue;
 	
-	OCLManager(const char *clFile = NULL); // no file required, just to print the devices ;)
+	OCLManager(const char *clFile);
 	
 	~OCLManager() {
 		free(deviceList);
@@ -28,7 +28,7 @@ public:
 		clReleaseCommandQueue(commandQueue);
 	};
 	
-	void printDevices();
+	static void printDevices();
 	
 	static void setPreferedGPU(int gpu);
 	static void forceNvidiaPlatform(bool f);

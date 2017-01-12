@@ -194,23 +194,27 @@ cl_device_id getMaxFlopsDevice(cl_device_id* list, cl_uint count) {
 // #
 // ################################################################
 
-OCLManager::OCLManager(const char *path) {
+cl_uint getPreferedDevice(cl_device_id* device, cl_device_id** list, cl_context* context) {
+	cl_uint n;
 	// Create context and get device list
 	if (GPU_SETTINGS::forceNvidiaPlatform)
-		deviceCount = getContextAndDevices(&context, &deviceList);
+		n = getContextAndDevices(context, list);
 	else
-		deviceCount = getDevicesList(&context, &deviceList);
+		n = getDevicesList(context, list);
 	
 	// select specific device
-	if (GPU_SETTINGS::preferedGPU >= 0 && GPU_SETTINGS::preferedGPU < deviceCount)
-		device = deviceList[GPU_SETTINGS::preferedGPU];
+	if (GPU_SETTINGS::preferedGPU >= 0 && GPU_SETTINGS::preferedGPU < n)
+		*device = *list[GPU_SETTINGS::preferedGPU];
 	else
-		device = getMaxFlopsDevice(deviceList, deviceCount);
+		*device = getMaxFlopsDevice(*list, n);
 	
+	return n;
+}
+
+OCLManager::OCLManager(const char *path) {
+	deviceCount = getPreferedDevice(&device, &deviceList, &context);
 	// Compile program
-	if (path)
-		program = loadProgram(path, context);
-	
+	program = loadProgram(path, context);
 	// Create a command-queue
 	cl_int errcode = CL_SUCCESS;
 	commandQueue = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &errcode);
@@ -218,9 +222,16 @@ OCLManager::OCLManager(const char *path) {
 }
 
 void OCLManager::printDevices() {
+	cl_context context;
+	cl_device_id device;
+	cl_device_id* deviceList;
+	cl_uint n = getPreferedDevice(&device, &deviceList, &context);
+	clReleaseContext(context);
+	
+	// Print devices
 	printf("Devices:\n");
 	char device_string[1024];
-	for (int i = 0; i < deviceCount; i++) {
+	for (int i = 0; i < n; i++) {
 		cl_uint compute_units, clock_frequency;
 		cl_ulong gpu_mem_size;
 		
@@ -236,6 +247,7 @@ void OCLManager::printDevices() {
 		printf("[%d]: %s (%d compute units, %llumb, %dMhz)\n",
 			   i, device_string, compute_units, (gpu_mem_size/1024/1024), clock_frequency);
 	}
+	free(deviceList);
 	printf("\n");
 }
 

@@ -133,7 +133,7 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 	size_t size = width * height;
 	float* vls = new float[size];
 	
-	OCLManager().printDevices();
+	OCLManager::printDevices();
 	copyArray(vls, matrix, size);
 	OCL_DCT::separated(vls, width, height); // once to init static var ocl
 	
