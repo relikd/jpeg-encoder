@@ -25,6 +25,17 @@ static cl_kernel separatedKernel;
 inline void initDCT() {
 	cl_int errcode = CL_SUCCESS;
 	ocl = new OCLManager("../jpegenc/opencl/arai.cl");
+	
+	// Check wether the device can handle the cl program
+	cl_uint dimensions;
+	clGetDeviceInfo(ocl->device, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS, sizeof(cl_uint), &dimensions, NULL);
+	size_t* workSize = new size_t[dimensions];
+	clGetDeviceInfo(ocl->device, CL_DEVICE_MAX_WORK_ITEM_SIZES, dimensions * sizeof(size_t), workSize, NULL);
+	if (workSize[0] < BLOCK_DIM || workSize[1] < BLOCK_DIM) {
+		fputs("Error: Device doesn't support a local worksize of 8x8 which is required for the cl kernel\n", stderr);
+		exit(EXIT_FAILURE);
+	}
+	
 	// Create kernels
 	araiKernel = clCreateKernel(ocl->program, "dct_arai", &errcode);
 	oclAssert(errcode);

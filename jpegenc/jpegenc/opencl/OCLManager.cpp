@@ -2,17 +2,18 @@
 #include "oclAssert.h"
 #include <cstring>
 
-static const cl_device_type deviceTypes = CL_DEVICE_TYPE_DEFAULT | CL_DEVICE_TYPE_GPU | CL_DEVICE_TYPE_ACCELERATOR;
-
-
 namespace GPU_SETTINGS {
 	static int preferedGPU = -1;
-	static bool forceNvidiaPlatform = false;
+	static bool forceNvidiaPlatform = true;
+	static cl_device_type deviceType = CL_DEVICE_TYPE_ALL;
 }
 
 void OCLManager::setPreferedGPU(int gpu) { GPU_SETTINGS::preferedGPU = gpu; }
-void OCLManager::forceNvidiaPlatform(bool f) { GPU_SETTINGS::forceNvidiaPlatform = f; }
 
+
+static void contextCallback(const char* errinfo, const void* /*private_info*/, size_t /*cb*/, void* /*user_data*/) {
+	printf("%s\n", errinfo);
+}
 
 #pragma mark - Compile Program
 
@@ -56,7 +57,7 @@ cl_program loadProgram(const char *path, cl_context &theContext) {
 	size_t program_length;
 	char *source = loadFileContent(path, &program_length);
 	if (source == NULL) {
-		fputs("Couldn't open OpenCL source file\n", stderr);
+		printf("Couldn't open OpenCL source file '%s'\n", path);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -138,7 +139,7 @@ cl_uint getContextAndDevices(cl_context* theContext, cl_device_id** theDevices) 
 	
 	//Create the context
 	cl_int errcode;
-	*theContext = clCreateContext(0, uiNumDevices, *theDevices, NULL, NULL, &errcode);
+	*theContext = clCreateContext(0, uiNumDevices, *theDevices, contextCallback, NULL, &errcode);
 	oclAssert(errcode);
 	
 	return uiNumDevices;
@@ -146,7 +147,7 @@ cl_uint getContextAndDevices(cl_context* theContext, cl_device_id** theDevices) 
 
 cl_uint getDevicesList(cl_context* context, cl_device_id** list) {
 	cl_int errcode;
-	*context = clCreateContextFromType(0, deviceTypes, NULL, NULL, &errcode);
+	*context = clCreateContextFromType(0, GPU_SETTINGS::deviceType, contextCallback, NULL, &errcode);
 	oclAssert(errcode);
 	
 	size_t dataBytes;
@@ -204,7 +205,7 @@ cl_uint getPreferedDevice(cl_device_id* device, cl_device_id** list, cl_context*
 	
 	// select specific device
 	if (GPU_SETTINGS::preferedGPU >= 0 && GPU_SETTINGS::preferedGPU < n)
-		*device = *list[GPU_SETTINGS::preferedGPU];
+		*device = (*list)[GPU_SETTINGS::preferedGPU];
 	else
 		*device = getMaxFlopsDevice(*list, n);
 	
@@ -249,5 +250,43 @@ void OCLManager::printDevices() {
 	}
 	free(deviceList);
 	printf("\n");
+}
+
+void OCLManager::askUserToSelectGPU() {
+	GPU_SETTINGS::forceNvidiaPlatform = false;
+	
+	printDevices();
+	unsigned char gpu;
+	printf("Select Device: ");
+	scanf("%c", &gpu);
+	
+	GPU_SETTINGS::preferedGPU = (gpu - 48); // char to int
+	
+	cl_context context;
+	cl_device_id correctDevice;
+	cl_device_id* deviceList;
+	getPreferedDevice(&correctDevice, &deviceList, &context);
+	free(deviceList);
+	clReleaseContext(context);
+	
+	cl_device_type type;
+	clGetDeviceInfo(correctDevice, CL_DEVICE_TYPE, sizeof(cl_device_type), &type, NULL);
+	
+	// avoid devices with multiple types
+	if (type & CL_DEVICE_TYPE_CUSTOM)            GPU_SETTINGS::deviceType = CL_DEVICE_TYPE_CUSTOM;
+	else if (type & CL_DEVICE_TYPE_ACCELERATOR)  GPU_SETTINGS::deviceType = CL_DEVICE_TYPE_ACCELERATOR;
+	else if (type & CL_DEVICE_TYPE_GPU)          GPU_SETTINGS::deviceType = CL_DEVICE_TYPE_GPU;
+	else if (type & CL_DEVICE_TYPE_CPU)          GPU_SETTINGS::deviceType = CL_DEVICE_TYPE_CPU;
+	else                                         GPU_SETTINGS::deviceType = CL_DEVICE_TYPE_DEFAULT;
+	
+	// Retrive the context a second time, to get the device-type specific list (and index)
+	GPU_SETTINGS::preferedGPU = 0;
+	cl_device_id wrongDevice;
+	cl_uint n = getPreferedDevice(&wrongDevice, &deviceList, &context);
+	while (n--) {
+		if (deviceList[n] == correctDevice) {
+			GPU_SETTINGS::preferedGPU = n;
+		}
+	}
 }
 

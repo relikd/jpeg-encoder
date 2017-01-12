@@ -30,8 +30,8 @@ public:
 	
 	static void printDevices();
 	
+	static void askUserToSelectGPU();
 	static void setPreferedGPU(int gpu);
-	static void forceNvidiaPlatform(bool f);
 };
 
 #endif /* OCLManager_hpp */
