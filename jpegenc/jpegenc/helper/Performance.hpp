@@ -5,7 +5,7 @@
 #include <chrono>
 
 #define PerformancePrintOperationsPerSecond(__desc, __time, __count) \
-printf("Testing <%s> took %lf seconds with %lu iterations (%lfms per operation)\n", __desc, __time, __count, (__time / __count) * 1000);
+printf("Testing <%s> took %lf seconds with %lu iterations (%lfms per operation)\n", __desc, __time, (unsigned long)__count, (__time / __count) * 1000);
 
 
 class Timer {

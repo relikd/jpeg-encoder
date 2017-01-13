@@ -19,13 +19,11 @@
 // |
 //  ---------------------------------------------------------------
 
-#pragma mark - Helper
-
 float* createTestMatrix(size_t width, size_t height) {
 	float *data = new float[width * height];
 	for (size_t y = 0; y < height; y++) {
 		for (size_t x = 0; x < width; x++) {
-			data[y * width + x]= (x+y*8) % 256;
+			data[y * width + x]= (float)((x+y*8) % 256);
 		}
 	}
 	return data; // remember to delete[]
@@ -68,7 +66,7 @@ inline void copyArray(float* dst, float* src, size_t size) {
 //	}
 }
 
-void check(const char* desc, float* originalMatrix, size_t width, size_t height, std::function<float*(float*)> func) {
+void verify(const char* desc, float* originalMatrix, size_t width, size_t height, std::function<float*(float*)> func) {
 	size_t size = width * height;
 	float *vls = new float[size];
 	copyArray(vls, originalMatrix, size);
@@ -99,13 +97,11 @@ void check(const char* desc, float* originalMatrix, size_t width, size_t height,
 	delete [] out;
 }
 
-//  ---------------------------------------------------------------
-// |
-// |  Performance
-// |
-//  ---------------------------------------------------------------
-
-#pragma mark - CPU - Single Core
+// ################################################################
+// #
+// #  CPU - Single Core
+// #
+// ################################################################
 
 void runCPUSingleCore(float* &matrix, size_t width, size_t height, double seconds) {
 	size_t size = width * height;
@@ -136,7 +132,11 @@ void runCPUSingleCore(float* &matrix, size_t width, size_t height, double second
 	delete [] vls;
 }
 
-#pragma mark - CPU - Multi Core
+// ################################################################
+// #
+// #  CPU - Multi Core
+// #
+// ################################################################
 
 void runCPUMultiCore(float* &matrix, size_t width, size_t height, double seconds) {
 	size_t size = width * height;
@@ -167,108 +167,66 @@ void runCPUMultiCore(float* &matrix, size_t width, size_t height, double seconds
 	delete [] vls;
 }
 
-#pragma mark - GPU
+// ################################################################
+// #
+// #  GPU
+// #
+// ################################################################
 
-void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
-	size_t size = width * height;
-	float* vls = new float[size];
-	
-	OCLManager::printDevices();
-	copyArray(vls, matrix, size);
-	OCL_DCT::separated(vls, width, height); // once to init static var ocl
-	
+void testGPUSingleFunction(const char* desc, float* matrix, size_t width, size_t height, double seconds, gpu_function func) {
+	float* vls = new float[width * height];
+	copyArray(vls, matrix, width * height);
+	size_t iterations = 0;
 	Timer t;
-	double time;
-	size_t iterations;
-	
-	// BEGIN: "Normal DCT (Single Image)"
-	{
-		copyArray(vls, matrix, size);
-		iterations = 0;
-		t.reset();
-		while (t.elapsed() < seconds) {
-			OCL_DCT::normal(vls, width, height);
-			++iterations;
-		}
-		time = t.elapsed();
-		PerformancePrintOperationsPerSecond("Normal DCT (Single Image)", time, iterations);
+	while (t.elapsed() < seconds) {
+		func(vls, width, height);
+		++iterations;
 	}
-	
-	// BEGIN: "Separated DCT (Single Image)"
-	{
-		copyArray(vls, matrix, size);
-		iterations = 0;
-		t.reset();
-		while (t.elapsed() < seconds) {
-			OCL_DCT::separated(vls, width, height);
-			++iterations;
+	double time = t.elapsed();
+	PerformancePrintOperationsPerSecond(desc, time, iterations);
+}
+
+void testGPUComposer(const char* desc, float* matrix, size_t width, size_t height, double seconds, gpu_function func, bool varSize) {
+	float* vls = new float[width * height];
+	copyArray(vls, matrix, width * height);
+	GPUComposer composer = GPUComposer(func, varSize);
+	size_t iterations = 0;
+	Timer t;
+	while (t.elapsed() < seconds) {
+		if (composer.add(vls, width, height)) {
+			composer.flush(); // send to GPU
+			iterations += composer.cacheInfo.size();
+			// do something with the data
 		}
-		time = t.elapsed();
-		PerformancePrintOperationsPerSecond("Separated DCT (Single Image)", time, iterations);
 	}
-	
-	// BEGIN: "Arai (Single Image)"
-	{
-		copyArray(vls, matrix, size);
-		iterations = 0;
-		t.reset();
-		while (t.elapsed() < seconds) {
-			OCL_DCT::arai(vls, width, height);
-			++iterations;
-		}
-		time = t.elapsed();
-		PerformancePrintOperationsPerSecond("Arai (Single Image)", time, iterations);
-	}
-	
-	// BEGIN: "Separated (Composer, var. Size)"
-	{
-		copyArray(vls, matrix, size);
-		GPUComposer c1 = GPUComposer(OCL_DCT::separated, false);
-		iterations = 0;
-		t.reset();
-		while (t.elapsed() < seconds) {
-			if (c1.add(vls, width, height)) {
-				c1.flush(); // send to GPU
-				iterations += c1.cacheInfo.size();
-				// do something with the data
-				// c1.cacheInfo[i], c1.cache
-			}
-		}
-		c1.flush(); // send remaining images to GPU
-		iterations += c1.cacheInfo.size();
-		time = t.elapsed();
-		PerformancePrintOperationsPerSecond("Separated (Composer, var. Size)", time, iterations);
-	}
-	
-	// BEGIN: "Separated (Composer, Same Size)"
-	{
-		copyArray(vls, matrix, size);
-		GPUComposer c2 = GPUComposer(OCL_DCT::separated, true);
-		iterations = 0;
-		t.reset();
-		while (t.elapsed() < seconds) {
-			if (c2.add(vls, width, height)) {
-				c2.flush(); // send to GPU
-				iterations += c2.cacheInfo.size();
-				// do something with the data
-			}
-		}
-		c2.flush(); // send remaining images to GPU
-		iterations += c2.cacheInfo.size();
-		time = t.elapsed();
-		PerformancePrintOperationsPerSecond("Separated (Composer, Same Size)", time, iterations);
-	}
-	
+	composer.flush(); // send remaining images to GPU
+	iterations += composer.cacheInfo.size();
+	double time = t.elapsed();
+	PerformancePrintOperationsPerSecond(desc, time, iterations);
 	delete [] vls;
 }
 
-//  ---------------------------------------------------------------
-// |
-// |  Main
-// |
-//  ---------------------------------------------------------------
+void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
+	OCLManager::printDevices();
+	
+	float* vls = new float[width * height];
+	copyArray(vls, matrix, width * height);
+	OCL_DCT::separated(vls, width, height); // once to init static var ocl
+	delete [] vls;
+	
+	testGPUSingleFunction("Normal DCT (Single Image)", matrix, width, height, seconds, OCL_DCT::normal);
+	testGPUSingleFunction("Separated DCT (Single Image)", matrix, width, height, seconds, OCL_DCT::separated);
+	testGPUSingleFunction("Arai (Single Image)", matrix, width, height, seconds, OCL_DCT::arai);
+	
+	testGPUComposer("Separated (Composer, var. Size)", matrix, width, height, seconds, OCL_DCT::separated, false);
+	testGPUComposer("Separated (Composer, Same Size)", matrix, width, height, seconds, OCL_DCT::separated, true);
+}
 
-#pragma mark - Class methods
+// ################################################################
+// #
+// #  Main
+// #
+// ################################################################
 
 void SpeedContest::run(double seconds, bool skipCPU, bool skipGPU) {
 	size_t width = 256, height = 256;
@@ -292,6 +250,12 @@ void SpeedContest::run(double seconds, bool skipCPU, bool skipGPU) {
 	
 	delete [] matrix;
 }
+
+// ################################################################
+// #
+// #  Correctness Test
+// #
+// ################################################################
 
 void SpeedContest::testForCorrectness(bool ourTestMatrix, bool use16x16, bool modifyData) {
 	size_t width = 8, height = 8;
@@ -317,32 +281,32 @@ void SpeedContest::testForCorrectness(bool ourTestMatrix, bool use16x16, bool mo
 	printf("------------------------------------------------------------------------\n");
 	
 	float *out = new float[width * height];
-	check("DCT Normal", matrix, width, height, [&](float* mat){
+	verify("DCT Normal", matrix, width, height, [&](float* mat){
 		DCT::transform(mat, out, width, height); return out;
 	});
 	delete [] out;
 	
-	check("DCT Separated", matrix, width, height, [&](float* mat){
+	verify("DCT Separated", matrix, width, height, [&](float* mat){
 		DCT::transform2(mat, width, height); return mat;
 	});
-	check("Arai", matrix, width, height, [&](float* mat){
+	verify("Arai", matrix, width, height, [&](float* mat){
 		Arai::transform(mat, width, height); return mat;
 	});
-	check("Arai Inline Transpose", matrix, width, height, [&](float* mat){
+	verify("Arai Inline Transpose", matrix, width, height, [&](float* mat){
 		Arai::transformInlineTranspose(mat, width, height); return mat;
 	});
-	check("GPU Normal", matrix, width, height, [&](float* mat){
+	verify("GPU Normal", matrix, width, height, [&](float* mat){
 		OCL_DCT::normal(mat, width, height); return mat;
 	});
-	check("GPU Separated", matrix, width, height, [&](float* mat){
+	verify("GPU Separated", matrix, width, height, [&](float* mat){
 		OCL_DCT::separated(mat, width, height); return mat;
 	});
-	check("GPU Arai", matrix, width, height, [&](float* mat){
+	verify("GPU Arai", matrix, width, height, [&](float* mat){
 		OCL_DCT::arai(mat, width, height); return mat;
 	});
 	
 	GPUComposer c = GPUComposer(OCL_DCT::separated, true); // with different sizes
-	check("GPU Composer", matrix, width, height, [&](float* mat){
+	verify("GPU Composer", matrix, width, height, [&](float* mat){
 		c.add(mat, width, height);
 		c.add(mat, width, height);
 		c.flush(); // send to GPU
