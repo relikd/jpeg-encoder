@@ -269,7 +269,7 @@ void OCLManager::askUserToSelectGPU() {
 	unsigned char gpu;
 	printf("Select Device: ");
 #ifdef _WIN32
-	scanf_s("%c", &gpu);
+	scanf_s("%c", &gpu, 2);
 #else
 	scanf("%c", &gpu);
 #endif
