@@ -11,7 +11,7 @@ namespace GPU_SETTINGS {
 void OCLManager::setPreferedGPU(int gpu) { GPU_SETTINGS::preferedGPU = gpu; }
 
 
-static void contextCallback(const char* errinfo, const void* /*private_info*/, size_t /*cb*/, void* /*user_data*/) {
+void CL_CALLBACK contextCallback(const char* errinfo, const void* /*private_info*/, size_t /*cb*/, void* /*user_data*/) {
 	printf("%s\n", errinfo);
 }
 
@@ -268,7 +268,11 @@ void OCLManager::askUserToSelectGPU() {
 	printDevices();
 	unsigned char gpu;
 	printf("Select Device: ");
+#ifdef _WIN32
+	scanf_s("%c", &gpu);
+#else
 	scanf("%c", &gpu);
+#endif
 	
 	GPU_SETTINGS::preferedGPU = (gpu - 48); // char to int
 	

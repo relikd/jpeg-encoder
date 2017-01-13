@@ -215,7 +215,7 @@ int main(int argc, const char *argv[]) {
 			if (strncmp(param, "-valid", 6) == 0) // -valid111 (three 1 for three bool parameter)
 			{
 				long validateParam = strtol(param + 6, NULL, 2);
-				SpeedContest::testForCorrectness(validateParam & 1, validateParam & 2, validateParam & 4);
+				SpeedContest::testForCorrectness((bool)(validateParam & 1), (bool)(validateParam & 2), (bool)(validateParam & 4));
 				exit(EXIT_SUCCESS);
 			}
 			else if (strncmp(param, "-gpu", 4) == 0) // -gpu0, -gpu1, -gpu = show list for selection
