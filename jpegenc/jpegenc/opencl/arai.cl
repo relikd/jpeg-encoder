@@ -135,8 +135,8 @@ __constant float cos_2x1iPi_2N[8][8] = { // cos( (2x + 1)iπ / 2N )
 
 __kernel void dct_normal(__global float *odata, __global float *idata, unsigned int width)
 {
-	unsigned int localX = get_global_id(0) & 0b111;
-	unsigned int localY = get_global_id(1) & 0b111;
+	unsigned int localX = get_global_id(0) & 7;
+	unsigned int localY = get_global_id(1) & 7;
 	unsigned int blockOffset = (get_global_id(1) - localY) * width + (get_global_id(0) - localX);
 	
 	float inner = 0;

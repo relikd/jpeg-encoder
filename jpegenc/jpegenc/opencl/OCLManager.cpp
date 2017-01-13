@@ -216,6 +216,16 @@ OCLManager::OCLManager(const char *path) {
 	deviceCount = getPreferedDevice(&device, &deviceList, &context);
 	// Compile program
 	program = loadProgram(path, context);
+	if (program == 0) {
+		// write out the build log
+		size_t len = 0;
+		clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, 0, NULL, &len );
+		char* log = new char[len];
+		clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, len * sizeof(char), log, NULL );
+		printf("\n-------------------------------------\nBuild Log:\n%s\n-------------------------------------\n", log);
+		free(log);
+		exit(EXIT_FAILURE);
+	}
 	// Create a command-queue
 	cl_int errcode = CL_SUCCESS;
 	commandQueue = clCreateCommandQueue(context, device, CL_QUEUE_PROFILING_ENABLE, &errcode);
