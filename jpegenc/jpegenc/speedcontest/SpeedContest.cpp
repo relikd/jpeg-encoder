@@ -1,6 +1,7 @@
 #include "SpeedContest.hpp"
 #include <stdlib.h>
 #include <thread>
+#include <math.h>
 #include "../helper/Performance.hpp"
 #include "../dct/Arai.hpp"
 #include "../dct/DCT.hpp"
@@ -17,6 +18,8 @@
 // |  Helper
 // |
 //  ---------------------------------------------------------------
+
+#pragma mark - Helper
 
 float* createTestMatrix(size_t width, size_t height) {
 	float *data = new float[width * height];
@@ -65,11 +68,44 @@ inline void copyArray(float* dst, float* src, size_t size) {
 //	}
 }
 
+void check(const char* desc, float* originalMatrix, size_t width, size_t height, std::function<float*(float*)> func) {
+	size_t size = width * height;
+	float *vls = new float[size];
+	copyArray(vls, originalMatrix, size);
+	float *result = func(vls);
+	
+	printf("\n%s\n", desc);
+	printFloatMatrix(result, width, height);
+	printf("------------------------------------------------------------> ");
+	
+	// Check if result is correct
+	bool inverseIsCorrect = true;
+	float *out = new float[size];
+	DCT::inverse(result, out, width, height);
+	while (size--) {
+		if (fabsf(originalMatrix[size] - out[size]) > 0.0005F )
+			inverseIsCorrect = false;
+	}
+	delete [] vls;
+	
+	// Break on Error
+	if (inverseIsCorrect) {
+		printf("Inverse: CORRECT\n");
+	} else {
+		printf("Inverse: FAILED\nInverse:\n");
+		printFloatMatrix(out, width, height);
+		exit(EXIT_FAILURE);
+	}
+	delete [] out;
+}
+
 //  ---------------------------------------------------------------
 // |
 // |  Performance
 // |
 //  ---------------------------------------------------------------
+
+#pragma mark - CPU - Single Core
 
 void runCPUSingleCore(float* &matrix, size_t width, size_t height, double seconds) {
 	size_t size = width * height;
@@ -100,6 +136,8 @@ void runCPUSingleCore(float* &matrix, size_t width, size_t height, double second
 	delete [] vls;
 }
 
+#pragma mark - CPU - Multi Core
+
 void runCPUMultiCore(float* &matrix, size_t width, size_t height, double seconds) {
 	size_t size = width * height;
 	float* vls = new float[size];
@@ -128,6 +166,8 @@ void runCPUMultiCore(float* &matrix, size_t width, size_t height, double seconds
 	
 	delete [] vls;
 }
+
+#pragma mark - GPU
 
 void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 	size_t size = width * height;
@@ -228,6 +268,8 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 // |
 //  ---------------------------------------------------------------
 
+#pragma mark - Class methods
+
 void SpeedContest::run(double seconds, bool skipCPU, bool skipGPU) {
 	size_t width = 256, height = 256;
 	float *matrix = createTestMatrix(width, height); // (x+y*8) % 256;
@@ -256,14 +298,10 @@ void SpeedContest::testForCorrectness(bool ourTestMatrix, bool use16x16, bool mo
 	if (use16x16) {
 		width = 16; height = 16;
 	}
-	size_t size = width * height;
-	float* matrix;
 	
-	if (ourTestMatrix) {
-		matrix = createOurTestMatrix(width, height); // 1, 7, 3, 4, 5, 4, 3, 2
-	} else {
-		matrix = createTestMatrix(width, height);
-	}
+	float* matrix = ( ourTestMatrix
+					 ? createOurTestMatrix(width, height) // 1, 7, 3, 4, 5, 4, 3, 2
+					 : createTestMatrix(width, height) );
 	
 	if (use16x16 && modifyData) {
 		// modify some values to get different results, especially for 16 x 16
@@ -273,80 +311,47 @@ void SpeedContest::testForCorrectness(bool ourTestMatrix, bool use16x16, bool mo
 		matrix[2*width + 1] = 8;
 		matrix[12*width + 1] = 1;
 	}
-
-	
-	float *vls = new float[width * height];
-	float *out = new float[width * height];
 	
 	printf("\nInput:\n");
 	printFloatMatrix(matrix, width, height);
 	printf("------------------------------------------------------------------------\n");
 	
-	copyArray(vls, matrix, size);
+	float *out = new float[width * height];
+	check("DCT Normal", matrix, width, height, [&](float* mat){
+		DCT::transform(mat, out, width, height); return out;
+	});
+	delete [] out;
 	
-	// normal
-	printf("\nDCT Normal:\n");
-	DCT::transform(vls, out, width, height);
-	printFloatMatrix(out, width, height);
-	printf("------------------------------------------------------------------------\n");
+	check("DCT Separated", matrix, width, height, [&](float* mat){
+		DCT::transform2(mat, width, height); return mat;
+	});
+	check("Arai", matrix, width, height, [&](float* mat){
+		Arai::transform(mat, width, height); return mat;
+	});
+	check("Arai Inline Transpose", matrix, width, height, [&](float* mat){
+		Arai::transformInlineTranspose(mat, width, height); return mat;
+	});
+	check("GPU Normal", matrix, width, height, [&](float* mat){
+		OCL_DCT::normal(mat, width, height); return mat;
+	});
+	check("GPU Separated", matrix, width, height, [&](float* mat){
+		OCL_DCT::separated(mat, width, height); return mat;
+	});
+	check("GPU Arai", matrix, width, height, [&](float* mat){
+		OCL_DCT::arai(mat, width, height); return mat;
+	});
 	
-	copyArray(vls, matrix, size);
-	
-	// separated
-	printf("\nDCT Separated:\n");
-	DCT::transform2(vls, width, height);
-	printFloatMatrix(vls, width, height);
-	printf("------------------------------------------------------------------------\n");
-	
-	copyArray(vls, matrix, size);
-	
-	// arai
-	printf("\nArai:\n");
-	Arai::transform(vls, width, height);
-	printFloatMatrix(vls, width, height);
-	printf("------------------------------------------------------------------------\n");
-	
-	copyArray(vls, matrix, size);
-	
-	// arai inline transpose
-	printf("\nArai Inline Transpose:\n");
-	Arai::transformInlineTranspose(vls, width, height);
-	printFloatMatrix(vls, width, height);
-	printf("------------------------------------------------------------------------\n");
-	
-	copyArray(vls, matrix, size);
-	
-	// GPU arai
-	printf("\nGPU Arai:\n");
-	OCL_DCT::arai(vls, width, height);
-	printFloatMatrix(vls, width, height);
-	printf("------------------------------------------------------------------------\n");
-	
-	copyArray(vls, matrix, size);
-	
-	// GPU separated
-	printf("\nGPU Separated:\n");
-	OCL_DCT::separated(vls, width, height);
-	printFloatMatrix(vls, width, height);
-	printf("------------------------------------------------------------------------\n");
-	
-	copyArray(vls, matrix, size);
-	
-	// GPU Composer
-	printf("\nGPU Composer:\n");
 	GPUComposer c = GPUComposer(OCL_DCT::separated, true); // with different sizes
-	c.add(vls, width, height);
-	c.add(vls, width, height);
-	c.flush(); // send to GPU
-	float* dataPtr = &c.cache[c.cacheInfo[1].offset];
-	printFloatMatrix(dataPtr, c.cacheInfo[1].width, c.cacheInfo[1].height);
-	printf("------------------------------------------------------------------------\n");
+	check("GPU Composer", matrix, width, height, [&](float* mat){
+		c.add(mat, width, height);
+		c.add(mat, width, height);
+		c.flush(); // send to GPU
+		float* dataPtr = &c.cache[c.cacheInfo[1].offset];
+		return dataPtr;
+	});
 	
 	printf("\nInverse:\n");
 	DCT::inverse(c.cache, out, width, height);
 	printFloatMatrix(out, width, height);
-	printf("------------------------------------------------------------------------\n");
-	
-	delete [] out;
-	delete [] vls;
+	printf("-----------------------------------------------------------------> ALL CORRECT\n");
 }
