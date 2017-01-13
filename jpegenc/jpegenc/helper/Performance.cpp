@@ -112,7 +112,7 @@ void Performance::time(std::function<void()> func) {
  * @param rounds Multiple rounds will increase the chance for a better time
  * @param func Lambda expression or Functor class to be profiled (simply use \a[&]{code} )
  */
-void Performance::repeat(const unsigned long iterations, const unsigned long rounds, std::function<void(size_t numberOfElements)> func) {
+void Performance::repeat(const unsigned long iterations, const unsigned long rounds, std::function<void(unsigned long numberOfElements)> func) {
 	size_t r = rounds;
 	
 	double fastest = DBL_MAX;
