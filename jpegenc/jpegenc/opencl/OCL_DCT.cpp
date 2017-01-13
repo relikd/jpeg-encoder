@@ -7,17 +7,6 @@
 static const size_t localWorkSize[2] = {BLOCK_DIM, BLOCK_DIM};
 const size_t local_mem_size = (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float);
 
-static const float* oclMatrixA = new float[64] {
-	0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,
-	0.490392640201615215289621119154617190361022949218750000F,  0.415734806151272617835701339572551660239696502685546875F,  0.277785116509801144335511935423710383474826812744140625F,  0.097545161008064151797469776283833198249340057373046875F, -0.097545161008064096286318545026006177067756652832031250F, -0.277785116509800977802058241650229319930076599121093750F, -0.415734806151272673346852570830378681421279907226562500F, -0.490392640201615215289621119154617190361022949218750000F,
-	0.461939766255643369241568052530055865645408630371093750F,  0.191341716182544918645191955874906852841377258300781250F, -0.191341716182544863134040724617079831659793853759765625F, -0.461939766255643369241568052530055865645408630371093750F, -0.461939766255643369241568052530055865645408630371093750F, -0.191341716182545168445372496535128448158502578735351562F,  0.191341716182545001911918802761647384613752365112304688F,  0.461939766255643258219265590014401823282241821289062500F,
-	0.415734806151272617835701339572551660239696502685546875F, -0.097545161008064096286318545026006177067756652832031250F, -0.490392640201615215289621119154617190361022949218750000F, -0.277785116509801088824360704165883362293243408203125000F,  0.277785116509800922290907010392402298748493194580078125F,  0.490392640201615215289621119154617190361022949218750000F,  0.097545161008064387719862509129598038271069526672363281F, -0.415734806151272562324550108314724639058113098144531250F,
-	0.353553390593273786368655464684707112610340118408203125F, -0.353553390593273730857504233426880091428756713867187500F, -0.353553390593273841879806695942534133791923522949218750F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273841879806695942534133791923522949218750F, -0.353553390593273342279445614622090943157672882080078125F, -0.353553390593273619835201770911226049065589904785156250F,  0.353553390593273286768294383364263921976089477539062500F,
-	0.277785116509801144335511935423710383474826812744140625F, -0.490392640201615215289621119154617190361022949218750000F,  0.097545161008064137919681968469376442953944206237792969F,  0.415734806151272784369155033346032723784446716308593750F, -0.415734806151272562324550108314724639058113098144531250F, -0.097545161008064013019591698139265645295381546020507812F,  0.490392640201615326311923581670271232724189758300781250F, -0.277785116509800755757453316618921235203742980957031250F,
-	0.191341716182544918645191955874906852841377258300781250F, -0.461939766255643369241568052530055865645408630371093750F,  0.461939766255643258219265590014401823282241821289062500F, -0.191341716182544918645191955874906852841377258300781250F, -0.191341716182545279467674959050782490521669387817382812F,  0.461939766255643369241568052530055865645408630371093750F, -0.461939766255643147196963127498747780919075012207031250F,  0.191341716182544779867313877730339299887418746948242188F,
-	0.097545161008064151797469776283833198249340057373046875F, -0.277785116509801088824360704165883362293243408203125000F,  0.415734806151272784369155033346032723784446716308593750F, -0.490392640201615326311923581670271232724189758300781250F,  0.490392640201615215289621119154617190361022949218750000F, -0.415734806151272506813398877056897617876529693603515625F,  0.277785116509800755757453316618921235203742980957031250F, -0.097545161008064276697560046613943995907902717590332031F
-};
-
 static OCLManager* ocl = nullptr;
 static cl_kernel araiKernel;
 static cl_kernel separatedKernel;
@@ -43,7 +32,7 @@ inline void initDCT() {
 	oclAssert(errcode);
 }
 
-void runOnGPU(const bool isSeparated, float* h_idata, unsigned int size_x, unsigned int size_y) {
+void OCL_DCT::separated(float* matrix, size_t size_x, size_t size_y) {
 	if (ocl == nullptr) {
 		initDCT();
 	}
@@ -52,49 +41,73 @@ void runOnGPU(const bool isSeparated, float* h_idata, unsigned int size_x, unsig
 	const size_t mem_size = sizeof(float) * size_x * size_y;
 	
 	// Setup device memory
-	cl_mem d_idata = clCreateBuffer(ocl->context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, mem_size, h_idata, &errcode);
+	cl_mem d_idata = clCreateBuffer(ocl->context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, mem_size, matrix, &errcode);
 	oclAssert(errcode);
 	cl_mem d_odata = clCreateBuffer(ocl->context, CL_MEM_WRITE_ONLY, mem_size, NULL, &errcode);
 	oclAssert(errcode);
-	cl_mem matrix_a = clCreateBuffer(ocl->context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, sizeof(float) * 64, (float*)oclMatrixA, &errcode);
-	oclAssert(errcode);
 	
 	// Set parameter values on device
-	cl_kernel clKernel = (isSeparated ? separatedKernel : araiKernel);
-	errcode  = clSetKernelArg(clKernel, 0, sizeof(cl_mem), &d_odata);
-	errcode |= clSetKernelArg(clKernel, 1, sizeof(cl_mem), &d_idata);
-	errcode |= clSetKernelArg(clKernel, 2, sizeof(unsigned int), &size_x);
-	errcode |= clSetKernelArg(clKernel, 3, sizeof(unsigned int), &size_y);
-	errcode |= clSetKernelArg(clKernel, 4, local_mem_size, 0 );
-	if (isSeparated) {
-		errcode |= clSetKernelArg(clKernel, 5, local_mem_size, 0 );
-		errcode |= clSetKernelArg(clKernel, 6, sizeof(cl_mem), &matrix_a);
-	}
+	errcode  = clSetKernelArg(separatedKernel, 0, sizeof(cl_mem), &d_odata);
+	errcode |= clSetKernelArg(separatedKernel, 1, sizeof(cl_mem), &d_idata);
+	errcode |= clSetKernelArg(separatedKernel, 2, sizeof(unsigned int), &size_x);
+	errcode |= clSetKernelArg(separatedKernel, 3, local_mem_size, 0 );
+	errcode |= clSetKernelArg(separatedKernel, 4, local_mem_size, 0 );
+	errcode |= clSetKernelArg(separatedKernel, 5, local_mem_size, 0 );
 	oclAssert(errcode);
 	
 	// set up execution configuration
-	size_t globalWorkSize[2];
-	globalWorkSize[0] = size_x;
-	globalWorkSize[1] = size_y;
+	size_t globalWorkSize[2] = {size_x, size_y};
 	
-	oclAssert( clEnqueueNDRangeKernel(ocl->commandQueue, clKernel, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL) );
+	oclAssert( clEnqueueNDRangeKernel(ocl->commandQueue, separatedKernel, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL) );
 	
 	// Block CPU till GPU is done
 	oclAssert( clFinish(ocl->commandQueue) );
 	
 	// Retrieve result from device
-	oclAssert( clEnqueueReadBuffer(ocl->commandQueue, d_odata, CL_TRUE, 0, mem_size, h_idata, 0, NULL, NULL) );
+	oclAssert( clEnqueueReadBuffer(ocl->commandQueue, d_odata, CL_TRUE, 0, mem_size, matrix, 0, NULL, NULL) );
 	
 	errcode |= clReleaseMemObject(d_idata);
 	errcode |= clReleaseMemObject(d_odata);
-	errcode |= clReleaseMemObject(matrix_a);
 	oclAssert(errcode);
 }
 
-void OCL_DCT::separated(float* matrix, size_t width, size_t height) {
-	runOnGPU(true, matrix, (unsigned int)width, (unsigned int)height);
+void OCL_DCT::arai(float* matrix, size_t size_x, size_t size_y) {
+	if (ocl == nullptr) {
+		initDCT();
+	}
+	
+	cl_int errcode = CL_SUCCESS;
+	const size_t mem_size = sizeof(float) * size_x * size_y;
+	
+	// Setup device memory
+	cl_mem d_idata = clCreateBuffer(ocl->context, CL_MEM_READ_WRITE | CL_MEM_COPY_HOST_PTR, mem_size, matrix, &errcode);
+	oclAssert(errcode);
+	cl_mem d_odata = clCreateBuffer(ocl->context, CL_MEM_READ_WRITE, mem_size, NULL, &errcode);
+	oclAssert(errcode);
+	
+	// set up execution configuration
+	size_t globalWorkSize[2] = {size_x, size_y};
+	
+	// Set parameter values on device
+	errcode  = clSetKernelArg(araiKernel, 0, sizeof(cl_mem), &d_odata);
+	errcode |= clSetKernelArg(araiKernel, 1, sizeof(cl_mem), &d_idata);
+	errcode |= clSetKernelArg(araiKernel, 2, sizeof(unsigned int), &size_x);
+	errcode |= clSetKernelArg(araiKernel, 3, local_mem_size, 0 );
+	oclAssert(errcode);
+	oclAssert( clEnqueueNDRangeKernel(ocl->commandQueue, araiKernel, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL) );
+	// requeue for col arai
+	errcode  = clSetKernelArg(araiKernel, 0, sizeof(cl_mem), &d_idata);
+	errcode |= clSetKernelArg(araiKernel, 1, sizeof(cl_mem), &d_odata);
+	oclAssert( clEnqueueNDRangeKernel(ocl->commandQueue, araiKernel, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL) );
+	
+	// Block CPU till GPU is done
+	oclAssert( clFinish(ocl->commandQueue) );
+	
+	// Retrieve result from device
+	oclAssert( clEnqueueReadBuffer(ocl->commandQueue, d_idata, CL_TRUE, 0, mem_size, matrix, 0, NULL, NULL) );
+	
+	errcode |= clReleaseMemObject(d_idata);
+	errcode |= clReleaseMemObject(d_odata);
+	oclAssert(errcode);
 }
 
-void OCL_DCT::arai(float* matrix, size_t width, size_t height) {
-	runOnGPU(false, matrix, (unsigned int)width, (unsigned int)height);
-}
