@@ -46,7 +46,12 @@ void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
 	char out[4096];
 	unsigned short idx = 0;
 	
-	FILE *f = fopen(pathToImage, "w");
+	FILE* f = NULL;
+#ifdef _WIN32
+	fopen_s(&f, pathToImage, "wb");
+#else
+	f = fopen(pathToImage, "wb");
+#endif
 	
 	//  HEADER
 	fwrite("P3\n# Created by Team Awesome\n", 1, 29, f);
@@ -120,7 +125,13 @@ inline color normalize(const unsigned int &inputValue, const unsigned int &maxVa
 
 void PPMLoader::readFileToMemory(const char *pathToImage) {
 	// fopen is used only to get the file size
-	FILE *fl = fopen(pathToImage, "r");
+	FILE* fl = NULL;
+#ifdef _WIN32
+	fopen_s(&fl, pathToImage, "rb");
+#else
+	fl = fopen(pathToImage, "rb");
+#endif
+	
 	fseek(fl, 0, SEEK_END);
 	filesize = ftell(fl);
 	

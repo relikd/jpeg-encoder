@@ -25,10 +25,10 @@ private:
 
 class Performance {
 public:
-	static void howManyOperationsInSeconds(double seconds, const char* description, std::function<void()> func, bool multiThreadingEnabled = false);
-	static void compareExecutionTime(size_t iterations, const char* description, std::function<void()> funcA, std::function<void()> funcB);
+	static void howManyOperationsInSeconds(const double seconds, const char* description, std::function<void()> func, bool multiThreadingEnabled = false);
+	static void compareExecutionTime(const unsigned long iterations, const char* description, std::function<void()> funcA, std::function<void()> funcB);
 	static void time(std::function<void()> func);
-	static void repeat(const size_t iterations, const size_t rounds, std::function<void(size_t numberOfElements)> func);
+	static void repeat(const unsigned long iterations, const unsigned long rounds, std::function<void(unsigned long numberOfElements)> func);
 };
 
 #endif /* Performance_hpp */

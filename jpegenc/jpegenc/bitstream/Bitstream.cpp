@@ -45,7 +45,7 @@ inline void Bitstream::upCountBits( const unsigned short amount ) {
 
 inline void Bitstream::downCountBits( const size_t amount ) {
 	if (amount <= bitIndex) {
-		bitIndex -= amount;
+		bitIndex -= (unsigned short)amount;
 		return; // pointer stays on the current Word
 	}
 	
@@ -84,7 +84,7 @@ bool Bitstream::read( const size_t idx ){
 //  ---------------------------------------------------------------
 
 void Bitstream::add( const bool bit ) {
-	*currentWord = (*currentWord << 1) | bit;
+	*currentWord = (*currentWord << 1) | (int)bit;
 	upCountBit();
 }
 
@@ -177,7 +177,13 @@ void Bitstream::printWord( const Word &byte ) {
 //  ---------------------------------------------------------------
 
 void Bitstream::saveToFile( const char *pathToFile ) {
-	FILE *f = fopen(pathToFile, "w");
+	FILE* f = NULL;
+#ifdef _WIN32
+	fopen_s(&f, pathToFile, "wb");
+#else
+	f = fopen(pathToFile, "wb");
+#endif
+	
 	char *byteRemap = new char[WORD_SIZE]; // needed to correct the byte order for int
 	
 	int bitsFilled = fillup(1); // complete the last byte

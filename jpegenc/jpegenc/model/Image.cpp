@@ -7,6 +7,7 @@ std::ostream& operator<<(std::ostream& out, const ColorSpace value){
 		case ColorSpaceRGB:   return out << "RGB";
 		case ColorSpaceYCbCr: return out << "YCbCr";
 	};
+	return out << "Undefined";
 }
 
 void Image::print(bool useIntValues) {

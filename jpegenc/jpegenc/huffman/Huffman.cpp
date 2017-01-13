@@ -66,7 +66,7 @@ const EncodingTable Huffman::canonicalEncoding() {
 
 /** @return Map with Symbol as key and bit pattern as value. Based on optimal length-limited tree */
 const EncodingTable Huffman::canonicalEncoding(Level lengthLimit) {
-	if (singleLeafNodes.size() > (1 << lengthLimit)) {
+	if (singleLeafNodes.size() > (size_t)(1 << lengthLimit)) {
 		lengthLimit = BitMath::log2(singleLeafNodes.size());
 		printf("Error: Can't create limited tree with given limit. Using limit %d instead.\n", lengthLimit);
 	}
