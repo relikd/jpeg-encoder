@@ -64,6 +64,9 @@ inline void oclCheckError(int value, const char* cFile, const int iLine) {
 		const char* errorString = (index > 0 && index < errorCount) ? errorArray[index] : "Unspecified Error";
 		
         printf("\n!!! OCL Error # %i (%s) at line %i , in file %s !!!\n\n", value, errorString, iLine, cFile);
+#ifdef _WIN32
+		getchar();
+#endif
 		exit(value);
     }
 }
