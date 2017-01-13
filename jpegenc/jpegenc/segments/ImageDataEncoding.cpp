@@ -8,8 +8,8 @@
  * toSingleByte takes the least 4 bits of one and two and combines them
  * to 8 bits with one in the front.
  */
-uint8_t ImageDataEncoding::toSingleByte(char one, char two) {
-	return (one << 4)| two;
+uint8_t ImageDataEncoding::toSingleByte(unsigned long one, unsigned long two) {
+	return (uint8_t)((one << 4) | two);
 }
 
 
@@ -19,7 +19,7 @@ Encoding ImageDataEncoding::calculateCategory(int input) {
 	}
 	
 	int start;
-	int bits;
+	unsigned short bits;
 	if (input < 0) {
 		int temp = input * -1;
 		bits = BitMath::log2(temp);
@@ -44,10 +44,10 @@ void ImageDataEncoding::init() {
 * and will be filled with the encodings for every dct value in the order they appear.
 */
 EncodingTable ImageDataEncoding::generateACEncodingTable(uint8_t* byteReps, Encoding* encodings) {
-	auto length = runLengthEncoding(byteReps, encodings);
+	unsigned int length = runLengthEncoding(byteReps, encodings);
 	Huffman huffman;
 	
-	for (int i = 0; i < length; ++i) {
+	for (unsigned int i = 0; i < length; ++i) {
 		huffman.addSymbol(byteReps[i]);
 	}
 	huffman.generateNodeList();
@@ -63,7 +63,7 @@ EncodingTable ImageDataEncoding::generateDCEncodingTable(Encoding* encodings) {
 	encodings = differenceEncoding();
 	Huffman huffman;
 	
-	for(int i = 0; i < verticalBlocks * horizontalBlocks; ++i) {
+	for (unsigned int i = 0; i < verticalBlocks * horizontalBlocks; ++i) {
 		huffman.addSymbol(encodings[i].numberOfBits);
 	}
 	huffman.generateNodeList();
@@ -80,10 +80,10 @@ void ImageDataEncoding::sortZickZack() {
 	unsigned int outputIndex = 0;
 	
 
-	for (int verticalIndex = 0; verticalIndex < verticalBlocks; ++verticalIndex) {
+	for (unsigned int verticalIndex = 0; verticalIndex < verticalBlocks; ++verticalIndex) {
 		verticalOffset = verticalIndex * BLOCKDIMENSION * width;
 		
-		for (int horizontalIndex = 0; horizontalIndex < horizontalBlocks; ++horizontalIndex) {
+		for (unsigned int horizontalIndex = 0; horizontalIndex < horizontalBlocks; ++horizontalIndex) {
 			horizontalOffset = horizontalIndex * BLOCKDIMENSION;
 			
 			for (int i = 0; i < TOTAL_BLOCK_SIZE; ++i) {
@@ -103,15 +103,15 @@ Encoding* ImageDataEncoding::differenceEncoding() {
 	encodings[blockIndex++] = calculateCategory(sortedData[0]);
 	
 	// Handling the first line of blocks separately
-	for (int firstLineBlock = 64 ; firstLineBlock < horizontalBlocks * TOTAL_BLOCK_SIZE; firstLineBlock += TOTAL_BLOCK_SIZE) {
+	for (unsigned int firstLineBlock = 64 ; firstLineBlock < horizontalBlocks * TOTAL_BLOCK_SIZE; firstLineBlock += TOTAL_BLOCK_SIZE) {
 		encodings[blockIndex++] = calculateCategory(sortedData[firstLineBlock] - TOTAL_BLOCK_SIZE);
 	}
 	
 	// Handling the rest
-	for (int verticalBlockIndex = 1; verticalBlockIndex < verticalBlocks; ++verticalBlockIndex) {
+	for (unsigned int verticalBlockIndex = 1; verticalBlockIndex < verticalBlocks; ++verticalBlockIndex) {
 		unsigned int verticalOffset = verticalBlockIndex * width * BLOCKDIMENSION;
 		
-		for (int horizontalBlockIndex = 0; horizontalBlockIndex < horizontalBlocks; ++horizontalBlockIndex) {
+		for (unsigned int horizontalBlockIndex = 0; horizontalBlockIndex < horizontalBlocks; ++horizontalBlockIndex) {
 			unsigned int horizontalOffset = horizontalBlockIndex * TOTAL_BLOCK_SIZE;
 			unsigned int dcIndex =  verticalOffset + horizontalOffset;
 			float leftValue = 0;
@@ -136,7 +136,7 @@ Encoding* ImageDataEncoding::differenceEncoding() {
 unsigned int ImageDataEncoding::runLengthEncoding(uint8_t* byteRepresentations, Encoding* encodings) {
 	int encodingIndex = 0;
 	
-	for (int i = 1; i < width * height; i += 64) {
+	for (unsigned int i = 1; i < width * height; i += 64) {
 		encodingIndex = runLengthEncodingSingleBlock(byteRepresentations, encodings, i, encodingIndex);
 	}
 	
@@ -145,11 +145,11 @@ unsigned int ImageDataEncoding::runLengthEncoding(uint8_t* byteRepresentations, 
 
 unsigned int ImageDataEncoding::runLengthEncodingSingleBlock(uint8_t* byteRepresentations,
 													 Encoding* encodings, unsigned int offset, unsigned int encodingIndex) {
-	const int maxZerosInARow = 15;
-	int zerosInARow = 0;
-	int lastIndexEOB = INT_MAX;
+	const unsigned int maxZerosInARow = 15;
+	unsigned int zerosInARow = 0;
+	unsigned int lastIndexEOB = INT_MAX;
 	
-	for (int i = offset; i < offset + TOTAL_BLOCK_SIZE - 1; ++i) {
+	for (unsigned int i = offset; i < offset + TOTAL_BLOCK_SIZE - 1; ++i) {
 		if (sortedData[i] == 0 && zerosInARow != maxZerosInARow) {
 			++zerosInARow;
 			continue;

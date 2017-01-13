@@ -8,17 +8,10 @@
 
 #define N 8
 
-inline float getConstantC(unsigned char x, unsigned char y) { // (2.0F / N) * getC(i) * getC(j)
-	if (x != 0 && y != 0)
-		// most common clause (49 / 64)
-		return 0.25F;
-	else if (x != 0 || y != 0)
-		// second most common clause (14 / 64)
-		return 0.176776695296636893184327732342353556305170059204101562F;
-	else
-		// least common clause (1 / 64)
-		return 0.125F;
-}
+static const float constantC[2][2] = { // (2.0F / N) * getC(i) * getC(j)
+	{ 0.125F, 0.176776695296636893184327732342353556305170059204101562F },
+	{ 0.176776695296636893184327732342353556305170059204101562F, 0.25F }
+};
 
 // float %1.25f  double %1.54f
 static const float cos_2x1iPi_2N[8][8] = { // cos( (2x + 1)iπ / 2N )
@@ -68,21 +61,17 @@ void transform8x8_normal(float* input, float* output, size_t width) {
 					inner += input[y + x * width] * cos_2x1iPi_2N[x][i] * cos_2x1iPi_2N[y][j];
 				}
 			}
-			output[j + i * width] = getConstantC(i, j) * inner;
+			output[j + i * width] = constantC[i>0][j>0] * inner;
 		}
 	}
 }
 
 void DCT::transform(float* input, float* output, const size_t width, const size_t height) {
-	unsigned short x, y;
-	const unsigned short width_8 = width / N;
-	const size_t blockLineJump = width * N;
-	
-	y = height / N;
+	size_t y = height / N;
 	while (y--) {
-		x = width_8;
+		size_t x = width / N;
 		while (x--) {
-			size_t offset = y * blockLineJump + x * N;
+			size_t offset = y * width * N + x * N;
 			transform8x8_normal(&input[offset], &output[offset], width);
 		}
 	}
@@ -129,17 +118,12 @@ void multiplyWithTransposedMatrixA(float* a, float* result, const size_t width) 
 }
 
 void DCT::transform2(float* input, const size_t width, const size_t height) {
-	unsigned short x,y;
-	const unsigned short width_8 = width / N;
-	const size_t blockLineJump = width * N;
-	
 	float* temp = new float[64];
-	
-	y = height / N;
+	size_t y = height / N;
 	while (y--) {
-		x = width_8;
+		size_t x = width / N;
 		while (x--) {
-			float *ptr = &input[y * blockLineJump + x * N];
+			float *ptr = &input[y * width * N + x * N];
 			multiplyMatrixAWith(ptr, temp, width); // a * input
 			multiplyWithTransposedMatrixA(temp, ptr, width); // input * a^t
 		}
@@ -166,7 +150,7 @@ void inverse8x8(float* input, float* output, const size_t width) {
 			while (i--) { // inner loop over input
 				j = N;
 				while (j--) {
-					float praefix = getConstantC(i, j) * input[j + i * width];
+					float praefix = constantC[i>0][j>0] * input[j + i * width];
 					inner += praefix * cos_2x1iPi_2N[x][i] * cos_2x1iPi_2N[y][j];
 				}
 			}
@@ -176,15 +160,11 @@ void inverse8x8(float* input, float* output, const size_t width) {
 }
 
 void DCT::inverse(float* input, float* output, const size_t width, const size_t height) {
-	unsigned short x, y;
-	const unsigned short width_8 = width / N;
-	const size_t blockLineJump = width * N;
-	
-	y = height / N;
+	size_t y = height / N;
 	while (y--) {
-		x = width_8;
+		size_t x = width / N;
 		while (x--) {
-			size_t offset = y * blockLineJump + x * N;
+			size_t offset = y * width * N + x * N;
 			inverse8x8(&input[offset], &output[offset], width);
 		}
 	}

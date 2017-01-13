@@ -83,7 +83,7 @@ void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathTo
     segments.push_back(eoi);
 	
     
-    for (int i = 0; i < segments.size(); ++i) {
+    for (size_t i = 0; i < segments.size(); ++i) {
         segments[i]->addToStream(stream);
     }
     stream.saveToFile(pathToFile);

@@ -183,7 +183,7 @@ void testhuffman() {
 	rootTree->exportTree();
 	Bitstream bitsteam;
 	std::vector<Symbol> word = getWord();
-	for (int i = 0; i < word.size(); ++i) {
+	for (size_t i = 0; i < word.size(); ++i) {
 		Encoding enc = encodingTable.at(word[i]);
 		std::cout << "füge " << enc << " hinzu (" << word[i] << ")" << std::endl;
 		bitsteam.add(enc.code, enc.numberOfBits);

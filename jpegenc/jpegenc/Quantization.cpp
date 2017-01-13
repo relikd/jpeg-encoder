@@ -16,8 +16,8 @@ void Quantization::run(float* &dctCoefficient, float* &quantizationMatrix){
 	size_t imageWidth = blocksPerLine * blockWidth;
 	size_t matrixLength = blockWidth * blockWidth;
 	
-	for (int i = 0; i < numberOfBlocks; i++) {
-		for (int j = 0; j < matrixLength; j++) {
+	for (unsigned int i = 0; i < numberOfBlocks; i++) {
+		for (unsigned int j = 0; j < matrixLength; j++) {
 			dctCoefficient[i * imageWidth + j] = dctCoefficient[i * imageWidth + j] / quantizationMatrix[(i % blockWidth) * blockWidth + j % blockWidth];
 		}
 	}

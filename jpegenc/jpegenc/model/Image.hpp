@@ -30,8 +30,8 @@ struct Image {
 	}
 
 	void print(bool useIntValues = true);
-	void reduceBySubSample(size_t xdiv, size_t ydiv);
-	void reduceByAverage(size_t xdiv, size_t ydiv);
+	void reduceBySubSample(unsigned short xdiv, unsigned short ydiv);
+	void reduceByAverage(unsigned short xdiv, unsigned short ydiv);
 	void seekAllChannelToStart(ChannelSeekType type);
 	void setReadingRuleForAllChannel();
 };

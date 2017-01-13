@@ -40,14 +40,14 @@ void Image::print(bool useIntValues) {
 	std::cout << std::endl;
 }
 
-void Image::reduceBySubSample(size_t xdiv, size_t ydiv) {
+void Image::reduceBySubSample(unsigned short xdiv, unsigned short ydiv) {
 	channel1->reduceBySubSampling(xdiv, ydiv);
 	channel2->reduceBySubSampling(xdiv, ydiv);
 	channel3->reduceBySubSampling(xdiv, ydiv);
 	imageSize = Dimension(imageSize.width / xdiv, imageSize.height / ydiv);
 }
 
-void Image::reduceByAverage(size_t xdiv, size_t ydiv) {
+void Image::reduceByAverage(unsigned short xdiv, unsigned short ydiv) {
 	channel1->reduceByAveraging(xdiv, ydiv);
 	channel2->reduceByAveraging(xdiv, ydiv);
 	channel3->reduceByAveraging(xdiv, ydiv);

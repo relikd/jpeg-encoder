@@ -23,8 +23,8 @@
 
 float* createTestMatrix(size_t width, size_t height) {
 	float *data = new float[width * height];
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
+	for (size_t y = 0; y < height; y++) {
+		for (size_t x = 0; x < width; x++) {
 			data[y * width + x]= (x+y*8) % 256;
 		}
 	}
@@ -34,8 +34,8 @@ float* createTestMatrix(size_t width, size_t height) {
 float* createOurTestMatrix(size_t w, size_t h) {
 	float data[8] = {1, 7, 3, 4, 5, 4, 3, 2}; // generate our well known test matrix
 	float *vls = new float[w * h];
-	for (int y = 0; y < h; y++) {
-		for (int x = 0; x < w; x++) {
+	for (size_t y = 0; y < h; y++) {
+		for (size_t x = 0; x < w; x++) {
 			float &u = vls[y * w + x];
 			if (y % 8 == 0) {
 				u = data[x % 8];
@@ -52,7 +52,7 @@ float* createOurTestMatrix(size_t w, size_t h) {
 }
 
 void printFloatMatrix(float* &mat, size_t w, size_t h) {
-	for (int i = 0; i < w * h; ++i) {
+	for (size_t i = 0; i < w * h; ++i) {
 		if (i % (w*8) == 0) printf("\n");
 		if (mat[i] < 0.0005F && mat[i] > -0.0005F) printf("%8d ", 0);
 		else printf("%8.3f ", mat[i]);

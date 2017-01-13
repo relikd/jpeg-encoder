@@ -36,7 +36,7 @@ struct ImageDataEncoding {
 	}
 	
 	static Encoding calculateCategory(int input);
-	static uint8_t toSingleByte(char one, char two);
+	static uint8_t toSingleByte(unsigned long one, unsigned long two);
 
 	
 	void init();

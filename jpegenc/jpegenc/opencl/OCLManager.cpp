@@ -204,7 +204,7 @@ cl_uint getPreferedDevice(cl_device_id* device, cl_device_id** list, cl_context*
 		n = getDevicesList(context, list);
 	
 	// select specific device
-	if (GPU_SETTINGS::preferedGPU >= 0 && GPU_SETTINGS::preferedGPU < n)
+	if (GPU_SETTINGS::preferedGPU >= 0 && GPU_SETTINGS::preferedGPU < (int)n)
 		*device = (*list)[GPU_SETTINGS::preferedGPU];
 	else
 		*device = getMaxFlopsDevice(*list, n);
@@ -242,7 +242,7 @@ void OCLManager::printDevices() {
 	// Print devices
 	printf("Devices:\n");
 	char device_string[1024];
-	for (int i = 0; i < n; i++) {
+	for (cl_uint i = 0; i < n; i++) {
 		cl_uint compute_units, clock_frequency;
 		cl_ulong gpu_mem_size;
 		
