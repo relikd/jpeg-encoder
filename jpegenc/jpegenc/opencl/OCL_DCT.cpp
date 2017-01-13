@@ -8,10 +8,11 @@ static const size_t localWorkSize[2] = {BLOCK_DIM, BLOCK_DIM};
 const size_t local_mem_size = (BLOCK_DIM + 1) * BLOCK_DIM * sizeof(float);
 
 static OCLManager* ocl = nullptr;
-static cl_kernel araiKernel;
+static cl_kernel normalKernel;
 static cl_kernel separatedKernel;
+static cl_kernel araiKernel;
 
-inline void initDCT() {
+void initDCT() {
 	cl_int errcode = CL_SUCCESS;
 	ocl = new OCLManager("../jpegenc/opencl/arai.cl");
 	
@@ -26,11 +27,59 @@ inline void initDCT() {
 	}
 	
 	// Create kernels
-	araiKernel = clCreateKernel(ocl->program, "dct_arai", &errcode);
+	normalKernel = clCreateKernel(ocl->program, "dct_normal", &errcode);
 	oclAssert(errcode);
 	separatedKernel = clCreateKernel(ocl->program, "dct_separated", &errcode);
 	oclAssert(errcode);
+	araiKernel = clCreateKernel(ocl->program, "dct_arai", &errcode);
+	oclAssert(errcode);
 }
+
+//  ---------------------------------------------------------------
+// |
+// |  Normal DCT
+// |
+//  ---------------------------------------------------------------
+
+void OCL_DCT::normal(float* matrix, size_t size_x, size_t size_y) {
+	if (ocl == nullptr) {
+		initDCT();
+	}
+	
+	cl_int errcode = CL_SUCCESS;
+	const size_t mem_size = sizeof(float) * size_x * size_y;
+	
+	// Setup device memory
+	cl_mem d_idata = clCreateBuffer(ocl->context, CL_MEM_READ_ONLY | CL_MEM_COPY_HOST_PTR, mem_size, matrix, &errcode);
+	oclAssert(errcode);
+	cl_mem d_odata = clCreateBuffer(ocl->context, CL_MEM_WRITE_ONLY, mem_size, NULL, &errcode);
+	oclAssert(errcode);
+	
+	// Set parameter values on device
+	errcode  = clSetKernelArg(normalKernel, 0, sizeof(cl_mem), &d_odata);
+	errcode |= clSetKernelArg(normalKernel, 1, sizeof(cl_mem), &d_idata);
+	errcode |= clSetKernelArg(normalKernel, 2, sizeof(unsigned int), &size_x);
+	oclAssert(errcode);
+	
+	size_t globalWorkSize[2] = {size_x, size_y};
+	oclAssert( clEnqueueNDRangeKernel(ocl->commandQueue, normalKernel, 2, NULL, globalWorkSize, localWorkSize, 0, NULL, NULL) );
+	
+	// Block CPU till GPU is done
+	oclAssert( clFinish(ocl->commandQueue) );
+	
+	// Retrieve result from device
+	oclAssert( clEnqueueReadBuffer(ocl->commandQueue, d_odata, CL_TRUE, 0, mem_size, matrix, 0, NULL, NULL) );
+	
+	errcode |= clReleaseMemObject(d_idata);
+	errcode |= clReleaseMemObject(d_odata);
+	oclAssert(errcode);
+}
+
+//  ---------------------------------------------------------------
+// |
+// |  Separated DCT
+// |
+//  ---------------------------------------------------------------
 
 void OCL_DCT::separated(float* matrix, size_t size_x, size_t size_y) {
 	if (ocl == nullptr) {
@@ -70,6 +119,12 @@ void OCL_DCT::separated(float* matrix, size_t size_x, size_t size_y) {
 	errcode |= clReleaseMemObject(d_odata);
 	oclAssert(errcode);
 }
+
+//  ---------------------------------------------------------------
+// |
+// |  Arai
+// |
+//  ---------------------------------------------------------------
 
 void OCL_DCT::arai(float* matrix, size_t size_x, size_t size_y) {
 	if (ocl == nullptr) {
