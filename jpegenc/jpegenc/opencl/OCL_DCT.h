@@ -5,6 +5,7 @@
 
 class OCL_DCT {
 public:
+	static void normal(float* matrix, size_t width, size_t height);
 	static void separated(float* matrix, size_t width, size_t height);
 	static void arai(float* matrix, size_t width, size_t height);
 };

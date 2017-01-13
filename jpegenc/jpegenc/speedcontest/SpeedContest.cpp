@@ -141,7 +141,20 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 	double time;
 	size_t iterations;
 	
-	// BEGIN: "Separated (Single Image)"
+	// BEGIN: "Normal DCT (Single Image)"
+	{
+		copyArray(vls, matrix, size);
+		iterations = 0;
+		t.reset();
+		while (t.elapsed() < seconds) {
+			OCL_DCT::normal(vls, width, height);
+			++iterations;
+		}
+		time = t.elapsed();
+		PerformancePrintOperationsPerSecond("Normal DCT (Single Image)", time, iterations);
+	}
+	
+	// BEGIN: "Separated DCT (Single Image)"
 	{
 		copyArray(vls, matrix, size);
 		iterations = 0;
@@ -151,7 +164,20 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 			++iterations;
 		}
 		time = t.elapsed();
-		PerformancePrintOperationsPerSecond("Separated (Single Image)", time, iterations);
+		PerformancePrintOperationsPerSecond("Separated DCT (Single Image)", time, iterations);
+	}
+	
+	// BEGIN: "Arai (Single Image)"
+	{
+		copyArray(vls, matrix, size);
+		iterations = 0;
+		t.reset();
+		while (t.elapsed() < seconds) {
+			OCL_DCT::arai(vls, width, height);
+			++iterations;
+		}
+		time = t.elapsed();
+		PerformancePrintOperationsPerSecond("Arai (Single Image)", time, iterations);
 	}
 	
 	// BEGIN: "Separated (Composer, var. Size)"
@@ -191,25 +217,6 @@ void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
 		iterations += c2.cacheInfo.size();
 		time = t.elapsed();
 		PerformancePrintOperationsPerSecond("Separated (Composer, Same Size)", time, iterations);
-	}
-	
-	// BEGIN: "Arai (Composer, Same Size)"
-	{
-		copyArray(vls, matrix, size);
-		GPUComposer c3 = GPUComposer(OCL_DCT::arai, true);
-		iterations = 0;
-		t.reset();
-		while (t.elapsed() < seconds) {
-			if (c3.add(vls, width, height)) {
-				c3.flush(); // send to GPU
-				iterations += c3.cacheInfo.size();
-				// do something with the data
-			}
-		}
-		c3.flush(); // send remaining images to GPU
-		iterations += c3.cacheInfo.size();
-		time = t.elapsed();
-		PerformancePrintOperationsPerSecond("Arai (Composer, Same Size)", time, iterations);
 	}
 	
 	delete [] vls;
