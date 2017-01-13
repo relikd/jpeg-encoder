@@ -14,7 +14,7 @@
  *
  * @param multiThreadingEnabled If \b true automatically detach new threads for all iterations (default: false)
  */
-void Performance::howManyOperationsInSeconds(double seconds, const char* description, std::function<void()> func, bool multiThreadingEnabled)
+void Performance::howManyOperationsInSeconds(const double seconds, const char* description, std::function<void()> func, bool multiThreadingEnabled)
 {
 	if (multiThreadingEnabled)
 	{
@@ -67,7 +67,7 @@ void Performance::howManyOperationsInSeconds(double seconds, const char* descrip
  * @param funcA Lambda expression or Functor class to be compared (simply use \a[&]{code} )
  * @param funcB Lambda expression or Functor class to be compared (simply use \a[&]{code} )
  */
-void Performance::compareExecutionTime(size_t iterations, const char* description, std::function<void()> funcA, std::function<void()> funcB) {
+void Performance::compareExecutionTime(const unsigned long iterations, const char* description, std::function<void()> funcA, std::function<void()> funcB) {
 	
 	size_t repeatA = iterations;
 	Timer tA;
@@ -112,13 +112,13 @@ void Performance::time(std::function<void()> func) {
  * @param rounds Multiple rounds will increase the chance for a better time
  * @param func Lambda expression or Functor class to be profiled (simply use \a[&]{code} )
  */
-void Performance::repeat(const size_t iterations, const size_t rounds, std::function<void(size_t numberOfElements)> func) {
+void Performance::repeat(const unsigned long iterations, const unsigned long rounds, std::function<void(size_t numberOfElements)> func) {
 	size_t r = rounds;
 	
 	double fastest = DBL_MAX;
 	while (r--) {
 		Timer t;
-		size_t it = iterations;
+		unsigned long it = iterations;
 		func(it);
 		double time = t.elapsed();
 		

@@ -188,7 +188,7 @@ void ImageDataEncoding::addEndOfBlock(uint8_t* byteRepresentations, Encoding* en
 
 
 float ImageDataEncoding::getValueOnIndex(long index) {
-	if (index < 0 || index > width * height) {
+	if (index < 0 || index > (long)(width * height)) {
 		return 0;
 	} else {
 		return sortedData[index];
