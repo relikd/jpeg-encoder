@@ -19,7 +19,7 @@ void Huffman::addSymbol(Symbol input) {
 /** Each element in given array will call @b addSymbol() */
 void Huffman::addSymbols(std::vector<Symbol> input) {
 	size_t count = input.size();
-	for (int i = 0; i < count; ++i)
+	for (size_t i = 0; i < count; ++i)
 		addSymbol(input[i]);
 }
 
@@ -124,7 +124,7 @@ std::vector<Symbol> Huffman::decode(Bitstream* bitstream, Node* rootNode) {
 	std::vector<Symbol> symbols;
 	size_t numberOfBits = bitstream->numberOfBits();
 	Node* node = rootNode;
-	for (int i = 0; i < numberOfBits; ++i) {
+	for (size_t i = 0; i < numberOfBits; ++i) {
 		if (!node) {
 			fputs("Error: Bitstream decode, unexpected symbol found.\n", stderr);
 			break;

@@ -138,23 +138,22 @@ _OUTPUT_[7 * _width_] = (e5 - d6) * S7;
 
 
 void araiWithInlineTranspose(float* input, float* output, size_t w, size_t h) {
-	const unsigned short wDivided8 = w / 8;
-	const unsigned short wMinus1 = w - 1;
-	const unsigned long lineSkip = (w * 8) - 8;
+	const size_t wDivided8 = w / 8;
+	const size_t wMinus1 = w - 1;
+	const size_t lineSkip = (w * 8) - 8;
 	
 	float *in = &input[w * h];
 	float *out = &output[w * h];
-	unsigned short yb, ya, x;
 	
-	yb = h / 8; // jump blockwise over rows
+	size_t yb = h / 8; // jump blockwise over rows
 	while (yb--) {
 		out -= lineSkip;
 		
-		ya = 8; // then those 8 rows per block
+		unsigned short ya = 8; // then those 8 rows per block
 		while (ya--) {
 			out += wMinus1;
 			
-			x = wDivided8; // finally process a single row
+			size_t x = wDivided8; // finally process a single row
 			while (x--) {
 				in -= 8;
 				out -= 8;

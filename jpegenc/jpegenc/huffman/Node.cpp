@@ -1,5 +1,4 @@
 #include "Node.hpp"
-#include <algorithm>
 
 /** Create new Node by combining two existent ones
  * @param l Left Node
@@ -35,7 +34,9 @@ void Node::print() {
 Level Node::maxDepth(Node* root) {
 	if (!root)
 		return -1; // unsigned but works properly
-	return std::max( 1 + maxDepth(root->left), 1 + maxDepth(root->right) );
+	Level ll = 1 + maxDepth(root->left);
+	Level lr = 1 + maxDepth(root->right);
+	return ( ll < lr ? lr : ll);
 }
 
 /** Internal recursive function to print a tree to console */
@@ -44,8 +45,8 @@ void Node::printWithDepth(const std::vector<Node*> arr, Level level) {
 		printf(" ");
 	
 	std::vector<Node*> newArr;
-	unsigned long maxWidth = arr.size();
-	for (int i = 0; i < maxWidth; i++) {
+	size_t maxWidth = arr.size();
+	for (size_t i = 0; i < maxWidth; i++) {
 		
 		if (arr[i] == NULL) {
 			newArr.push_back(NULL);
