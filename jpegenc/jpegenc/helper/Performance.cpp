@@ -19,29 +19,32 @@ void Performance::howManyOperationsInSeconds(const double seconds, const char* d
 	if (multiThreadingEnabled)
 	{
 		static const unsigned int hwThreadCount = std::thread::hardware_concurrency();
-		std::atomic<unsigned long> iters(0); // Use GCC 4.7+ (GCC 4.6 atomics are not lock free)
-		std::atomic<unsigned int> threadsRunning(0);
+		unsigned long* counters = new unsigned long[hwThreadCount];
+		std::thread* threads = new std::thread[hwThreadCount];
 		
-		Timer t;
-		while (t.elapsed() < seconds) {
-			if (threadsRunning < hwThreadCount) {
-				++threadsRunning;
-				std::thread([&]{
+		unsigned int i = hwThreadCount;
+		while (i--) {
+			threads[i] = std::thread([seconds, i, &func, &counters]{
+				Timer inner;
+				unsigned long innerCounter = 0;
+				while (inner.elapsed() < seconds) {
 					func();
-					++iters;
-					--threadsRunning;
-				}).detach();
-			}
+					++innerCounter;
+				}
+				counters[i] = innerCounter;
+			});
 		}
+		
+		unsigned long numberOfIterations = 0;
+		i = hwThreadCount;
+		Timer t;
+		while (i--) {
+			threads[i].join();
+			numberOfIterations += counters[i];
+		}
+		
 		double time = t.elapsed();
-		unsigned long numberOfIterations = iters;
-		
 		PerformancePrintOperationsPerSecond(description, time, numberOfIterations);
-		
-		// wait till all previous threads are finished
-		while (threadsRunning) {
-			std::this_thread::sleep_for(std::chrono::milliseconds(50));
-		}
 	}
 	else // single core (And single thread? Or does C++ optimize for multi-thread automatically?)
 	{
