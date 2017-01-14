@@ -5,9 +5,6 @@
 #include "../helper/Performance.hpp"
 #include "../dct/Arai.hpp"
 #include "../dct/DCT.hpp"
-#include "../opencl/OCL_DCT.h"
-#include "../opencl/GPUComposer.h"
-#include "../opencl/OCLManager.hpp"
 
 // 1, 7, 3, 4, 5, 4, 3, 2
 // one way transform gets:
@@ -169,83 +166,22 @@ void runCPUMultiCore(float* &matrix, size_t width, size_t height, double seconds
 
 // ################################################################
 // #
-// #  GPU
-// #
-// ################################################################
-
-void testGPUSingleFunction(const char* desc, float* matrix, size_t width, size_t height, double seconds, gpu_function func) {
-	float* vls = new float[width * height];
-	copyArray(vls, matrix, width * height);
-	size_t iterations = 0;
-	Timer t;
-	while (t.elapsed() < seconds) {
-		func(vls, width, height);
-		++iterations;
-	}
-	double time = t.elapsed();
-	PerformancePrintOperationsPerSecond(desc, time, iterations);
-	delete [] vls;
-}
-
-void testGPUComposer(const char* desc, float* matrix, size_t width, size_t height, double seconds, gpu_function func, bool varSize) {
-	float* vls = new float[width * height];
-	copyArray(vls, matrix, width * height);
-	GPUComposer composer = GPUComposer(func, varSize);
-	size_t iterations = 0;
-	Timer t;
-	while (t.elapsed() < seconds) {
-		if (composer.add(vls, width, height)) {
-			composer.flush(); // send to GPU
-			iterations += composer.cacheInfo.size();
-			// do something with the data
-		}
-	}
-	composer.flush(); // send remaining images to GPU
-	iterations += composer.cacheInfo.size();
-	double time = t.elapsed();
-	PerformancePrintOperationsPerSecond(desc, time, iterations);
-	delete [] vls;
-}
-
-void runGPU(float* &matrix, size_t width, size_t height, double seconds) {
-	OCLManager::printDevices();
-	
-	float* vls = new float[width * height];
-	copyArray(vls, matrix, width * height);
-	OCL_DCT::separated(vls, width, height); // once to init static var ocl
-	delete [] vls;
-	
-	testGPUSingleFunction("Normal DCT (Single Image)", matrix, width, height, seconds, OCL_DCT::normal);
-	testGPUSingleFunction("Separated DCT (Single Image)", matrix, width, height, seconds, OCL_DCT::separated);
-	testGPUSingleFunction("Arai (Single Image)", matrix, width, height, seconds, OCL_DCT::arai);
-	
-	testGPUComposer("Separated (Composer, var. Size)", matrix, width, height, seconds, OCL_DCT::separated, false);
-	testGPUComposer("Separated (Composer, Same Size)", matrix, width, height, seconds, OCL_DCT::separated, true);
-}
-
-// ################################################################
-// #
 // #  Main
 // #
 // ################################################################
 
-void SpeedContest::run(double seconds, bool skipCPU, bool skipGPU) {
+void SpeedContest::run(double seconds, bool skipSingeCore) {
 	size_t width = 256, height = 256;
 	float *matrix = createTestMatrix(width, height); // (x+y*8) % 256;
 	
-	if (skipCPU == false) {
+	if (skipSingeCore == false) {
 		printf("\n== Single-Threaded ==\n");
 		runCPUSingleCore(matrix, width, height, seconds);
-		
-		printf("\n== Multi-Threading ==\n");
-		printf("Threads: %d\n", std::thread::hardware_concurrency());
-		runCPUMultiCore(matrix, width, height, seconds);
 	}
 	
-	if (skipGPU == false && OCLManager::hasValidDevice()) {
-		printf("\n== GPU ==\n");
-		runGPU(matrix, width, height, seconds);
-	}
+	printf("\n== Multi-Threading ==\n");
+	printf("Threads: %d\n", std::thread::hardware_concurrency());
+	runCPUMultiCore(matrix, width, height, seconds);
 	
 	printf("\n");
 	
@@ -294,27 +230,6 @@ void SpeedContest::testForCorrectness(bool ourTestMatrix, bool use16x16, bool mo
 	verify("Arai Inline Transpose", matrix, width, height, [&](float* mat){
 		Arai::transformInlineTranspose(mat, width, height); return mat;
 	});
-	
-	if (OCLManager::hasValidDevice()) {
-		verify("GPU Normal", matrix, width, height, [&](float* mat){
-			OCL_DCT::normal(mat, width, height); return mat;
-		});
-		verify("GPU Separated", matrix, width, height, [&](float* mat){
-			OCL_DCT::separated(mat, width, height); return mat;
-		});
-		verify("GPU Arai", matrix, width, height, [&](float* mat){
-			OCL_DCT::arai(mat, width, height); return mat;
-		});
-		
-		GPUComposer c = GPUComposer(OCL_DCT::separated, true); // with different sizes
-		verify("GPU Composer", matrix, width, height, [&](float* mat){
-			c.add(mat, width, height);
-			c.add(mat, width, height);
-			c.flush(); // send to GPU
-			float* dataPtr = &c.cache[c.cacheInfo[1].offset];
-			return dataPtr;
-		});
-	}
 	
 	printf("\nInverse:\n");
 	DCT::transform2(matrix, width, height);

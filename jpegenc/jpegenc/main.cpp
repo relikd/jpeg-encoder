@@ -8,7 +8,6 @@
 #include "bitstream/Bitstream.hpp"
 #include "segments/JPEGSegments.hpp"
 #include "speedcontest/SpeedContest.hpp"
-#include "opencl/OCLManager.hpp" // only for GPU_SETTINGS
 
 using namespace JPEGSegments;
 
@@ -205,8 +204,7 @@ int main(int argc, const char *argv[]) {
 //	testImage();
 	
 	double testTime = 10.0F;
-	bool testSkipCPU = false;
-	bool testSkipGPU = false;
+	bool skipSingeCore = false;
 	
 	int i = argc;
 	while (--i) { // skip the first param, which is the path of this executable
@@ -218,24 +216,9 @@ int main(int argc, const char *argv[]) {
 				SpeedContest::testForCorrectness((bool)(validateParam & 1), (bool)(validateParam & 2), (bool)(validateParam & 4));
 				exit(EXIT_SUCCESS);
 			}
-			else if (strncmp(param, "-gpu", 4) == 0) // -gpu0, -gpu1, -gpu = show list for selection
+			else if (strcmp(param, "-skip") == 0)
 			{
-				char c = param[4];
-				if (c >= '0' && c <= '9') { // select specific gpu
-					long gpu = -1;
-					gpu = strtol(param + 4, NULL, 10);
-					OCLManager::setPreferedGPU((int)gpu);
-				} else {
-					OCLManager::askUserToSelectGPU();
-				}
-			}
-			else if (strcmp(param, "-nocpu") == 0)
-			{
-				testSkipCPU = true;
-			}
-			else if (strcmp(param, "-nogpu") == 0)
-			{
-				testSkipGPU = true;
+				skipSingeCore = true;
 			}
 		} else {
 			double tmp = strtod(param, NULL); // see if time provided, otherwise default to 10
@@ -244,7 +227,7 @@ int main(int argc, const char *argv[]) {
 	}
 	
 	printf("Starting Performance Test with %1.1fs\n", testTime);
-	SpeedContest::run(testTime, testSkipCPU, testSkipGPU);
+	SpeedContest::run(testTime, skipSingeCore);
 	
 	return 0;
 }
