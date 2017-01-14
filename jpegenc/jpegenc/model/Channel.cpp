@@ -5,7 +5,7 @@
  * @param dim The image size
  * @param blockSize Will resize the image if necessary to allow separation
  */
-Channel::Channel(Dimension dim, unsigned short blockSize) : imageSize(dim), currentBlockSize(blockSize) {
+Channel::Channel(Dimension dim, unsigned short blockSize) : currentBlockSize(blockSize), imageSize(dim) {
 	setImageSize(dim, blockSize);
 	values = new color[ imageSize.pixelCount ];
 	seekTo(ChannelSeekBoth);

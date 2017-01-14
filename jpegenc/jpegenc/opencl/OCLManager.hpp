@@ -12,6 +12,7 @@
 class OCLManager {
 	cl_uint deviceCount;
 	cl_device_id* deviceList;
+	bool managerIsValid = true;
 	
 public:
 	cl_context context;
@@ -28,7 +29,10 @@ public:
 		clReleaseCommandQueue(commandQueue);
 	};
 	
-	static void printDevices();
+	bool isValid() { return managerIsValid; }
+	static bool hasValidDevice();
+	
+	static cl_uint printDevices();
 	
 	static void askUserToSelectGPU();
 	static void setPreferedGPU(int gpu);

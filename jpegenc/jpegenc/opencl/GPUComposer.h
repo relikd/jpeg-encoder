@@ -32,7 +32,7 @@ public:
 	std::vector<DATA_INFO> cacheInfo;
 	gpu_function func;
 	
-	GPUComposer(gpu_function f, bool allImagesHaveSameSize = false) : func(f), shouldRestructureData(!allImagesHaveSameSize) {};
+	GPUComposer(gpu_function f, bool allImagesHaveSameSize = false) : shouldRestructureData(!allImagesHaveSameSize), func(f) {};
 	~GPUComposer() {
 		delete[] cache;
 	};

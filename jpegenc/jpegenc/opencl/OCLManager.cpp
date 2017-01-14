@@ -94,7 +94,6 @@ cl_int findNvidiaPlatform(cl_platform_id* platform) {
 	cl_uint platformsCount;
 	oclAssert( clGetPlatformIDs(0, NULL, &platformsCount) );
 	if (platformsCount == 0) {
-		printf("No OpenCL platform found!\n\n");
 		platform = NULL;
 		return CL_INVALID_PLATFORM;
 	}
@@ -122,37 +121,47 @@ cl_int findNvidiaPlatform(cl_platform_id* platform) {
 }
 
 cl_uint getContextAndDevices(cl_context* theContext, cl_device_id** theDevices) {
+	cl_int error;
 	cl_platform_id cpPlatform;
-	oclAssert( findNvidiaPlatform(&cpPlatform) );
+	error = findNvidiaPlatform(&cpPlatform);
 	
-	//Get the devices
-	cl_uint uiNumDevices;
-	oclAssert( clGetDeviceIDs(cpPlatform, CL_DEVICE_TYPE_GPU, 0, NULL, &uiNumDevices) );
-	
-	if (uiNumDevices == 0) {
-		printf(" There are no devices supporting OpenCL\n\n");
+	if (error != CL_SUCCESS) { // no platform found
 		return 0;
 	}
 	
-	*theDevices = (cl_device_id *) malloc( uiNumDevices * sizeof(cl_device_id) );
-	oclAssert( clGetDeviceIDs(cpPlatform, CL_DEVICE_TYPE_GPU, uiNumDevices, *theDevices, NULL) );
+	//Get the devices
+	cl_uint uiNumDevices;
+	error = clGetDeviceIDs(cpPlatform, CL_DEVICE_TYPE_GPU, 0, NULL, &uiNumDevices);
+	
+	if (error != CL_SUCCESS || uiNumDevices == 0) {
+		return 0;
+	}
+	
+	cl_device_id* devList = (cl_device_id *) malloc( uiNumDevices * sizeof(cl_device_id) );
+	oclAssert( clGetDeviceIDs(cpPlatform, CL_DEVICE_TYPE_GPU, uiNumDevices, devList, NULL) );
 	
 	//Create the context
-	cl_int errcode;
-	*theContext = clCreateContext(0, uiNumDevices, *theDevices, contextCallback, NULL, &errcode);
-	oclAssert(errcode);
+	*theContext = clCreateContext(0, uiNumDevices, devList, contextCallback, NULL, &error);
+	oclAssert(error);
 	
+	*theDevices = devList;
 	return uiNumDevices;
 }
 
 cl_uint getDevicesList(cl_context* context, cl_device_id** list) {
 	cl_int errcode;
 	*context = clCreateContextFromType(0, GPU_SETTINGS::deviceType, contextCallback, NULL, &errcode);
-	oclAssert(errcode);
+	if (errcode != CL_SUCCESS) {
+		return 0;
+	}
 	
 	size_t dataBytes;
 	clGetContextInfo(*context, CL_CONTEXT_DEVICES, 0, NULL, &dataBytes);
 	
+	if (dataBytes == 0) {
+		clReleaseContext(*context);
+		return 0;
+	}
 	*list = (cl_device_id*) malloc(dataBytes);
 	clGetContextInfo(*context, CL_CONTEXT_DEVICES, dataBytes, *list, NULL);
 	
@@ -203,6 +212,8 @@ cl_uint getPreferedDevice(cl_device_id* device, cl_device_id** list, cl_context*
 	else
 		n = getDevicesList(context, list);
 	
+	if (n == 0) return 0;
+	
 	// select specific device
 	if (GPU_SETTINGS::preferedGPU >= 0 && GPU_SETTINGS::preferedGPU < (int)n)
 		*device = (*list)[GPU_SETTINGS::preferedGPU];
@@ -214,6 +225,11 @@ cl_uint getPreferedDevice(cl_device_id* device, cl_device_id** list, cl_context*
 
 OCLManager::OCLManager(const char *path) {
 	deviceCount = getPreferedDevice(&device, &deviceList, &context);
+	if (deviceCount == 0) {
+		managerIsValid = false;
+		return;
+	}
+	
 	// Compile program
 	program = loadProgram(path, context);
 	if (program == 0) {
@@ -232,11 +248,28 @@ OCLManager::OCLManager(const char *path) {
 	oclAssert(errcode);
 }
 
-void OCLManager::printDevices() {
+bool OCLManager::hasValidDevice() {
 	cl_context context;
 	cl_device_id device;
 	cl_device_id* deviceList;
 	cl_uint n = getPreferedDevice(&device, &deviceList, &context);
+	if (n == 0) {
+		return false;
+	}
+	clReleaseContext(context);
+	free(deviceList);
+	return true;
+}
+
+cl_uint OCLManager::printDevices() {
+	cl_context context;
+	cl_device_id device;
+	cl_device_id* deviceList;
+	cl_uint n = getPreferedDevice(&device, &deviceList, &context);
+	if (n == 0) {
+		fputs("No OpenCL device available\n", stderr);
+		return 0;
+	}
 	clReleaseContext(context);
 	
 	// Print devices
@@ -260,12 +293,16 @@ void OCLManager::printDevices() {
 	}
 	free(deviceList);
 	printf("\n");
+	return n;
 }
 
 void OCLManager::askUserToSelectGPU() {
 	GPU_SETTINGS::forceNvidiaPlatform = false;
 	
-	printDevices();
+	if (printDevices() == 0) {
+		return;
+	}
+	
 	unsigned char gpu;
 	printf("Select Device: ");
 #ifdef _WIN32
@@ -280,6 +317,7 @@ void OCLManager::askUserToSelectGPU() {
 	cl_device_id correctDevice;
 	cl_device_id* deviceList;
 	getPreferedDevice(&correctDevice, &deviceList, &context);
+	
 	free(deviceList);
 	clReleaseContext(context);
 	
