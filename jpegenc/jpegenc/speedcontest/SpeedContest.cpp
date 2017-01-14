@@ -237,4 +237,5 @@ void SpeedContest::testForCorrectness(bool ourTestMatrix, bool use16x16, bool mo
 	printFloatMatrix(out, width, height);
 	printf("-----------------------------------------------------------------> ALL CORRECT\n");
 	delete [] out;
+	delete [] matrix;
 }

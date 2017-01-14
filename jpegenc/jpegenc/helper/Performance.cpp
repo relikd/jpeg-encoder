@@ -42,9 +42,10 @@ void Performance::howManyOperationsInSeconds(const double seconds, const char* d
 			threads[i].join();
 			numberOfIterations += counters[i];
 		}
-		
 		double time = t.elapsed();
 		PerformancePrintOperationsPerSecond(description, time, numberOfIterations);
+		delete [] counters;
+		delete [] threads;
 	}
 	else // single core (And single thread? Or does C++ optimize for multi-thread automatically?)
 	{
