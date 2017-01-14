@@ -100,7 +100,7 @@ void verify(const char* desc, float* originalMatrix, size_t width, size_t height
 // #
 // ################################################################
 
-void runCPUSingleCore(float* &matrix, size_t width, size_t height, double seconds) {
+void runCPUSingleCore(float* matrix, size_t width, size_t height, double seconds) {
 	size_t size = width * height;
 	float* vls = new float[size];
 	float* out = new float[size];
@@ -135,33 +135,71 @@ void runCPUSingleCore(float* &matrix, size_t width, size_t height, double second
 // #
 // ################################################################
 
-void runCPUMultiCore(float* &matrix, size_t width, size_t height, double seconds) {
-	size_t size = width * height;
-	float* vls = new float[size];
-	float* out = new float[size];
+void testMultiThread(const char* desc, float* matrix, size_t width, size_t height, double seconds, std::function<void(float*,float*)> func) {
+	static const unsigned int hwThreadCount = std::thread::hardware_concurrency();
+	unsigned long* counters = new unsigned long[hwThreadCount];
+	std::thread* threads = new std::thread[hwThreadCount];
 	
-	copyArray(vls, matrix, size);
-	Performance::howManyOperationsInSeconds(seconds, "Normal DCT", [&]{
-		DCT::transform(vls, out, width, height);
-	}, true);
-	delete [] out;
+	// Prepare an array of input images to have coalesced memory access
+	// This wouldn't be necessary in a real life situation, since input
+	// should be in general different images with different memory locations
+	float** multiSrc = new float*[hwThreadCount];
+	float** multiDst = new float*[hwThreadCount];
+	unsigned int u = hwThreadCount;
+	while (u--) {
+		multiSrc[u] = new float[width * height];
+		multiDst[u] = new float[width * height];
+		copyArray(multiSrc[u], matrix, width * height);
+	}
 	
-	copyArray(vls, matrix, size);
-	Performance::howManyOperationsInSeconds(seconds, "Separated DCT", [&]{
-		DCT::transform2(vls, width, height);
-	}, true);
+	// Start as many threads as supported
+	unsigned int i = hwThreadCount;
+	while (i--) {
+		threads[i] = std::thread([multiSrc, multiDst, seconds, i, func, &counters, width, height]{
+			Timer inner;
+			unsigned long innerCounter = 0;
+			while (inner.elapsed() < seconds) {
+				func(multiSrc[i], multiDst[i]);
+				++innerCounter;
+			}
+			counters[i] = innerCounter;
+		});
+	}
+	Timer t;
+	unsigned long totalIterations = 0;
+	i = hwThreadCount;
+	while (i--) {
+		threads[i].join();
+		totalIterations += counters[i];
+	}
 	
-	copyArray(vls, matrix, size);
-	Performance::howManyOperationsInSeconds(seconds, "Arai inline transpose", [&]{
-		Arai::transformInlineTranspose(vls, width, height);
-	}, true);
+	double time = t.elapsed();
+	PerformancePrintOperationsPerSecond(desc, time, totalIterations);
 	
-	copyArray(vls, matrix, size);
-	Performance::howManyOperationsInSeconds(seconds, "Arai DCT", [&]{
-		Arai::transform(vls, width, height);
-	}, true);
 	
-	delete [] vls;
+	// Cleanup
+	u = hwThreadCount;
+	while (u--) {
+		delete [] multiSrc[u];
+		delete [] multiDst[u];
+	}
+	delete [] counters;
+	delete [] threads;
+}
+
+void runCPUMultiCore(float* matrix, size_t width, size_t height, double seconds) {
+	testMultiThread("Normal DCT", matrix, width, height, seconds, [width, height](float *in, float* out){
+		DCT::transform(in, out, width, height);
+	});
+	testMultiThread("Separated DCT", matrix, width, height, seconds, [width, height](float *in, float*){
+		DCT::transform2(in, width, height);
+	});
+	testMultiThread("Arai inline transpose", matrix, width, height, seconds, [width, height](float *in, float*){
+		Arai::transformInlineTranspose(in, width, height);
+	});
+	testMultiThread("Arai DCT", matrix, width, height, seconds, [width, height](float *in, float*){
+		Arai::transform(in, width, height);
+	});
 }
 
 // ################################################################
