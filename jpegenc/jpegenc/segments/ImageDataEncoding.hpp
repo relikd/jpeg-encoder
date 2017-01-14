@@ -29,8 +29,13 @@ struct ImageDataEncoding {
 	
 	ImageDataEncoding(float* data, const unsigned int width, const unsigned int height)
 	:
- data(data), width(width), height(height),horizontalBlocks(width / BLOCKDIMENSION), verticalBlocks(height / BLOCKDIMENSION), sortedData(new float[width * height]){
- }
+	width(width),
+	height(height),
+	horizontalBlocks(width / BLOCKDIMENSION),
+	verticalBlocks(height / BLOCKDIMENSION),
+	data(data),
+	sortedData(new float[width * height]) {};
+	
 	~ImageDataEncoding() {
 		//delete[] sortedData;
 	}

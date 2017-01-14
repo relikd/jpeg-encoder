@@ -241,7 +241,7 @@ void SpeedContest::run(double seconds, bool skipCPU, bool skipGPU) {
 		runCPUMultiCore(matrix, width, height, seconds);
 	}
 	
-	if (skipGPU == false) {
+	if (skipGPU == false && OCLManager::hasValidDevice()) {
 		printf("\n== GPU ==\n");
 		runGPU(matrix, width, height, seconds);
 	}

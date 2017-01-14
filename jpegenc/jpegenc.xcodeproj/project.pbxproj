@@ -584,6 +584,7 @@
 				GCC_WARN_UNUSED_PARAMETER = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "";
+				WARNING_CFLAGS = "-Wall";
 			};
 			name = Debug;
 		};
@@ -601,6 +602,7 @@
 				GCC_WARN_UNUSED_PARAMETER = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "";
+				WARNING_CFLAGS = "-Wall";
 			};
 			name = Release;
 		};
