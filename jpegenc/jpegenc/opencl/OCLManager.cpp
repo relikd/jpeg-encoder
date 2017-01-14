@@ -239,7 +239,7 @@ OCLManager::OCLManager(const char *path) {
 		char* log = new char[len];
 		clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_LOG, len * sizeof(char), log, NULL );
 		printf("\n-------------------------------------\nBuild Log:\n%s\n-------------------------------------\n", log);
-		free(log);
+		delete [] log;
 		exit(EXIT_FAILURE);
 	}
 	// Create a command-queue
@@ -316,7 +316,9 @@ void OCLManager::askUserToSelectGPU() {
 	cl_context context;
 	cl_device_id correctDevice;
 	cl_device_id* deviceList;
-	getPreferedDevice(&correctDevice, &deviceList, &context);
+	cl_uint tmp = getPreferedDevice(&correctDevice, &deviceList, &context);
+	if (tmp == 0)
+		return;
 	
 	free(deviceList);
 	clReleaseContext(context);
