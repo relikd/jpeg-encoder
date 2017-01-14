@@ -5,7 +5,7 @@ file( GLOB_RECURSE SOURCE_FILES jpegenc/jpegenc/* )
 
 # Add C++ 11 support
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" )
-set( EXECUTABLE_OUTPUT_PATH "../bin" CACHE PATH "Output directory" )
+set( EXECUTABLE_OUTPUT_PATH "_bin" CACHE PATH "Output directory" )
 
 add_executable( jpeg_encoder ${SOURCE_FILES})
 
@@ -16,14 +16,14 @@ IF (APPLE)
 	target_link_libraries( jpeg_encoder ${OPENCL_LIBRARIES} )
 ELSE (APPLE)
 	## C/C++ -> General -> Additional Include Directories
-	#   $(CUDA_INC_PATH)\include
+	#   $(CUDA_PATH)\include
 	#   $(AMDAPPSDKROOT)\include
 	#   $(INTELOCLSDKROOT)\include
 	# can be added with 'include_directories(...)'
 	# but I couldnt figure out how to prevent working dir
 
 	## Linker-> General -> Additional Dependencies
-	#   $(CUDA_LIB_PATH)\lib\x64     || or Win32
+	#   $(CUDA_PATH)\lib\x64     || or Win32
 	#   $(AMDAPPSDKROOT)\lib\x86_64  || or x86
 	#   $(INTELOCLSDKROOT)\lib\x64   || or x86
 	target_link_libraries( jpeg_encoder "OpenCL.lib" )
