@@ -45,7 +45,7 @@ inline void Bitstream::upCountBits( const unsigned short amount ) {
 
 inline void Bitstream::downCountBits( const size_t amount ) {
 	if (amount <= bitIndex) {
-		bitIndex -= amount;
+		bitIndex -= (unsigned short)amount;
 		return; // pointer stays on the current Word
 	}
 	
@@ -59,7 +59,7 @@ inline void Bitstream::downCountBits( const size_t amount ) {
 	// then split the index into three again
 	pageIndex = (singleIndex >> SHIFT_PAGE);
 	WordIndex = (singleIndex & MASK_WORD_INDEX) >> SHIFT_WORD;
-	bitIndex  = (singleIndex & MASK_BIT_INDEX);
+	bitIndex  = (unsigned short)(singleIndex & MASK_BIT_INDEX);
 	
 	// move char to new position
 	currentWord = &book[ pageIndex ][ WordIndex ];
@@ -73,7 +73,7 @@ inline void Bitstream::downCountBits( const size_t amount ) {
 
 bool Bitstream::read( const size_t idx ){
 	Word* a = &book[ idx >> SHIFT_PAGE ][ (idx & MASK_WORD_INDEX) >> SHIFT_WORD ];
-	unsigned short selectedBit = idx & MASK_BIT_INDEX;
+	unsigned short selectedBit = (unsigned short)(idx & MASK_BIT_INDEX);
 	return (*a >> (MAX_INDEX_WORD - selectedBit)) & 1; // shift selected bit to lowest position
 }
 
@@ -84,7 +84,7 @@ bool Bitstream::read( const size_t idx ){
 //  ---------------------------------------------------------------
 
 void Bitstream::add( const bool bit ) {
-	*currentWord = (*currentWord << 1) | bit;
+	*currentWord = (*currentWord << 1) | (int)bit;
 	upCountBit();
 }
 
@@ -177,7 +177,13 @@ void Bitstream::printWord( const Word &byte ) {
 //  ---------------------------------------------------------------
 
 void Bitstream::saveToFile( const char *pathToFile ) {
-	FILE *f = fopen(pathToFile, "w");
+	FILE* f = NULL;
+#ifdef _WIN32
+	fopen_s(&f, pathToFile, "wb");
+#else
+	f = fopen(pathToFile, "wb");
+#endif
+	
 	char *byteRemap = new char[WORD_SIZE]; // needed to correct the byte order for int
 	
 	int bitsFilled = fillup(1); // complete the last byte
@@ -215,11 +221,11 @@ void Bitstream::saveToFile( const char *pathToFile ) {
 inline void Bitstream::mapWordToChar( const Word &in, char* &out ) {
 	// this bitshift hack is possible because a char will copy only the 8 least significant bits
 	switch (WORD_SIZE) {
-		case 8: out[0]=in>>56; out[1]=in>>48; out[2]=in>>40; out[3]=in>>32;
-			    out[4]=in>>24; out[5]=in>>16; out[6]=in>>8;  out[7]=in; break;
-		case 4: out[0]=in>>24; out[1]=in>>16; out[2]=in>>8;  out[3]=in; break;
-		case 2: out[0]=in>>8;  out[1]=in; break;
-		case 1: out[0]=in; break;
+		case 8: out[0]=(char)(in>>56); out[1]=(char)(in>>48); out[2]=(char)(in>>40); out[3]=(char)(in>>32);
+			    out[4]=(char)(in>>24); out[5]=(char)(in>>16); out[6]=(char)(in>>8);  out[7]=(char)in; break;
+		case 4: out[0]=(char)(in>>24); out[1]=(char)(in>>16); out[2]=(char)(in>>8);  out[3]=(char)in; break;
+		case 2: out[0]=(char)(in>>8);  out[1]=(char)in; break;
+		case 1: out[0]=(char)in; break;
 	}
 	// not readable, but compact and efficient
 }

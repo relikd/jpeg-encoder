@@ -64,8 +64,8 @@ public:
 	void deleteReadIndexAccessMappingRule();
 	
 	// Subsampling & Averaging
-	void reduceBySubSampling(size_t stepWidth, size_t stepHeight=1);
-	void reduceByAveraging(size_t stepWidth, size_t stepHeight=1);
+	void reduceBySubSampling(unsigned short stepWidth, unsigned short stepHeight=1);
+	void reduceByAveraging(unsigned short stepWidth, unsigned short stepHeight=1);
 	
 private:
 	inline void setImageSize(Dimension dim, unsigned short blockSize = 1);

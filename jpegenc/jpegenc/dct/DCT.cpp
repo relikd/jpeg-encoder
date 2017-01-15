@@ -8,17 +8,10 @@
 
 #define N 8
 
-inline float getConstantC(unsigned char x, unsigned char y) { // (2.0F / N) * getC(i) * getC(j)
-	if (x != 0 && y != 0)
-		// most common clause (49 / 64)
-		return 0.25F;
-	else if (x != 0 || y != 0)
-		// second most common clause (14 / 64)
-		return 0.176776695296636893184327732342353556305170059204101562F;
-	else
-		// least common clause (1 / 64)
-		return 0.125F;
-}
+static const float constantC[2][2] = { // (2.0F / N) * getC(i) * getC(j)
+	{ 0.125F, 0.176776695296636893184327732342353556305170059204101562F },
+	{ 0.176776695296636893184327732342353556305170059204101562F, 0.25F }
+};
 
 // float %1.25f  double %1.54f
 static const float cos_2x1iPi_2N[8][8] = { // cos( (2x + 1)iπ / 2N )
@@ -32,7 +25,7 @@ static const float cos_2x1iPi_2N[8][8] = { // cos( (2x + 1)iπ / 2N )
 	{ 1, -0.980785280403230449126182236134239036973933730893336095003F,  0.923879532511286756128183189396788286822416625863642486115F, -0.831469612302545237078788377617905756738560811987249963446F,  0.707106781186547524400844362104849039284835937688474036588F, -0.55557023301960222474283081394853287437493719075480404592F,   0.38268343236508977172845998403039886676134456248562704143F,  -0.19509032201612826784828486847702224092769161775195480775F }
 };
 
-static const float* matrixA = new float[64] {
+static const float matrixA[64] = {
 	0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,  0.353553390593273730857504233426880091428756713867187500F,
 	0.490392640201615215289621119154617190361022949218750000F,  0.415734806151272617835701339572551660239696502685546875F,  0.277785116509801144335511935423710383474826812744140625F,  0.097545161008064151797469776283833198249340057373046875F, -0.097545161008064096286318545026006177067756652832031250F, -0.277785116509800977802058241650229319930076599121093750F, -0.415734806151272673346852570830378681421279907226562500F, -0.490392640201615215289621119154617190361022949218750000F,
 	0.461939766255643369241568052530055865645408630371093750F,  0.191341716182544918645191955874906852841377258300781250F, -0.191341716182544863134040724617079831659793853759765625F, -0.461939766255643369241568052530055865645408630371093750F, -0.461939766255643369241568052530055865645408630371093750F, -0.191341716182545168445372496535128448158502578735351562F,  0.191341716182545001911918802761647384613752365112304688F,  0.461939766255643258219265590014401823282241821289062500F,
@@ -50,7 +43,7 @@ static const float* matrixA = new float[64] {
 // |
 //  ---------------------------------------------------------------
 
-void transform8x8_normal(float* &input, float* &output, size_t width) {
+void transform8x8_normal(float* input, float* output, size_t width) {
 	unsigned char i,j,x,y;
 	
 	// jump through output
@@ -68,29 +61,19 @@ void transform8x8_normal(float* &input, float* &output, size_t width) {
 					inner += input[y + x * width] * cos_2x1iPi_2N[x][i] * cos_2x1iPi_2N[y][j];
 				}
 			}
-			output[j + i * width] = getConstantC(i, j) * inner;
+			output[j + i * width] = constantC[i>0][j>0] * inner;
 		}
 	}
 }
 
-void DCT::transform(float* &input, float* &output, const size_t width, const size_t height) {
-	float *ptIn = &input[0];
-	float *ptOut = &output[0];
-	
-	unsigned short x, y;
-	const unsigned short numOfCols = width / N; // otherwise will be calculated multiple times
-	const size_t lineJump = width * (N - 1); // only N-1 because one line was already processed
-	
-	x = height / N;
-	while (x--) {
-		y = numOfCols;
-		while (y--) {
-			transform8x8_normal(ptIn, ptOut, width);
-			ptIn += N;
-			ptOut += N;
+void DCT::transform(float* input, float* output, const size_t width, const size_t height) {
+	size_t y = height / N;
+	while (y--) {
+		size_t x = width / N;
+		while (x--) {
+			size_t offset = y * width * N + x * N;
+			transform8x8_normal(&input[offset], &output[offset], width);
 		}
-		ptIn += lineJump;
-		ptOut += lineJump;
 	}
 }
 
@@ -102,7 +85,7 @@ void DCT::transform(float* &input, float* &output, const size_t width, const siz
 // |
 //  ---------------------------------------------------------------
 
-void multiplyMatrixAWith(float* &b, float* &result, const size_t width) {
+void multiplyMatrixAWith(float* b, float* result, const size_t width) {
 	unsigned char x,y, i;
 	y = N;
 	while (y--) {
@@ -113,12 +96,12 @@ void multiplyMatrixAWith(float* &b, float* &result, const size_t width) {
 			while (i--) { // multiplication loop
 				sum += matrixA[y * N + i] * b[i * width + x];
 			}
-			result[y * width + x] = sum;
+			result[y * N + x] = sum;
 		}
 	}
 }
 // two separate loops because its around 300.000 operations per second faster than an if (bool) clause
-void multiplyWithTransposedMatrixA(float* &a, float* &result, const size_t width) {
+void multiplyWithTransposedMatrixA(float* a, float* result, const size_t width) {
 	unsigned char x,y, i;
 	y = N;
 	while (y--) {
@@ -127,38 +110,24 @@ void multiplyWithTransposedMatrixA(float* &a, float* &result, const size_t width
 			float sum = 0;
 			i = N;
 			while (i--) { // multiplication loop
-				sum += a[y * width + i] * matrixA[x * N + i];
+				sum += a[y * N + i] * matrixA[x * N + i];
 			}
 			result[y * width + x] = sum;
 		}
 	}
 }
 
-void transform8x8_separated(float* &input, float* &temp, const size_t width) {
-//	float* temp = new float[64];
-	multiplyMatrixAWith(input, temp, width); // a * input
-	multiplyWithTransposedMatrixA(temp, input, width); // input * a^t
-}
-
-void DCT::transform2(float* &input, const size_t width, const size_t height) {
-	float *ptIn = &input[0];
-	
-	unsigned short x, y;
-	const unsigned short numOfCols = width / N; // otherwise will be calculated multiple times
-	const size_t lineJump = width * (N - 1); // only N-1 because one line was already processed
-	
-	float* temp = new float[width * height];
-	
-	x = height / N;
-	while (x--) {
-		y = numOfCols;
-		while (y--) {
-			transform8x8_separated(ptIn, temp, width);
-			ptIn += N;
+void DCT::transform2(float* input, const size_t width, const size_t height) {
+	float* temp = new float[64];
+	size_t y = height / N;
+	while (y--) {
+		size_t x = width / N;
+		while (x--) {
+			float *ptr = &input[y * width * N + x * N];
+			multiplyMatrixAWith(ptr, temp, width); // a * input
+			multiplyWithTransposedMatrixA(temp, ptr, width); // input * a^t
 		}
-		ptIn += lineJump;
 	}
-	
 	delete[] temp;
 }
 
@@ -170,7 +139,7 @@ void DCT::transform2(float* &input, const size_t width, const size_t height) {
 // |
 //  ---------------------------------------------------------------
 
-void DCT::inverse(float* &input, float* &output) {
+void inverse8x8(float* input, float* output, const size_t width) {
 	unsigned char i,j,x,y;
 	x = N;
 	while (x--) { // outer loop over output
@@ -181,11 +150,22 @@ void DCT::inverse(float* &input, float* &output) {
 			while (i--) { // inner loop over input
 				j = N;
 				while (j--) {
-					float praefix = getConstantC(i, j) * input[j + i * N];
+					float praefix = constantC[i>0][j>0] * input[j + i * width];
 					inner += praefix * cos_2x1iPi_2N[x][i] * cos_2x1iPi_2N[y][j];
 				}
 			}
-			output[y + x * N] = inner;
+			output[y + x * width] = inner;
+		}
+	}
+}
+
+void DCT::inverse(float* input, float* output, const size_t width, const size_t height) {
+	size_t y = height / N;
+	while (y--) {
+		size_t x = width / N;
+		while (x--) {
+			size_t offset = y * width * N + x * N;
+			inverse8x8(&input[offset], &output[offset], width);
 		}
 	}
 }

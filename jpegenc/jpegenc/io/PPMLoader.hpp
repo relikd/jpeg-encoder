@@ -11,13 +11,13 @@ public:
 	void write(const char *pathToImage, std::shared_ptr<Image> image);
 
 private:
-	long filesize;
+	size_t filesize;
 	char *buffer; // the whole file content
 	
 	// read
 	void readFileToMemory(const char *pathToImage);
-	bool parseHeader(size_t &index, size_t &width, size_t &height, unsigned short &maxValue);
-	void parseData(size_t &index, std::shared_ptr<Image> image, const unsigned short maxValue);
+	bool parseHeader(size_t &index, size_t &width, size_t &height, unsigned int &maxValue);
+	void parseData(size_t &index, std::shared_ptr<Image> image, const unsigned int maxValue);
 	
 	// write
 	inline void readNumberToFileSaveBuffer(size_t number, char *buf, unsigned short &index);

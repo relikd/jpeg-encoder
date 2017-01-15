@@ -18,7 +18,7 @@ std::shared_ptr<Image> PPMLoader::load(const char *pathToImage) {
 	
 	size_t bufferIndex = 2; // start right after the first two bytes 'P3'
 	size_t width = 0, height = 0;
-	unsigned short maxValue = 0; // short because PPM maxVal is limited to 65535
+	unsigned int maxValue = 0; // short because PPM maxVal is limited to 65535
 	bool successfull = parseHeader(bufferIndex, width, height, maxValue);
 	
 	if (successfull) {
@@ -46,7 +46,12 @@ void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
 	char out[4096];
 	unsigned short idx = 0;
 	
-	FILE *f = fopen(pathToImage, "w");
+	FILE* f = NULL;
+#ifdef _WIN32
+	fopen_s(&f, pathToImage, "wb");
+#else
+	f = fopen(pathToImage, "wb");
+#endif
 	
 	//  HEADER
 	fwrite("P3\n# Created by Team Awesome\n", 1, 29, f);
@@ -63,7 +68,7 @@ void PPMLoader::write(const char *pathToImage, std::shared_ptr<Image> image) {
 	unsigned short charactersOnLine = 0;
 	for (size_t i = 0; i < pixelCount; i++) {
 		
-		unsigned int zahl = channels[i%3]->readNextValue() * 255;
+		unsigned int zahl = (unsigned int)(channels[i%3]->readNextValue() * 255);
 		unsigned short stellen = BitMath::numberOfDigitsBase10(zahl);
 		charactersOnLine += stellen + 1;
 		
@@ -108,7 +113,7 @@ inline void PPMLoader::readNumberToFileSaveBuffer(size_t zahl, unsigned short st
 // #
 // ################################################################
 
-inline color normalize(const unsigned short &inputValue, const unsigned short &maxValue){
+inline color normalize(const unsigned int &inputValue, const unsigned int &maxValue){
 	return inputValue / (color) maxValue;
 }
 
@@ -120,7 +125,13 @@ inline color normalize(const unsigned short &inputValue, const unsigned short &m
 
 void PPMLoader::readFileToMemory(const char *pathToImage) {
 	// fopen is used only to get the file size
-	FILE *fl = fopen(pathToImage, "r");
+	FILE* fl = NULL;
+#ifdef _WIN32
+	fopen_s(&fl, pathToImage, "rb");
+#else
+	fl = fopen(pathToImage, "rb");
+#endif
+	
 	fseek(fl, 0, SEEK_END);
 	filesize = ftell(fl);
 	
@@ -158,7 +169,7 @@ void PPMLoader::readFileToMemory(const char *pathToImage) {
 	/* the whole file is now loaded in the memory buffer. */
 }
 
-bool PPMLoader::parseHeader(size_t &index, size_t &width, size_t &height, unsigned short &maxValue) {
+bool PPMLoader::parseHeader(size_t &index, size_t &width, size_t &height, unsigned int &maxValue) {
 	// check if file is in the correct format
 	if (buffer[0] != 'P' || buffer[1] != '3') {
 		fputs("Invalid format. PPM P3 expected.\n", stderr);
@@ -167,7 +178,7 @@ bool PPMLoader::parseHeader(size_t &index, size_t &width, size_t &height, unsign
 	
 	char c;
 	int headerIndex = 0; // 0 = width, 1 = height, 2 = maxValue, 3 = first data value
-	int headerValue = 0; // holds the actual number
+	unsigned int headerValue = 0; // holds the actual number
 	bool headerValueChanged = false;
 	bool isComment = false;
 	
@@ -206,8 +217,8 @@ bool PPMLoader::parseHeader(size_t &index, size_t &width, size_t &height, unsign
 	return true;
 }
 
-void PPMLoader::parseData(size_t &index, std::shared_ptr<Image> image, const unsigned short maxValue) {
-	int value = 0; // holds the actual number
+void PPMLoader::parseData(size_t &index, std::shared_ptr<Image> image, const unsigned int maxValue) {
+	unsigned short value = 0; // holds the actual number
 	bool valueChanged = false;
 	
 	size_t channelIndex = 0; // constantly switch the three channels

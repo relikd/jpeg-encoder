@@ -14,7 +14,7 @@
 #include <memory>
 #include "../bitstream/Bitstream.hpp"
 #include "../model/Image.hpp"
-#include "../huffmann/Huffman.hpp"
+#include "../huffman/Huffman.hpp"
 
 namespace JPEGSegments {
 	
@@ -59,10 +59,10 @@ namespace JPEGSegments {
 		: JpegSegment(0xFFC0) {
 			this->numberOfComponents = numberOfComponents;
 			this->image = image;
-			this->width = image->imageSize.width;
-			this->height = image->imageSize.height;
+			this->width = (uint16_t)(image->imageSize.width);
+			this->height = (uint16_t)(image->imageSize.height);
 			this->precision = precision;
-			this->length = numberOfComponents * 3 + 8;
+			this->length = (uint16_t)(numberOfComponents * 3 + 8);
 		}
 		
 		virtual void addToStream(Bitstream &stream);
@@ -100,7 +100,7 @@ namespace JPEGSegments {
 				unsigned short numberOfBits = enc.second.numberOfBits;
 				symbolsPerLevel[numberOfBits - 1] += 1;
 			}
-			this->length = 2 + 17 + encodingTable.size();
+			this->length = (uint16_t)(2 + 17 + encodingTable.size());
 		}
 		
 		virtual void addToStream(Bitstream &stream);
