@@ -19,7 +19,7 @@ void Huffman::addSymbol(Symbol input) {
 /** Each element in given array will call @b addSymbol() */
 void Huffman::addSymbols(std::vector<Symbol> input) {
 	size_t count = input.size();
-	for (int i = 0; i < count; ++i)
+	for (size_t i = 0; i < count; ++i)
 		addSymbol(input[i]);
 }
 
@@ -66,7 +66,7 @@ const EncodingTable Huffman::canonicalEncoding() {
 
 /** @return Map with Symbol as key and bit pattern as value. Based on optimal length-limited tree */
 const EncodingTable Huffman::canonicalEncoding(Level lengthLimit) {
-	if (singleLeafNodes.size() > (1 << lengthLimit)) {
+	if ((long long)singleLeafNodes.size() > (long long)1 << lengthLimit) {
 		lengthLimit = BitMath::log2(singleLeafNodes.size());
 		printf("Error: Can't create limited tree with given limit. Using limit %d instead.\n", lengthLimit);
 	}
@@ -124,7 +124,7 @@ std::vector<Symbol> Huffman::decode(Bitstream* bitstream, Node* rootNode) {
 	std::vector<Symbol> symbols;
 	size_t numberOfBits = bitstream->numberOfBits();
 	Node* node = rootNode;
-	for (int i = 0; i < numberOfBits; ++i) {
+	for (size_t i = 0; i < numberOfBits; ++i) {
 		if (!node) {
 			fputs("Error: Bitstream decode, unexpected symbol found.\n", stderr);
 			break;

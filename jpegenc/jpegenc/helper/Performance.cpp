@@ -14,39 +14,50 @@
  *
  * @param multiThreadingEnabled If \b true automatically detach new threads for all iterations (default: false)
  */
-void Performance::howManyOperationsInSeconds(double seconds, const char* description, std::function<void()> func, bool multiThreadingEnabled) {
-	std::atomic<unsigned long> iters(0); // Use GCC 4.7+ (GCC 4.6 atomics are not lock free)
-	std::atomic<unsigned int> threadsRunning(0);
-	static const unsigned int threadCount = std::thread::hardware_concurrency();
-	
-	Timer t;
+void Performance::howManyOperationsInSeconds(const double seconds, const char* description, std::function<void()> func, bool multiThreadingEnabled)
+{
 	if (multiThreadingEnabled)
 	{
-		while (t.elapsed() < seconds) {
-			if (threadsRunning < threadCount) {
-				++threadsRunning;
-				std::thread([&]{
+		static const unsigned int hwThreadCount = std::thread::hardware_concurrency();
+		unsigned long* counters = new unsigned long[hwThreadCount];
+		std::thread* threads = new std::thread[hwThreadCount];
+		
+		unsigned int i = hwThreadCount;
+		while (i--) {
+			threads[i] = std::thread([seconds, i, &func, &counters]{
+				Timer inner;
+				unsigned long innerCounter = 0;
+				while (inner.elapsed() < seconds) {
 					func();
-					++iters;
-					--threadsRunning;
-				}).detach();
-			}
+					++innerCounter;
+				}
+				counters[i] = innerCounter;
+			});
 		}
+		
+		unsigned long numberOfIterations = 0;
+		i = hwThreadCount;
+		Timer t;
+		while (i--) {
+			threads[i].join();
+			numberOfIterations += counters[i];
+		}
+		double time = t.elapsed();
+		PerformancePrintOperationsPerSecond(description, time, numberOfIterations);
+		delete [] counters;
+		delete [] threads;
 	}
 	else // single core (And single thread? Or does C++ optimize for multi-thread automatically?)
 	{
+		unsigned long numberOfIterations = 0;
+		Timer t;
 		while (t.elapsed() < seconds) {
 			func();
-			++iters;
+			++numberOfIterations;
 		}
-	}
-	double time = t.elapsed();
-	unsigned long numberOfIterations = iters;
-	PerformancePrintOperationsPerSecond(description, time, numberOfIterations);
-	
-	// wait till all previous threads are finished
-	while (threadsRunning) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		double time = t.elapsed();
+		
+		PerformancePrintOperationsPerSecond(description, time, numberOfIterations);
 	}
 }
 
@@ -60,7 +71,7 @@ void Performance::howManyOperationsInSeconds(double seconds, const char* descrip
  * @param funcA Lambda expression or Functor class to be compared (simply use \a[&]{code} )
  * @param funcB Lambda expression or Functor class to be compared (simply use \a[&]{code} )
  */
-void Performance::compareExecutionTime(size_t iterations, const char* description, std::function<void()> funcA, std::function<void()> funcB) {
+void Performance::compareExecutionTime(const unsigned long iterations, const char* description, std::function<void()> funcA, std::function<void()> funcB) {
 	
 	size_t repeatA = iterations;
 	Timer tA;
@@ -84,7 +95,7 @@ void Performance::compareExecutionTime(size_t iterations, const char* descriptio
  * @param func Lambda expression or Functor class to be profiled (simply use \a[&]{code} )
  */
 void Performance::time(std::function<void()> func) {
-	repeat(1, 1, [&func](size_t numberOfElements){func();});
+	repeat(1, 1, [&func](size_t){func();});
 }
 
 /**
@@ -105,13 +116,13 @@ void Performance::time(std::function<void()> func) {
  * @param rounds Multiple rounds will increase the chance for a better time
  * @param func Lambda expression or Functor class to be profiled (simply use \a[&]{code} )
  */
-void Performance::repeat(const size_t iterations, const size_t rounds, std::function<void(size_t numberOfElements)> func) {
+void Performance::repeat(const unsigned long iterations, const unsigned long rounds, std::function<void(unsigned long numberOfElements)> func) {
 	size_t r = rounds;
 	
 	double fastest = DBL_MAX;
 	while (r--) {
 		Timer t;
-		size_t it = iterations;
+		unsigned long it = iterations;
 		func(it);
 		double time = t.elapsed();
 		

@@ -5,7 +5,7 @@
  * @param dim The image size
  * @param blockSize Will resize the image if necessary to allow separation
  */
-Channel::Channel(Dimension dim, unsigned short blockSize) : imageSize(dim), currentBlockSize(blockSize) {
+Channel::Channel(Dimension dim, unsigned short blockSize) : currentBlockSize(blockSize), imageSize(dim) {
 	setImageSize(dim, blockSize);
 	values = new color[ imageSize.pixelCount ];
 	seekTo(ChannelSeekBoth);
@@ -60,8 +60,8 @@ inline void Channel::setImageSize(Dimension size, unsigned short blockSize) {
 	imageSize = enlargeSizeToFitBlocksize(size, blockSize);
 	originalWidth = size.width;
 	originalHeight = size.height;
-	blockAddCols = imageSize.width - originalWidth;
-	blockAddRows = imageSize.height - originalHeight;
+	blockAddCols = (unsigned short)(imageSize.width - originalWidth);
+	blockAddRows = (unsigned short)(imageSize.height - originalHeight);
 }
 /**
  * Set internal data pointer to specified position and recalculate internal counter
@@ -206,7 +206,7 @@ inline void Channel::fillupValuesByDuplicating() {
 		
 		// fillup remaining lines at the bottom
 		if (++currentWriteRow >= originalHeight) {
-			unsigned short missingRows = blockAddRows * imageSize.width;
+			size_t missingRows = blockAddRows * imageSize.width;
 			while (missingRows--) {
 				*writePointer = *(writePointer - imageSize.width); // repeat the value above
 				++writePointer;
@@ -228,7 +228,7 @@ inline void Channel::fillupValuesByDuplicating() {
  * @param stepWidth Skip values in X direction
  * @param stepHeight Skip values in Y direction
  */
-void Channel::reduceBySubSampling(size_t stepWidth, size_t stepHeight) {
+void Channel::reduceBySubSampling(unsigned short stepWidth, unsigned short stepHeight) {
 	size_t prevWidth = imageSize.width;
 	reduceWithFunction(stepWidth, stepHeight, [&](size_t row, size_t col) {
 		return values[col * stepWidth + row * stepHeight * prevWidth];
@@ -239,7 +239,7 @@ void Channel::reduceBySubSampling(size_t stepWidth, size_t stepHeight) {
  * @param stepWidth Take all values in X direction into account
  * @param stepHeight Take all values in Y direction into account
  */
-void Channel::reduceByAveraging(size_t stepWidth, size_t stepHeight) {
+void Channel::reduceByAveraging(unsigned short stepWidth, unsigned short stepHeight) {
 	size_t prevWidth = imageSize.width;
 	short row_offset = stepHeight;
 	short col_offset = stepWidth;
