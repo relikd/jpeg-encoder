@@ -164,7 +164,6 @@ TEST_CASE("Test image data encoding", "[imageDataEncoding]") {
 		encoding.init();
 		auto dcEncodings = encoding.differenceEncoding();
 		
-		
 		int length = encoding.verticalBlocks * encoding.horizontalBlocks;
 		
 		REQUIRE(length == lengthDcEncodingResult);
