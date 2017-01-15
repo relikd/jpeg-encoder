@@ -185,18 +185,3 @@ void ImageDataEncoding::addEndOfBlock(uint8_t* byteRepresentations, Encoding* en
 	encodings[index] = calculateCategory(0);
 	byteRepresentations[index] = toSingleByte(0, encodings[index].code);
 }
-
-
-float ImageDataEncoding::getValueOnIndex(long index) {
-	if (index < 0 || index > (long)(width * height)) {
-		return 0;
-	} else {
-		return sortedData[index];
-	}
-}
-
-
-
-
-
-

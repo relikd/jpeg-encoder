@@ -37,7 +37,7 @@ struct ImageDataEncoding {
 	sortedData(new float[width * height]) {};
 	
 	~ImageDataEncoding() {
-		//delete[] sortedData;
+//		delete []sortedData;
 	}
 	
 	static Encoding calculateCategory(int input);
@@ -53,7 +53,6 @@ struct ImageDataEncoding {
 	unsigned int runLengthEncodingSingleBlock(uint8_t* byteRepresentations, Encoding* encodings, unsigned int offset, unsigned int encodingIndex);
 	
 	void addEndOfBlock(uint8_t* byteRepresentations, Encoding* encodings, unsigned int index);
-	float getValueOnIndex(long index);
 };
 
 #endif /* ImageDataEncoding_hpp */
