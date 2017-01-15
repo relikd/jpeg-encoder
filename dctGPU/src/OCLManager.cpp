@@ -1,82 +1,20 @@
 #include "OCLManager.hpp"
 #include "oclAssert.h"
+#include "oclHelper.h"
 #include <cstring>
 
 namespace GPU_SETTINGS {
 	static int preferedGPU = -1;
-	static bool forceNvidiaPlatform = true;
-	static cl_device_type deviceType = CL_DEVICE_TYPE_ALL;
+	static cl_platform_id preferedPlatform   = nullptr;
+	static cl_device_id   preferedDevice     = nullptr;
+	static cl_device_type preferedDeviceType = CL_DEVICE_TYPE_GPU;
 }
 
 void OCLManager::setPreferedGPU(int gpu) { GPU_SETTINGS::preferedGPU = gpu; }
 
-
 void CL_CALLBACK contextCallback(const char* errinfo, const void* /*private_info*/, size_t /*cb*/, void* /*user_data*/) {
 	printf("%s\n", errinfo);
 }
-
-#pragma mark - Compile Program
-
-// ################################################################
-// #
-// #  Compile .cl Program
-// #
-// ################################################################
-
-char* loadFileContent(const char* path, size_t* fileSize) {
-	FILE* file = NULL;
-	
-#ifdef _WIN32
-	if (fopen_s(&file, path, "rb") != 0)
-		return NULL;
-#else
-	file = fopen(path, "rb");
-	if (file == 0)
-		return NULL;
-#endif
-	
-	fseek(file, 0, SEEK_END);
-	size_t length = ftell(file);
-	fseek(file, 0, SEEK_SET);
-	
-	// allocate a buffer for the source code string and read it in
-	char* buffer = (char *)malloc(length);
-	if (fread(buffer, length, 1, file) != 1) {
-		fclose(file);
-		free(buffer);
-		fileSize = 0;
-		return 0;
-	}
-	fclose(file);
-	*fileSize = length;
-	return buffer;
-}
-
-cl_program loadProgram(const char *path, cl_context &theContext) {
-	// Program setup
-	size_t program_length;
-	char *source = loadFileContent(path, &program_length);
-	if (source == NULL) {
-		printf("Couldn't open OpenCL source file '%s'\n", path);
-		exit(EXIT_FAILURE);
-	}
-	
-	// Create the program
-	cl_int errcode;
-	cl_program prog = clCreateProgramWithSource(theContext, 1, (const char **)&source, &program_length, &errcode);
-	free(source);
-	oclAssert(errcode);
-	
-	// Build the program
-	errcode = clBuildProgram(prog, 0, NULL, "-cl-fast-relaxed-math", NULL, NULL);
-	if (errcode != CL_SUCCESS) {
-		printf("file %s, line %i\n\n" , __FILE__ , __LINE__);
-		return 0;
-	}
-	return prog;
-}
-
-#pragma mark - Find Platform and Device
 
 // ################################################################
 // #
@@ -120,25 +58,28 @@ cl_int findNvidiaPlatform(cl_platform_id* platform) {
 	return CL_SUCCESS;
 }
 
-cl_uint getContextAndDevices(cl_context* theContext, cl_device_id** theDevices) {
+cl_uint getContextAndDevices(cl_context* theContext,
+							 cl_device_id** theDevices,
+							 cl_platform_id platform   = nullptr,
+							 cl_device_type deviceType = CL_DEVICE_TYPE_GPU)
+{
 	cl_int error;
-	cl_platform_id cpPlatform;
-	error = findNvidiaPlatform(&cpPlatform);
-	
-	if (error != CL_SUCCESS) { // no platform found
-		return 0;
+	if (!platform) {
+		if (findNvidiaPlatform(&platform) != CL_SUCCESS) {
+			return 0; // no platform found
+		}
 	}
 	
 	//Get the devices
 	cl_uint uiNumDevices;
-	error = clGetDeviceIDs(cpPlatform, CL_DEVICE_TYPE_GPU, 0, NULL, &uiNumDevices);
+	error = clGetDeviceIDs(platform, deviceType, 0, NULL, &uiNumDevices);
 	
 	if (error != CL_SUCCESS || uiNumDevices == 0) {
 		return 0;
 	}
 	
 	cl_device_id* devList = (cl_device_id *) malloc( uiNumDevices * sizeof(cl_device_id) );
-	oclAssert( clGetDeviceIDs(cpPlatform, CL_DEVICE_TYPE_GPU, uiNumDevices, devList, NULL) );
+	oclAssert( clGetDeviceIDs(platform, deviceType, uiNumDevices, devList, NULL) );
 	
 	//Create the context
 	*theContext = clCreateContext(0, uiNumDevices, devList, contextCallback, NULL, &error);
@@ -148,37 +89,11 @@ cl_uint getContextAndDevices(cl_context* theContext, cl_device_id** theDevices) 
 	return uiNumDevices;
 }
 
-cl_uint getDevicesList(cl_context* context, cl_device_id** list) {
-	cl_int errcode;
-	*context = clCreateContextFromType(0, GPU_SETTINGS::deviceType, contextCallback, NULL, &errcode);
-	if (errcode != CL_SUCCESS) {
-		return 0;
-	}
-	
-	size_t dataBytes;
-	clGetContextInfo(*context, CL_CONTEXT_DEVICES, 0, NULL, &dataBytes);
-	
-	if (dataBytes == 0) {
-		clReleaseContext(*context);
-		return 0;
-	}
-	*list = (cl_device_id*) malloc(dataBytes);
-	clGetContextInfo(*context, CL_CONTEXT_DEVICES, dataBytes, *list, NULL);
-	
-	return (cl_uint)(dataBytes / sizeof(cl_device_id));
-}
-
 //  ---------------------------------------------------------------
 // |
 // |  Get device with highest FLOPS (compute unit * clock frequency)
 // |
 //  ---------------------------------------------------------------
-
-inline unsigned int flopsForDevice(cl_device_id dev, cl_uint* compute_units, cl_uint* clock_frequency) {
-	clGetDeviceInfo(dev, CL_DEVICE_MAX_COMPUTE_UNITS, sizeof(cl_uint), compute_units, NULL);
-	clGetDeviceInfo(dev, CL_DEVICE_MAX_CLOCK_FREQUENCY, sizeof(cl_uint), clock_frequency, NULL);
-	return (*compute_units) * (*clock_frequency);
-}
 
 cl_device_id getMaxFlopsDevice(cl_device_id* list, cl_uint count) {
 	unsigned int maxFlops = 0;
@@ -187,7 +102,7 @@ cl_device_id getMaxFlopsDevice(cl_device_id* list, cl_uint count) {
 	cl_uint i = count;
 	while (i--) {
 		cl_uint compute_units, clock_frequency;
-		unsigned int currentFlops = flopsForDevice(list[i], &compute_units, &clock_frequency);
+		cl_uint currentFlops = oclHelper::flopsForDevice(list[i], &compute_units, &clock_frequency);
 		if (currentFlops > maxFlops) {
 			maxFlops = currentFlops;
 			fastestDevice = list[i];
@@ -196,8 +111,6 @@ cl_device_id getMaxFlopsDevice(cl_device_id* list, cl_uint count) {
 	return fastestDevice;
 }
 
-#pragma mark - Class methods
-
 // ################################################################
 // #
 // #  Class methods
@@ -205,17 +118,14 @@ cl_device_id getMaxFlopsDevice(cl_device_id* list, cl_uint count) {
 // ################################################################
 
 cl_uint getPreferedDevice(cl_device_id* device, cl_device_id** list, cl_context* context) {
-	cl_uint n;
 	// Create context and get device list
-	if (GPU_SETTINGS::forceNvidiaPlatform)
-		n = getContextAndDevices(context, list);
-	else
-		n = getDevicesList(context, list);
-	
+	cl_uint n = getContextAndDevices(context, list, GPU_SETTINGS::preferedPlatform, GPU_SETTINGS::preferedDeviceType);
 	if (n == 0) return 0;
 	
 	// select specific device
-	if (GPU_SETTINGS::preferedGPU >= 0 && GPU_SETTINGS::preferedGPU < (int)n)
+	if (nullptr != GPU_SETTINGS::preferedDevice)
+		*device = GPU_SETTINGS::preferedDevice;
+	else if (GPU_SETTINGS::preferedGPU >= 0 && GPU_SETTINGS::preferedGPU < (int)n)
 		*device = (*list)[GPU_SETTINGS::preferedGPU];
 	else
 		*device = getMaxFlopsDevice(*list, n);
@@ -231,7 +141,7 @@ OCLManager::OCLManager(const char *path) {
 	}
 	
 	// Compile program
-	program = loadProgram(path, context);
+	program = oclHelper::loadProgram(path, context);
 	if (program == 0) {
 		// write out the build log
 		size_t len = 0;
@@ -261,6 +171,7 @@ bool OCLManager::hasValidDevice() {
 	return true;
 }
 
+
 cl_uint OCLManager::printDevices() {
 	cl_context context;
 	cl_device_id device;
@@ -274,22 +185,8 @@ cl_uint OCLManager::printDevices() {
 	
 	// Print devices
 	printf("Devices:\n");
-	char device_string[1024];
 	for (cl_uint i = 0; i < n; i++) {
-		cl_uint compute_units, clock_frequency;
-		cl_ulong gpu_mem_size;
-		
-		flopsForDevice(deviceList[i], &compute_units, &clock_frequency);
-		clGetDeviceInfo(deviceList[i], CL_DEVICE_NAME, sizeof(device_string), &device_string, NULL);
-		clGetDeviceInfo(deviceList[i], CL_DEVICE_GLOBAL_MEM_SIZE, sizeof(cl_ulong), &gpu_mem_size, NULL);
-		
-		if (deviceList[i] == device) {
-			printf("-> "); // mark selected device
-		} else {
-			printf("   ");
-		}
-		printf("[%d]: %s (%d compute units, %llumb, %dMhz)\n",
-			   i, device_string, compute_units, (gpu_mem_size/1024/1024), clock_frequency);
+		oclHelper::printDevice(deviceList[i], i, deviceList[i] == device);
 	}
 	free(deviceList);
 	printf("\n");
@@ -297,50 +194,31 @@ cl_uint OCLManager::printDevices() {
 }
 
 void OCLManager::askUserToSelectGPU() {
-	GPU_SETTINGS::forceNvidiaPlatform = false;
-	
-	if (printDevices() == 0) {
+	CLPlatformDevice* pdList;
+	cl_uint n = oclHelper::getListOfPlattformsAndDevices(&pdList, true);
+	if (n == 0)
 		return;
-	}
 	
-	unsigned char gpu;
-	printf("Select Device: ");
+	unsigned int gpu;
+	do {
+		printf("Select Device: ");
 #ifdef _WIN32
-	scanf_s("%c", &gpu, 2);
+		scanf_s("%i", &gpu, 2);
 #else
-	scanf("%c", &gpu);
+		scanf("%i", &gpu);
 #endif
+	} while (gpu >= n);
 	
-	GPU_SETTINGS::preferedGPU = (gpu - 48); // char to int
+	printf("\n");
 	
-	cl_context context;
-	cl_device_id correctDevice;
-	cl_device_id* deviceList;
-	cl_uint tmp = getPreferedDevice(&correctDevice, &deviceList, &context);
-	if (tmp == 0)
-		return;
-	
-	free(deviceList);
-	clReleaseContext(context);
-	
-	cl_device_type type;
-	clGetDeviceInfo(correctDevice, CL_DEVICE_TYPE, sizeof(cl_device_type), &type, NULL);
-	
-	// avoid devices with multiple types
-	if (type & CL_DEVICE_TYPE_CUSTOM)            GPU_SETTINGS::deviceType = CL_DEVICE_TYPE_CUSTOM;
-	else if (type & CL_DEVICE_TYPE_ACCELERATOR)  GPU_SETTINGS::deviceType = CL_DEVICE_TYPE_ACCELERATOR;
-	else if (type & CL_DEVICE_TYPE_GPU)          GPU_SETTINGS::deviceType = CL_DEVICE_TYPE_GPU;
-	else if (type & CL_DEVICE_TYPE_CPU)          GPU_SETTINGS::deviceType = CL_DEVICE_TYPE_CPU;
-	else                                         GPU_SETTINGS::deviceType = CL_DEVICE_TYPE_DEFAULT;
-	
-	// Retrive the context a second time, to get the device-type specific list (and index)
-	GPU_SETTINGS::preferedGPU = 0;
-	cl_device_id wrongDevice;
-	cl_uint n = getPreferedDevice(&wrongDevice, &deviceList, &context);
-	while (n--) {
-		if (deviceList[n] == correctDevice) {
-			GPU_SETTINGS::preferedGPU = n;
-		}
-	}
+	CLPlatformDevice sel = pdList[gpu];
+	GPU_SETTINGS::preferedPlatform   = sel.platform;
+	GPU_SETTINGS::preferedDevice     = sel.device;
+	// Because device type can be a combination of types
+	GPU_SETTINGS::preferedDeviceType = (sel.type & CL_DEVICE_TYPE_ACCELERATOR ? CL_DEVICE_TYPE_ACCELERATOR
+										: sel.type & CL_DEVICE_TYPE_GPU ? CL_DEVICE_TYPE_GPU
+										: sel.type & CL_DEVICE_TYPE_CPU ? CL_DEVICE_TYPE_CPU
+										: CL_DEVICE_TYPE_DEFAULT );
+	free(pdList);
 }
 
