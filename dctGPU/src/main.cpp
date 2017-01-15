@@ -5,6 +5,7 @@
 #include <functional>
 #include <chrono>
 #include "OCL_DCT.h"
+#include "DCT_Nvidia.h"
 #include "GPUComposer.h"
 #include "OCLManager.hpp"
 
@@ -221,6 +222,7 @@ void contest(double seconds) {
 		float* vls = new float[width * height];
 		copyArray(vls, matrix, width * height);
 		OCL_DCT::separated(vls, width, height); // once to init static var ocl
+		DCT_Nvidia::arai(vls, width, height);
 		delete [] vls;
 		
 		testGPUSingleFunction("Normal DCT (Single Image)", matrix, width, height, seconds, OCL_DCT::normal);
@@ -229,6 +231,9 @@ void contest(double seconds) {
 		
 		testGPUComposer("Separated (Composer, var. Size)", matrix, width, height, seconds, OCL_DCT::separated, false);
 		testGPUComposer("Separated (Composer, Same Size)", matrix, width, height, seconds, OCL_DCT::separated, true);
+		
+		testGPUSingleFunction("Arai NVIDIA (Single Image)", matrix, width, height, seconds, DCT_Nvidia::arai);
+		testGPUComposer("Arai NVIDIA (Composer)", matrix, width, height, seconds, DCT_Nvidia::arai, true);
 	}
 	
 	printf("\n");
