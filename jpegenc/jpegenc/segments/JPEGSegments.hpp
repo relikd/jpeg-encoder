@@ -105,6 +105,19 @@ namespace JPEGSegments {
 		
 		virtual void addToStream(Bitstream &stream);
 	};
+    
+    struct DefineQuantizationTable : JpegSegment {
+        uint16_t length;
+        unsigned char qtNumber;
+        unsigned char qtPrecision;
+        unsigned char* values; // TODO: Replace by real table
+
+        DefineQuantizationTable(unsigned char qtNumber, unsigned char qtPrecision) : JpegSegment(0xFFDB) {
+            this->qtNumber = qtNumber;
+            this->qtPrecision = qtPrecision;
+            
+        }
+    };
 	
 	struct JPEGWriter {
 		std::vector<JpegSegment*> segments;
