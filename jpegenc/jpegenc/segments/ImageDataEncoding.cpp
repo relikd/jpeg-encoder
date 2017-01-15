@@ -100,11 +100,11 @@ Encoding* ImageDataEncoding::differenceEncoding() {
 	
 	unsigned int blockIndex = 0;
 	// Handling first Block
-	encodings[blockIndex++] = calculateCategory(sortedData[0]);
+	encodings[blockIndex++] = calculateCategory((int)sortedData[0]);
 	
 	// Handling the first line of blocks separately
 	for (unsigned int firstLineBlock = 64 ; firstLineBlock < horizontalBlocks * TOTAL_BLOCK_SIZE; firstLineBlock += TOTAL_BLOCK_SIZE) {
-		encodings[blockIndex++] = calculateCategory(sortedData[firstLineBlock] - TOTAL_BLOCK_SIZE);
+		encodings[blockIndex++] = calculateCategory((int)sortedData[firstLineBlock] - TOTAL_BLOCK_SIZE);
 	}
 	
 	// Handling the rest
@@ -121,7 +121,7 @@ Encoding* ImageDataEncoding::differenceEncoding() {
 				leftValue = sortedData[dcIndex - TOTAL_BLOCK_SIZE];
 			}
 			
-			encodings[blockIndex++] = calculateCategory(sortedData[dcIndex] - leftValue - upperValue);
+			encodings[blockIndex++] = calculateCategory((int)(sortedData[dcIndex] - leftValue - upperValue));
 		}
 	}
 	
@@ -161,7 +161,7 @@ unsigned int ImageDataEncoding::runLengthEncodingSingleBlock(uint8_t* byteRepres
 			lastIndexEOB = INT_MAX;
 		}
 		
-		encodings[encodingIndex] = calculateCategory(sortedData[i]);
+		encodings[encodingIndex] = calculateCategory((int)sortedData[i]);
 		byteRepresentations[encodingIndex] = toSingleByte(zerosInARow, encodings[encodingIndex].code);
 		++encodingIndex;
 		
