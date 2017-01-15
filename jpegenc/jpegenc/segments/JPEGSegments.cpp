@@ -52,9 +52,9 @@ void EndOfImage::addToStream(Bitstream &stream) {
 void DefineHuffmanTable::addToStream(Bitstream &stream) {
     stream.add(type, 16);
     stream.add(length, 16);
-    stream.add(htInfoNumber, 4);
-    stream.add(htInfoType, 1);
-    stream.add(htInfoRest, 3);
+    stream.add(htNumber, 4);
+    stream.add(htType, 1);
+    stream.add(htRest, 3);
 	
     for ( int i = 0; i < 16; ++i ) {
         stream.add(symbolsPerLevel[i], 8);
@@ -62,6 +62,17 @@ void DefineHuffmanTable::addToStream(Bitstream &stream) {
 	
     for (const std::pair<Symbol, Encoding> &enc : encodingTable) {
         stream.add(enc.first, 8);
+    }
+}
+
+void DefineQuantizationTable::addToStream(Bitstream &stream) {
+    stream.add(type, 16);
+    stream.add(length, 16);
+    stream.add(qtNumber, 4);
+    stream.add(qtPrecision, 4);
+    
+    for (int i = 0; i < 64; ++i) {
+        stream.add(values[i], 8);
     }
 }
 
@@ -76,7 +87,7 @@ void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathTo
     StartOfFrame0* sof0 = new StartOfFrame0(1, image);  // 1 = numberOfComponents
     segments.push_back(sof0);
 	
-	DefineHuffmanTable* dht = new DefineHuffmanTable(encodingTable);
+	DefineHuffmanTable* dht = new DefineHuffmanTable(0,0,0, encodingTable);
 	segments.push_back(dht);
 	
     EndOfImage* eoi = new EndOfImage();
