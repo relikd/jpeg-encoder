@@ -85,16 +85,16 @@ namespace JPEGSegments {
 	struct DefineHuffmanTable : JpegSegment {
 		uint16_t length;
 		EncodingTable encodingTable;
-		unsigned char htInfoNumber;
-		unsigned char htInfoType;
-		unsigned char htInfoRest;
+		unsigned char htNumber;
+		unsigned char htType;
+		unsigned char htRest;
 		unsigned char symbolsPerLevel[16] = {0};
 		
-		DefineHuffmanTable(EncodingTable encodingTable) : JpegSegment(0xFFC4) {
+		DefineHuffmanTable(unsigned char htNumber, unsigned char htType, unsigned char htRest, EncodingTable encodingTable) : JpegSegment(0xFFC4) {
 			this->encodingTable = encodingTable;
-			this->htInfoNumber = 0; // hardcoded
-			this->htInfoType = 0; // hardcoded
-			this->htInfoRest = 0; // hardcoded
+			this->htNumber = htNumber;
+			this->htType = htType;
+			this->htRest = htRest;
 			
 			for (const std::pair<Symbol, Encoding> &enc : encodingTable) {
 				unsigned short numberOfBits = enc.second.numberOfBits;
@@ -110,13 +110,16 @@ namespace JPEGSegments {
         uint16_t length;
         unsigned char qtNumber;
         unsigned char qtPrecision;
-        unsigned char* values; // TODO: Replace by real table
+        unsigned char *values; // TODO: Replace by real table
 
-        DefineQuantizationTable(unsigned char qtNumber, unsigned char qtPrecision) : JpegSegment(0xFFDB) {
+        DefineQuantizationTable(unsigned char qtNumber, unsigned char qtPrecision, unsigned char *values) : JpegSegment(0xFFDB) {
             this->qtNumber = qtNumber;
             this->qtPrecision = qtPrecision;
-            
+            this->values = values;
+            this->length = 1 + 64 * (qtPrecision + 1);
         }
+        
+        virtual void addToStream(Bitstream &stream);
     };
 	
 	struct JPEGWriter {
