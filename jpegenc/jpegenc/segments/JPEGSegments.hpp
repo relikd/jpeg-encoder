@@ -119,6 +119,30 @@ namespace JPEGSegments {
         
         virtual void addToStream(Bitstream &stream);
     };
+	
+	struct StartOfScan : JpegSegment {
+		uint16_t length;
+		unsigned char numberOfComponents;
+		//todo for every component 2 byte
+		/*For each component, read 2 bytes. It contains,
+		 1 byte   Component Id (1=Y, 2=Cb, 3=Cr, 4=I, 5=Q),
+		 1 byte   Huffman table to use :
+		 bit 0..3 : AC table (0..3)
+		 bit 4..7 : DC table (0..3)*/
+		unsigned char ignorableBytes[3] = {0x00, 0x3f, 0x00};
+		
+		StartOfScan(unsigned char numberOfComponents) : JpegSegment(0xFFDA) {
+			if(numberOfComponents < 1 || numberOfComponents > 4) {
+				printf("number of Componentes must be >= 1 and <=4");
+				exit(EXIT_FAILURE);
+			}
+			this->numberOfComponents = numberOfComponents;
+			this->length = 6 + 2 * numberOfComponents;
+		}
+		
+		virtual void addToStream(Bitstream &stream);
+		
+	};
     
 	struct JPEGWriter {
 		std::vector<JpegSegment*> segments;
