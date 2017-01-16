@@ -52,16 +52,33 @@ void EndOfImage::addToStream(Bitstream &stream) {
 void DefineHuffmanTable::addToStream(Bitstream &stream) {
     stream.add(type, 16);
     stream.add(length, 16);
+    
+    addTableData(0, 0, Y_DC, stream);
+    addTableData(1, 1, Y_AC, stream);
+    addTableData(2, 0, CbCr_DC, stream);
+    addTableData(3, 1, CbCr_AC, stream);
+}
+
+void DefineHuffmanTable::addTableData(uint8_t htNumber, uint8_t htType, EncodingTable table, Bitstream &stream) {
+    // HT Information
     stream.add(htNumber, 4);
     stream.add(htType, 1);
-    stream.add(htRest, 3);
-	
-    for ( int i = 0; i < 16; ++i ) {
+    stream.add(0, 3); // rest
+
+    // number of symbols per level
+    unsigned char symbolsPerLevel[16] = {0};
+
+    for (const std::pair<Symbol, Encoding> &encoding : table) {
+        unsigned short numberOfBits = encoding.second.numberOfBits;
+        symbolsPerLevel[numberOfBits - 1] += 1;
+    }
+
+    for (int i = 0; i < 16; ++i) {
         stream.add(symbolsPerLevel[i], 8);
     }
-	
-    for (const std::pair<Symbol, Encoding> &enc : encodingTable) {
-        stream.add(enc.first, 8);
+
+    for (const std::pair<Symbol, Encoding> &encoding : table) {
+        stream.add(encoding.first, 8);
     }
 }
 
@@ -87,7 +104,7 @@ void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathTo
     StartOfFrame0* sof0 = new StartOfFrame0(1, image);  // 1 = numberOfComponents
     segments.push_back(sof0);
 	
-	DefineHuffmanTable* dht = new DefineHuffmanTable(0,0,0, encodingTable);
+	DefineHuffmanTable* dht = new DefineHuffmanTable(encodingTable, encodingTable, encodingTable, encodingTable); // TODO: Use all tables
 	segments.push_back(dht);
 	
     EndOfImage* eoi = new EndOfImage();
