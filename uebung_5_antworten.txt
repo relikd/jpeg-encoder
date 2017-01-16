@@ -1,4 +1,4 @@
-5a) Welche in der JPEG-Spezifikation genannten Funktionalitäten implementieren wir nicht?
+5a) Welche in der JPEG-Spezifikation genannten Funktionalitäten implementieren wir nicht??
 
 Implementierte Funktionalitäten
 -------------------------------
