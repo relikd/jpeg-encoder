@@ -121,6 +121,7 @@ namespace JPEGSegments {
             this->length = 2 + 1 + 64 * (precision + 1);
         }
         
+        uint8_t* sortZickZack(const uint8_t* table);
         virtual void addToStream(Bitstream &stream);
     };
 	
