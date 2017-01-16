@@ -1,4 +1,5 @@
 #include "DCT.hpp"
+#include <thread>
 
 //  ---------------------------------------------------------------
 // |
@@ -169,3 +170,89 @@ void DCT::inverse(float* input, float* output, const size_t width, const size_t 
 		}
 	}
 }
+
+
+
+// ################################################################
+// #
+// #  Multi Threading
+// #
+// ################################################################
+
+static const unsigned int hwThreadCount = std::thread::hardware_concurrency();
+
+void DCT::transformMT(float* input, float* output, const size_t width, const size_t height) {
+	//	if (height < 8 * hwThreadCount) {
+	//		DCT::transform(input, output, width, height);
+	//		return;
+	//	}
+	std::thread* threads = new std::thread[hwThreadCount];
+	
+	size_t heightPerThread = height / hwThreadCount;
+	if (heightPerThread & 0b111) {
+		heightPerThread -= heightPerThread & 0b111; // floor to full 8-float block
+	}
+	size_t threadHeight = height - (heightPerThread * (hwThreadCount - 1)); // height of last thread
+	
+	unsigned int i = hwThreadCount;
+	while (i--) {
+		size_t threadOffset = heightPerThread * width * i;
+		threads[i] = std::thread([threadHeight, width, threadOffset, input, output]{
+			size_t y = threadHeight / N;
+			while (y--) {
+				size_t x = width / N;
+				while (x--) {
+					size_t offset = threadOffset + (y * width * N) + (x * N);
+					transform8x8_normal(&input[offset], &output[offset], width);
+				}
+			}
+		});
+		threadHeight = heightPerThread; // all other, except the last thread are of equal height
+	}
+	
+	i = hwThreadCount;
+	while (i--) {
+		threads[i].join();
+	}
+	delete [] threads;
+}
+
+void DCT::transform2MT(float* input, const size_t width, const size_t height) {
+	//	if (height < 8 * hwThreadCount) {
+	//		DCT::transform2(input, output, width, height);
+	//		return;
+	//	}
+	std::thread* threads = new std::thread[hwThreadCount];
+	
+	size_t heightPerThread = height / hwThreadCount;
+	if (heightPerThread & 0b111) {
+		heightPerThread -= heightPerThread & 0b111; // floor to full 8-float block
+	}
+	size_t threadHeight = height - (heightPerThread * (hwThreadCount - 1)); // height of last thread
+	
+	unsigned int i = hwThreadCount;
+	while (i--) {
+		size_t threadOffset = heightPerThread * width * i;
+		threads[i] = std::thread([threadHeight, width, threadOffset, input]{
+			float* temp = new float[64];
+			size_t y = threadHeight / N;
+			while (y--) {
+				size_t x = width / N;
+				while (x--) {
+					float *ptr = &input[ threadOffset + (y * width * N) + (x * N) ];
+					multiplyMatrixAWith(ptr, temp, width); // a * input
+					multiplyWithTransposedMatrixA(temp, ptr, width); // input * a^t
+				}
+			}
+			delete[] temp;
+		});
+		threadHeight = heightPerThread; // all other, except the last thread are of equal height
+	}
+	
+	i = hwThreadCount;
+	while (i--) {
+		threads[i].join();
+	}
+	delete [] threads;
+}
+

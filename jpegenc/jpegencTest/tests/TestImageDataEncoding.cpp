@@ -139,8 +139,8 @@ TEST_CASE("Test image data encoding", "[imageDataEncoding]") {
 	}
 	
 	SECTION("Test run length encoding") {
-		uint8_t* byteReps = new uint8_t[width * height];
-		Encoding* encodings = new Encoding[width * height];
+		std::vector<uint8_t> byteReps;
+		std::vector<Encoding> encodings;
 		float* input = lengthEncodingData;
 		ImageDataEncoding encoding(input, width, height);
 		
@@ -149,13 +149,12 @@ TEST_CASE("Test image data encoding", "[imageDataEncoding]") {
 		int length = encoding.runLengthEncoding(byteReps, encodings);
 		
 		REQUIRE(length == lengthEncodingBitRepsSize);
+		REQUIRE(byteReps.size() == lengthEncodingBitRepsSize);
+		REQUIRE(encodings.size() == lengthEncodingBitRepsSize);
 		
 		for(int i = 0; i < length; ++i) {
 			REQUIRE(byteReps[i] == lengthEncodingBitReps[i]);
 		}
-		
-		delete[] byteReps;
-		delete[] encodings;
 	}
 	
 	SECTION("Test difference encoding") {
@@ -167,6 +166,7 @@ TEST_CASE("Test image data encoding", "[imageDataEncoding]") {
 		int length = encoding.verticalBlocks * encoding.horizontalBlocks;
 		
 		REQUIRE(length == lengthDcEncodingResult);
+		REQUIRE(dcEncodings.size() == lengthDcEncodingResult);
 		
 		for (int i = 0; i < length; ++i) {
 			bool validEncoding =
@@ -178,8 +178,8 @@ TEST_CASE("Test image data encoding", "[imageDataEncoding]") {
 	}
 	
 	SECTION("Test AC Huffman encoding table") {
-		uint8_t* byteReps = new uint8_t[width * height];
-		Encoding* encodings = new Encoding[width * height];
+		std::vector<uint8_t> byteReps;
+		std::vector<Encoding> encodings;
 		float* input = lengthEncodingData;
 		
 		ImageDataEncoding encoding(input, width, height);
@@ -188,12 +188,10 @@ TEST_CASE("Test image data encoding", "[imageDataEncoding]") {
 		auto encodingTable = encoding.generateACEncodingTable(byteReps, encodings);
 		auto root = Huffman::treeFromEncodingTable(encodingTable);
 		
-		delete[] byteReps;
-		delete[] encodings;
 	}
 	
 	SECTION("Test DC Huffman encoding table") {
-		Encoding* encodings = new Encoding[width * height];
+		std::vector<Encoding> encodings;
 		float* input = lengthEncodingData;
 		
 		ImageDataEncoding encoding(input, width, height);
@@ -202,6 +200,5 @@ TEST_CASE("Test image data encoding", "[imageDataEncoding]") {
 		auto encodingTable = encoding.generateDCEncodingTable(encodings);
 		auto root = Huffman::treeFromEncodingTable(encodingTable);
 		
-		delete[] encodings;
 	}
 }
