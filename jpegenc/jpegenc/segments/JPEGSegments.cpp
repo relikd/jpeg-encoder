@@ -105,6 +105,15 @@ void DefineQuantizationTable::addToStream(Bitstream &stream) {
     }
 }
 
+void StartOfScan::addToStream(Bitstream &stream) {
+	stream.add(type, 16);
+	stream.add(length, 16);
+	stream.add(numberOfComponents, 8);
+	//todo add components
+	//stream.add(ignorableBytes, 24);
+	
+}
+
 void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile, EncodingTable encodingTable) {
 
     StartOfImage* soi = new StartOfImage();
