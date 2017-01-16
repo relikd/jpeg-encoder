@@ -31,7 +31,7 @@ static const uint8_t chrominanceQuantizationTable[64] = {
 };
 
 
-void Quantization::run(float* &dctCoefficient, size_t picWidth, size_t picHeigth, uint8_t* &quantizationMatrix) {
+void Quantization::run(float* &dctCoefficient, size_t picWidth, size_t picHeigth, const uint8_t* &quantizationMatrix) {
 	size_t matrixWidth = 8;
 	size_t numberOfBlocks = (picWidth * picHeigth) / (matrixWidth * matrixWidth);
 	size_t matrixLength = matrixWidth * matrixWidth;
