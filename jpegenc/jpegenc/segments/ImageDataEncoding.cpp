@@ -98,31 +98,22 @@ void ImageDataEncoding::sortZickZack() {
 Encoding* ImageDataEncoding::differenceEncoding() {
 	Encoding* encodings = new Encoding[verticalBlocks * horizontalBlocks];
 	
-	unsigned int blockIndex = 0;
-	// Handling first Block
-	encodings[blockIndex++] = calculateCategory((int)sortedData[0]);
+	unsigned int blockIndex = 1;
+	unsigned int blockInRow = 0;
+	unsigned int imageSize = width * height;
+	const unsigned int rowOffset = width * BLOCKDIMENSION;
 	
-	// Handling the first line of blocks separately
-	for (unsigned int firstLineBlock = 64 ; firstLineBlock < horizontalBlocks * TOTAL_BLOCK_SIZE; firstLineBlock += TOTAL_BLOCK_SIZE) {
-		encodings[blockIndex++] = calculateCategory((int)sortedData[firstLineBlock] - TOTAL_BLOCK_SIZE);
-	}
+	encodings[0] = calculateCategory(sortedData[0]);
 	
-	// Handling the rest
-	for (unsigned int verticalBlockIndex = 1; verticalBlockIndex < verticalBlocks; ++verticalBlockIndex) {
-		unsigned int verticalOffset = verticalBlockIndex * width * BLOCKDIMENSION;
+	for (int dcIndex = TOTAL_BLOCK_SIZE; dcIndex < imageSize; dcIndex += TOTAL_BLOCK_SIZE, ++blockInRow, ++blockIndex) {
+		int neighborBlockOffset = TOTAL_BLOCK_SIZE;
 		
-		for (unsigned int horizontalBlockIndex = 0; horizontalBlockIndex < horizontalBlocks; ++horizontalBlockIndex) {
-			unsigned int horizontalOffset = horizontalBlockIndex * TOTAL_BLOCK_SIZE;
-			unsigned int dcIndex =  verticalOffset + horizontalOffset;
-			float leftValue = 0;
-			float upperValue = sortedData[dcIndex - BLOCKDIMENSION * width];
-			
-			if (horizontalBlockIndex != 0) {
-				leftValue = sortedData[dcIndex - TOTAL_BLOCK_SIZE];
-			}
-			
-			encodings[blockIndex++] = calculateCategory((int)(sortedData[dcIndex] - leftValue - upperValue));
+		if (blockInRow == horizontalBlocks) {
+			blockInRow = 0;
+			neighborBlockOffset = rowOffset;
 		}
+		
+		encodings[blockIndex] = calculateCategory(sortedData[dcIndex] - sortedData[dcIndex - neighborBlockOffset]);
 	}
 	
 	return encodings;
