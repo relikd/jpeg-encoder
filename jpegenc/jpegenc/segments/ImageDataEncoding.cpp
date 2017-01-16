@@ -149,7 +149,7 @@ unsigned int ImageDataEncoding::runLengthEncodingSingleBlock(std::vector<uint8_t
 		}
 		
 		encodings.push_back(calculateCategory((int)sortedData[i]));
-		byteRepresentations.push_back(toSingleByte(zerosInARow, encodings[encodingIndex].code));
+		byteRepresentations.push_back(toSingleByte(zerosInARow, encodings[encodingIndex].numberOfBits));
 		++encodingIndex;
 		
 		zerosInARow = 0;

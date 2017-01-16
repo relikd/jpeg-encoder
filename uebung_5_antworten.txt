@@ -13,18 +13,22 @@ Nicht implementierte Funktionalitäten
 ------------------------------------
 - Alternativen zur sequentiellen DCT-Berechnung
 	- Verlustfreier Modus
-	- Progressiver DCT Modus
-		- Unterteilung in Scans
-		- zur progressiven Anzeige (Bild wird zunehmend schärfer)
+	- Progressiver DCT Modus (22)
+		- zur progressiven Anzeige
 	- Hierarchischer Modus
 		- Unterteilung in Frames
 		- SubFrames geben Unterschied zum SuperFrame an
 		- vgl. 1->4->8-"Pyramide"
 		- kann auch zur progressiven Anzeige verwendet werden
 - Arithmetische Entropie-Kodierung
-- Verarbeitung einer 12bit-Farbtiefe
-- Schreiben der Bilddaten im Interleaved-Modus (Y1 Cb1 Cr1, Y2 Cb2 Cr2, ...)
+- Verarbeitung einer 12bit-Farbtiefe (23)
+- Schreiben der Bilddaten im Interleaved-Modus (Y1 Cb1 Cr1, Y2 Cb2 Cr2, ...) (24)
+- Übersicht (26)
 
+- Marker-Tabelle: Seite 36
+- Außerdem: Seite 43 - damit kann man verstehen, wie rum die bits in dem Segment gehören xP
+- Anhang F: Sequential DCT-based mode of operation (Seite 91)
+- Anhang K: Beispiel (inkl. Quantisierungstabellen) (Seite 147)
 
 5b) Wie sehen die Quantisierungstabellen der JPEG-Spezifikation aus?
 
@@ -57,6 +61,8 @@ Chrominanz
 99  99  99  99  99  99  99  99
 99  99  99  99  99  99  99  99
 99  99  99  99  99  99  99  99
+
+If these quantization values are divided by 2, the resulting reconstructed image is usually nearly indistinguishable from thesource image.
 
 5c) Wie kommt man an die Quantisierungstabelle eines Photohandys?
 
