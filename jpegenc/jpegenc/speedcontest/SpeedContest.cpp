@@ -188,8 +188,37 @@ void testMultiThread(const char* desc, float* matrix, size_t width, size_t heigh
 }
 
 void runCPUMultiCore(float* matrix, size_t width, size_t height, double seconds) {
-	testMultiThread("Normal DCT", matrix, width, height, seconds, [width, height](float *in, float* out){
-		DCT::transform(in, out, width, height);
+	printf("\nThreading for single image:\n");
+	
+	size_t size = width * height;
+	float* vls = new float[size];
+	float* out = new float[size];
+	
+	copyArray(vls, matrix, size);
+	Performance::howManyOperationsInSeconds(seconds, "Normal DCT", [&]{
+		DCT::transformMT(vls, out, width, height);
+	});
+	delete [] out;
+	
+	copyArray(vls, matrix, size);
+	Performance::howManyOperationsInSeconds(seconds, "Separated DCT", [&]{
+		DCT::transform2MT(vls, width, height);
+	});
+	
+	copyArray(vls, matrix, size);
+	Performance::howManyOperationsInSeconds(seconds, "Arai inline transpose", [&]{
+		Arai::transformInlineTransposeMT(vls, width, height);
+	});
+	
+	copyArray(vls, matrix, size);
+	Performance::howManyOperationsInSeconds(seconds, "Arai DCT", [&]{
+		Arai::transformMT(vls, width, height);
+	});
+	
+	printf("\nThreading for image queue:\n");
+	
+	testMultiThread("Normal DCT", matrix, width, height, seconds, [width, height](float *in, float* outy){
+		DCT::transform(in, outy, width, height);
 	});
 	testMultiThread("Separated DCT", matrix, width, height, seconds, [width, height](float *in, float*){
 		DCT::transform2(in, width, height);

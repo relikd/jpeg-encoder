@@ -38,12 +38,10 @@ void ImageDataEncoding::init() {
 }
 
 /**
-* @param byteReps has to be handed in as an empty array with the size of the total image
-* and will be filled with the byte representations of the encodings in the order they appear.
-* @param encodings has to be handed in as an empty array with the size of the total image
-* and will be filled with the encodings for every dct value in the order they appear.
+* @param byteReps will be filled with the byte representations of the encodings in the order they appear.
+* @param encodings will be filled with the encodings for every dct value in the order they appear.
 */
-EncodingTable ImageDataEncoding::generateACEncodingTable(uint8_t* byteReps, Encoding* encodings) {
+EncodingTable ImageDataEncoding::generateACEncodingTable(std::vector<uint8_t> &byteReps, std::vector<Encoding> &encodings) {
 	unsigned int length = runLengthEncoding(byteReps, encodings);
 	Huffman huffman;
 	
@@ -56,10 +54,9 @@ EncodingTable ImageDataEncoding::generateACEncodingTable(uint8_t* byteReps, Enco
 }
 
 /**
-* @param encodings has to be handed in as an empty array with the size of the total image
-* and will be filled with the encodings for every dct value in the order they appear.
+* @param encodings will be filled with the encodings for every dct value in the order they appear.
 */
-EncodingTable ImageDataEncoding::generateDCEncodingTable(Encoding* encodings) {
+EncodingTable ImageDataEncoding::generateDCEncodingTable(std::vector<Encoding> &encodings) {
 	encodings = differenceEncoding();
 	Huffman huffman;
 	
@@ -68,7 +65,6 @@ EncodingTable ImageDataEncoding::generateDCEncodingTable(Encoding* encodings) {
 	}
 	huffman.generateNodeList();
 	
-	delete [] encodings;
 	return huffman.canonicalEncoding(16);
 }
 
@@ -96,18 +92,16 @@ void ImageDataEncoding::sortZickZack() {
 	}
 }
 
-Encoding* ImageDataEncoding::differenceEncoding() {
-	Encoding* encodings = new Encoding[verticalBlocks * horizontalBlocks];
-	
+std::vector<Encoding> ImageDataEncoding::differenceEncoding() {
+	std::vector<Encoding> encodings;
 	const unsigned int rowOffset = width * BLOCKDIMENSION;
-	unsigned int blockIndex = 1;
 	unsigned int blockInRow = 0;
 	unsigned int imageSize = width * height;
 	
 	
-	encodings[0] = calculateCategory(sortedData[0]);
+	encodings.push_back(calculateCategory(sortedData[0]));
 	
-	for (int dcIndex = TOTAL_BLOCK_SIZE; dcIndex < imageSize; dcIndex += TOTAL_BLOCK_SIZE, ++blockInRow, ++blockIndex) {
+	for (int dcIndex = TOTAL_BLOCK_SIZE; dcIndex < imageSize; dcIndex += TOTAL_BLOCK_SIZE, ++blockInRow) {
 		int neighborBlockOffset = TOTAL_BLOCK_SIZE;
 		
 		if (blockInRow == horizontalBlocks) {
@@ -115,7 +109,7 @@ Encoding* ImageDataEncoding::differenceEncoding() {
 			neighborBlockOffset = rowOffset;
 		}
 		
-		encodings[blockIndex] = calculateCategory(sortedData[dcIndex] - sortedData[dcIndex - neighborBlockOffset]);
+		encodings.push_back(calculateCategory(sortedData[dcIndex] - sortedData[dcIndex - neighborBlockOffset]));
 	}
 	
 	return encodings;
@@ -126,7 +120,7 @@ Encoding* ImageDataEncoding::differenceEncoding() {
 * @param encodings will be filled with the encodings of the length encoding.
 * byteRepresentations[0] and encodings[0] and so on fit together.
 */
-unsigned int ImageDataEncoding::runLengthEncoding(uint8_t* byteRepresentations, Encoding* encodings) {
+unsigned int ImageDataEncoding::runLengthEncoding(std::vector<uint8_t> &byteRepresentations,std::vector<Encoding> &encodings) {
 	int encodingIndex = 0;
 	
 	for (unsigned int i = 1; i < width * height; i += 64) {
@@ -136,8 +130,8 @@ unsigned int ImageDataEncoding::runLengthEncoding(uint8_t* byteRepresentations, 
 	return encodingIndex;
 }
 
-unsigned int ImageDataEncoding::runLengthEncodingSingleBlock(uint8_t* byteRepresentations,
-													 Encoding* encodings, unsigned int offset, unsigned int encodingIndex) {
+unsigned int ImageDataEncoding::runLengthEncodingSingleBlock(std::vector<uint8_t> &byteRepresentations,
+													std::vector<Encoding> &encodings, unsigned int offset, unsigned int encodingIndex) {
 	const unsigned int maxZerosInARow = 15;
 	unsigned int zerosInARow = 0;
 	unsigned int lastIndexEOB = INT_MAX;
@@ -154,8 +148,8 @@ unsigned int ImageDataEncoding::runLengthEncodingSingleBlock(uint8_t* byteRepres
 			lastIndexEOB = INT_MAX;
 		}
 		
-		encodings[encodingIndex] = calculateCategory((int)sortedData[i]);
-		byteRepresentations[encodingIndex] = toSingleByte(zerosInARow, encodings[encodingIndex].code);
+		encodings.push_back(calculateCategory((int)sortedData[i]));
+		byteRepresentations.push_back(toSingleByte(zerosInARow, encodings[encodingIndex].code));
 		++encodingIndex;
 		
 		zerosInARow = 0;
@@ -174,7 +168,10 @@ unsigned int ImageDataEncoding::runLengthEncodingSingleBlock(uint8_t* byteRepres
 }
 
 
-void ImageDataEncoding::addEndOfBlock(uint8_t* byteRepresentations, Encoding* encodings, unsigned int index) {
-	encodings[index] = calculateCategory(0);
-	byteRepresentations[index] = toSingleByte(0, encodings[index].code);
+void ImageDataEncoding::addEndOfBlock(std::vector<uint8_t> &byteRepresentations, std::vector<Encoding> &encodings, unsigned int index) {
+	encodings.erase(encodings.begin() + index, encodings.end());
+	encodings.push_back(calculateCategory(0));
+	
+	byteRepresentations.erase(byteRepresentations.begin() + index, byteRepresentations.end());
+	byteRepresentations.push_back(toSingleByte(0, encodings[index].code));
 }
