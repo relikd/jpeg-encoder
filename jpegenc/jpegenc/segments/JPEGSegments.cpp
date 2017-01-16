@@ -86,6 +86,15 @@ void DefineHuffmanTable::addTableData(uint8_t htNumber, uint8_t htType, Encoding
     }
 }
 
+uint8_t* DefineQuantizationTable::sortZickZack(const uint8_t* table) {
+    uint8_t *sortedTable = new uint8_t[64];
+    
+    for (int i = 0; i < 64; ++i) {
+        sortedTable[i] = table[ZICK_ZACK_INDEXES[i]];
+    }
+    return sortedTable;
+}
+
 void DefineQuantizationTable::addToStream(Bitstream &stream) {
     stream.add(type, 16);
     stream.add(length, 16);
@@ -93,8 +102,10 @@ void DefineQuantizationTable::addToStream(Bitstream &stream) {
     stream.add(precision, 4);
     stream.add(qt_number, 4);
     
+    uint8_t* sortedTable = sortZickZack(table);
+    
     for (int i = 0; i < 64; ++i) {
-        stream.add(table[i], 8);
+        stream.add(sortedTable[i], 8);
     }
 }
 
