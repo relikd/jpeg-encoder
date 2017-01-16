@@ -81,33 +81,38 @@ namespace JPEGSegments {
 		}
 		virtual void addToStream(Bitstream &stream);
 	};
-	
+    
 	struct DefineHuffmanTable : JpegSegment {
 		uint16_t length;
-		EncodingTable encodingTable;
-		unsigned char htNumber;
-		unsigned char htType;
-		unsigned char htRest;
-		unsigned char symbolsPerLevel[16] = {0};
+        EncodingTable Y_DC;
+        EncodingTable Y_AC;
+        EncodingTable CbCr_DC;
+        EncodingTable CbCr_AC;
 		
-		DefineHuffmanTable(unsigned char htNumber, unsigned char htType, unsigned char htRest, EncodingTable encodingTable) : JpegSegment(0xFFC4) {
-			this->encodingTable = encodingTable;
-			this->htNumber = htNumber;
-			this->htType = htType;
-			this->htRest = htRest;
-			
-			for (const std::pair<Symbol, Encoding> &enc : encodingTable) {
-				unsigned short numberOfBits = enc.second.numberOfBits;
-				symbolsPerLevel[numberOfBits - 1] += 1;
-			}
-			this->length = (uint16_t)(2 + 17 + encodingTable.size());
-		}
-		
+        DefineHuffmanTable(EncodingTable Y_DC, EncodingTable Y_AC, EncodingTable CbCr_DC, EncodingTable CbCr_AC) : JpegSegment(0xFFC4) {
+            this->Y_DC = Y_DC;
+            this->Y_AC = Y_AC;
+            this->CbCr_DC = CbCr_DC;
+            this->CbCr_AC = CbCr_AC;
+            this->length = (uint16_t)(
+                            2 // 1 *  2 length
+                         +  4 // 4 *  1 HT info
+                         + 64 // 4 * 16 number of symbols
+                         + Y_DC.size()
+                         + Y_AC.size()
+                         + CbCr_DC.size()
+                         + CbCr_AC.size()
+            );
+        }		
 		virtual void addToStream(Bitstream &stream);
+        void addTableData(uint8_t htNumber, uint8_t htType, EncodingTable table, Bitstream &stream);
 	};
     
     struct DefineQuantizationTable : JpegSegment {
         uint16_t length;
+        
+        
+        
         unsigned char qtNumber;
         unsigned char qtPrecision;
         unsigned char *values; // TODO: Replace by real table
