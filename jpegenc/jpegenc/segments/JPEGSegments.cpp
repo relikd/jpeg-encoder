@@ -90,18 +90,11 @@ void DefineQuantizationTable::addToStream(Bitstream &stream) {
     stream.add(type, 16);
     stream.add(length, 16);
     
-    stream.add(0, 4); // 0 = Y
+    stream.add(qt_number, 4); // 0 = Y
     stream.add(precision, 4);
     
     for (int i = 0; i < 64; ++i) {
-        stream.add(Quantization::getLuminanceQT()[i], 8);
-    }
-
-    stream.add(1, 4); // 1 = CbCr
-    stream.add(precision, 4);
-    
-    for (int i = 0; i < 64; ++i) {
-        stream.add(Quantization::getChrominanceQT()[i], 8);
+        stream.add(table[i], 8);
     }
 }
 
@@ -114,25 +107,87 @@ void StartOfScan::addToStream(Bitstream &stream) {
 	
 }
 
-void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile, EncodingTable encodingTable) {
-
+void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile) {
+    const uint8_t *luminanceQT = Quantization::getLuminanceQT();
+    const uint8_t *chrominanceQT = Quantization::getChrominanceQT();
+    
     StartOfImage* soi = new StartOfImage();
     segments.push_back(soi);
     
     APP0* app0 = new APP0();
     segments.push_back(app0);
-    
-    DefineQuantizationTable* dqt = new DefineQuantizationTable(0); // 0 = 8bit precision
-    segments.push_back(dqt);
 
+    DefineQuantizationTable* Y_dqt = new DefineQuantizationTable(0, 0, luminanceQT);
+    segments.push_back(Y_dqt);
+    
+    DefineQuantizationTable* CbCr_dqt = new DefineQuantizationTable(1, 0, chrominanceQT);
+    segments.push_back(CbCr_dqt);
+    
     StartOfFrame0* sof0 = new StartOfFrame0(1, image);  // 1 = numberOfComponents
     segments.push_back(sof0);
 
+    float *copyOfChannel1 = new float[image->channel1->numberOfPixel()];
+    float *copyOfChannel2 = new float[image->channel2->numberOfPixel()];
+    float *copyOfChannel3 = new float[image->channel3->numberOfPixel()];
+
+    memcpy(copyOfChannel1, image->channel1, image->channel1->numberOfPixel() * sizeof(float));
+    memcpy(copyOfChannel2, image->channel2, image->channel2->numberOfPixel() * sizeof(float));
+    memcpy(copyOfChannel3, image->channel3, image->channel3->numberOfPixel() * sizeof(float));
+
+    Arai::transform(copyOfChannel1, image->channel1->imageSize.width, image->channel1->imageSize.height);
+    Arai::transform(copyOfChannel2, image->channel2->imageSize.width, image->channel2->imageSize.height);
+    Arai::transform(copyOfChannel3, image->channel3->imageSize.width, image->channel3->imageSize.height);
+
+    Quantization::run(copyOfChannel1, image->channel1->imageSize.width, image->channel1->imageSize.height, luminanceQT);
+    Quantization::run(copyOfChannel2, image->channel2->imageSize.width, image->channel2->imageSize.height, chrominanceQT);
+    Quantization::run(copyOfChannel3, image->channel3->imageSize.width, image->channel3->imageSize.height, chrominanceQT);
     
-    // TODO
+    ImageDataEncoding channel1Encoder(copyOfChannel1, image->channel1->imageSize.width, image->channel1->imageSize.height);
+    ImageDataEncoding channel2Encoder(copyOfChannel2, image->channel2->imageSize.width, image->channel2->imageSize.height);
+    ImageDataEncoding channel3Encoder(copyOfChannel3, image->channel3->imageSize.width, image->channel3->imageSize.height);
     
+    channel1Encoder.init();
+    channel2Encoder.init();
+    channel3Encoder.init();
+
+    std::vector<Encoding> Y_DC_encoding;
+    auto Y_DC = channel1Encoder.generateDCEncodingTable(Y_DC_encoding);
     
-    DefineHuffmanTable* dht = new DefineHuffmanTable(encodingTable, encodingTable, encodingTable, encodingTable);
+    std::vector<uint8_t> Y_AC_byteReps;
+    std::vector<Encoding> Y_AC_encoding;
+    auto Y_AC = channel1Encoder.generateACEncodingTable(Y_AC_byteReps, Y_AC_encoding);
+    
+    std::vector<Encoding> Cb_DC_encoding = channel2Encoder.differenceEncoding();
+    std::vector<Encoding> Cr_DC_encoding = channel3Encoder.differenceEncoding();
+    Huffman DC_huffman;
+    for (auto &current : Cb_DC_encoding) {
+        DC_huffman.addSymbol(current.numberOfBits);
+    }
+    for (auto &current : Cr_DC_encoding) {
+        DC_huffman.addSymbol(current.numberOfBits);
+    }
+    DC_huffman.generateNodeList();
+    auto CbCr_DC = DC_huffman.canonicalEncoding(16);
+    
+    std::vector<Encoding> Cb_AC_encoding;
+    std::vector<Encoding> Cr_AC_encoding;
+    std::vector<uint8_t> Cb_AC_byteReps;
+    std::vector<uint8_t> Cr_AC_byteReps;
+    channel2Encoder.runLengthEncoding(Cb_AC_byteReps, Cb_AC_encoding);
+    channel3Encoder.runLengthEncoding(Cr_AC_byteReps, Cr_AC_encoding);
+    Huffman AC_huffman;
+    for (auto &current : Cb_AC_byteReps)
+    {
+        AC_huffman.addSymbol(current);
+    }
+    for (auto &current : Cr_AC_byteReps)
+    {
+        AC_huffman.addSymbol(current);
+    }
+    AC_huffman.generateNodeList();
+    auto CbCr_AC = AC_huffman.canonicalEncoding(16);
+    
+    DefineHuffmanTable* dht = new DefineHuffmanTable(Y_DC, Y_AC, CbCr_DC, CbCr_AC);
     segments.push_back(dht);
 
     // sos
