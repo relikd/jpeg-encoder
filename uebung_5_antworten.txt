@@ -1,0 +1,86 @@
+5a) Welche in der JPEG-Spezifikation genannten Funktionalitäten implementieren wir nicht?
+
+Implementierte Funktionalitäten
+-------------------------------
+- Farbraumkonvertierung
+- Subsampling
+- DCT-Berechnung (baseline sequential DCT)
+- Zick-Zack-Sortierung
+- Quantisierung
+- Huffman-Kodierung
+
+Nicht implementierte Funktionalitäten
+------------------------------------
+- Alternativen zur sequentiellen DCT-Berechnung
+	- Verlustfreier Modus
+	- Progressiver DCT Modus
+		- Unterteilung in Scans
+		- zur progressiven Anzeige (Bild wird zunehmend schärfer)
+	- Hierarchischer Modus
+		- Unterteilung in Frames
+		- SubFrames geben Unterschied zum SuperFrame an
+		- vgl. 1->4->8-"Pyramide"
+		- kann auch zur progressiven Anzeige verwendet werden
+- Arithmetische Entropie-Kodierung
+- Verarbeitung einer 12bit-Farbtiefe
+- Schreiben der Bilddaten im Interleaved-Modus (Y1 Cb1 Cr1, Y2 Cb2 Cr2, ...)
+
+
+5b) Wie sehen die Quantisierungstabellen der JPEG-Spezifikation aus?
+
+- lediglich Beispielwerte
+- Betrachtung in ZZ-Reihenfolge
+- Verlauf von geringen Quantisierungsstufen für die forderen Werte zu hohen Quantisierungsstufen für die hinteren Werte
+- Luminanz-Tabelle
+	- feiner gegliedert als Chrominaztabelle
+	- relativ gleichmäßiger Verlauf
+	- letzter Wert ist 99, zuvor werden aber Werte von bis zu 121 erreicht (Ausreißer)
+- Chrominanz-Tabelle
+- nur 13 Werte sind nicht 99 (alle liegen unter den ersten 15)
+
+Luminanz
+16  11  10  16  24  40  51  61
+12  12  14  19  26  58  60  55
+14  13  16  24  40  57  69  56
+14  17  22  29  51  87  80  62
+18  22  37  56  68 109 103  77
+24  35  55  64  81 104 113  92
+49  64  78  87 103 121 120 101
+72  92  95  98 112 100 103  99
+
+Chrominanz
+17  18  24  47  99  99  99  99
+18  21  26  66  99  99  99  99
+24  26  56  99  99  99  99  99
+47  66  99  99  99  99  99  99
+99  99  99  99  99  99  99  99
+99  99  99  99  99  99  99  99
+99  99  99  99  99  99  99  99
+99  99  99  99  99  99  99  99
+
+5c) Wie kommt man an die Quantisierungstabelle eines Photohandys?
+
+1. Foto machen
+2. Als JPEG abspeichern
+3. JPEG-Snoop
+
+Für Samsung Galaxy S4 mini (von Marv)
+Luminanz-Tabelle
+1  1  1  1  2  3  4  5
+1  1  1  2  2  5  5  4
+1  1  1  2  3  5  6  4
+1  1  2  2  4  7  6  5
+1  2  3  4  5  9  8  6
+2  3  4  5  6  8  9  7
+4  5  6  7  8 10 10  8
+6  7  8  8  9  8  8  8
+
+Chrominanz-Tabelle
+1  1  2  4  8  8  8  8
+1  2  2  5  8  8  8  8
+2  2  4  8  8  8  8  8
+4  5  8  8  8  8  8  8
+8  8  8  8  8  8  8  8
+8  8  8  8  8  8  8  8
+8  8  8  8  8  8  8  8
+
