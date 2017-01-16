@@ -13,7 +13,7 @@
 
 class Quantization {
 public:
-	static void run(float* &dctCoefficient,float* &quantizationMatrix);
+	static void run(float* &dctCoefficient, size_t picWidth, size_t picHeigth, float* &quantizationMatrix);
 };
 
 #endif /* Quantization_hpp */
