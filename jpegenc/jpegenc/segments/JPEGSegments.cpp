@@ -8,8 +8,9 @@
 
 #include "JPEGSegments.hpp"
 #include <iostream>
-#include "Quantization.hpp"
-#include "Quantization.cpp"
+#include "../Quantization.hpp"
+#include "../dct/Arai.hpp"
+#include "ImageDataEncoding.hpp"
 
 using namespace JPEGSegments;
 
@@ -112,15 +113,20 @@ void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathTo
     APP0* app0 = new APP0();
     segments.push_back(app0);
     
-    StartOfFrame0* sof0 = new StartOfFrame0(1, image);  // 1 = numberOfComponents
-    segments.push_back(sof0);
-	
-    // TODO: Fix with Chris (4 different tables instead of 1)
-	DefineHuffmanTable* dht = new DefineHuffmanTable(encodingTable, encodingTable, encodingTable, encodingTable);
-	segments.push_back(dht);
-	
     DefineQuantizationTable* dqt = new DefineQuantizationTable(0); // 0 = 8bit precision
     segments.push_back(dqt);
+
+    StartOfFrame0* sof0 = new StartOfFrame0(1, image);  // 1 = numberOfComponents
+    segments.push_back(sof0);
+
+    
+    // TODO
+    
+    
+    DefineHuffmanTable* dht = new DefineHuffmanTable(encodingTable, encodingTable, encodingTable, encodingTable);
+    segments.push_back(dht);
+
+    // sos
     
     EndOfImage* eoi = new EndOfImage();
     segments.push_back(eoi);
