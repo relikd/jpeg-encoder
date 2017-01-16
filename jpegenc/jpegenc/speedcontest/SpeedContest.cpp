@@ -159,6 +159,7 @@ void testMultiThread(const char* desc, float* matrix, size_t width, size_t heigh
 	
 	// Start as many threads as supported
 	unsigned int i = hwThreadCount;
+	Timer t;
 	while (i--) {
 		threads[i] = std::thread([multiSrc, multiDst, seconds, i, func, &counters, width, height]{
 			Timer inner;
@@ -170,7 +171,7 @@ void testMultiThread(const char* desc, float* matrix, size_t width, size_t heigh
 			counters[i] = innerCounter;
 		});
 	}
-	Timer t;
+	
 	unsigned long totalIterations = 0;
 	i = hwThreadCount;
 	while (i--) {
@@ -231,6 +232,8 @@ void testMultiThread2(const char* desc, float* matrix, size_t width, size_t heig
 	float* src = new float[width * height];
 	float* dst = new float[width * height];
 	copyArray(src, matrix, width * height);
+	
+	threadSyncedCounter = 0;
 	
 	// calc size and offset
 	size_t heightPerThread = height / hwThreadCount;
