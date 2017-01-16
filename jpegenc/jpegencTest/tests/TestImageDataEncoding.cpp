@@ -61,7 +61,7 @@ const unsigned int lengthEncodingBitReps[lengthEncodingBitRepsSize] = {
 
 
 const unsigned int lengthDcEncodingResult = 4;
-const Encoding dcEncodingResult[4] = {Encoding(8, 4), Encoding(2, 6), Encoding(3, 2), Encoding(0, 3)};
+const Encoding dcEncodingResult[4] = {Encoding(8, 4), Encoding(2, 3), Encoding(8, 4), Encoding(4, 3)};
 const unsigned int width = 16, height = 16;
 
 
