@@ -10,10 +10,12 @@
 #define Quantization_hpp
 
 #include <stdio.h>
+#include <stdint.h>
+
 
 class Quantization {
 public:
-	static void run(float* &dctCoefficient, size_t picWidth, size_t picHeigth, float* &quantizationMatrix);
+	static void run(float* &dctCoefficient, size_t picWidth, size_t picHeigth, uint8_t* &quantizationMatrix);
 };
 
 #endif /* Quantization_hpp */

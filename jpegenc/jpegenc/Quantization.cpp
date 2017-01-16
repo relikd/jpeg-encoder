@@ -9,7 +9,7 @@
 #include "Quantization.hpp"
 
 
-static const float luminaceQuantizationTable[64] = {
+static const uint8_t luminaceQuantizationTable[64] = {
 	16, 11, 10, 16, 124, 140, 151, 161,
 	12, 12, 14, 19, 126, 158, 160, 155,
 	14, 13, 16, 24, 140, 157, 169, 156,
@@ -20,7 +20,7 @@ static const float luminaceQuantizationTable[64] = {
 	72, 92, 95, 98, 112, 100, 103, 199
 };
 
-static const float chrominanceQuantizationTable[64] = {
+static const uint8_t chrominanceQuantizationTable[64] = {
 	17, 18, 24, 47, 99, 99, 99, 99,
 	18, 21, 26, 66, 99, 99, 99, 99,
 	24, 26, 56, 99, 99, 99, 99, 99,
@@ -32,7 +32,7 @@ static const float chrominanceQuantizationTable[64] = {
 };
 
 
-void Quantization::run(float* &dctCoefficient, size_t picWidth, size_t picHeigth, float* &quantizationMatrix) {
+void Quantization::run(float* &dctCoefficient, size_t picWidth, size_t picHeigth, uint8_t* &quantizationMatrix) {
 	size_t matrixWidth = 8;
 	size_t numberOfBlocks = (picWidth * picHeigth) / (matrixWidth * matrixWidth);
 	size_t matrixLength = matrixWidth * matrixWidth;
