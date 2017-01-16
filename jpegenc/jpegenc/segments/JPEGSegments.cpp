@@ -8,6 +8,9 @@
 
 #include "JPEGSegments.hpp"
 #include <iostream>
+#include "Quantization.hpp"
+#include "Quantization.cpp"
+
 using namespace JPEGSegments;
 
 void APP0::addToStream(Bitstream &stream) {
@@ -85,11 +88,19 @@ void DefineHuffmanTable::addTableData(uint8_t htNumber, uint8_t htType, Encoding
 void DefineQuantizationTable::addToStream(Bitstream &stream) {
     stream.add(type, 16);
     stream.add(length, 16);
-    stream.add(qtNumber, 4);
-    stream.add(qtPrecision, 4);
+    
+    stream.add(0, 4); // 0 = Y
+    stream.add(precision, 4);
     
     for (int i = 0; i < 64; ++i) {
-        stream.add(values[i], 8);
+        stream.add(Quantization::getLuminanceQT()[i], 8);
+    }
+
+    stream.add(1, 4); // 1 = CbCr
+    stream.add(precision, 4);
+    
+    for (int i = 0; i < 64; ++i) {
+        stream.add(Quantization::getChrominanceQT()[i], 8);
     }
 }
 
@@ -104,12 +115,15 @@ void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathTo
     StartOfFrame0* sof0 = new StartOfFrame0(1, image);  // 1 = numberOfComponents
     segments.push_back(sof0);
 	
-	DefineHuffmanTable* dht = new DefineHuffmanTable(encodingTable, encodingTable, encodingTable, encodingTable); // TODO: Use all tables
+    // TODO: Fix with Chris (4 different tables instead of 1)
+	DefineHuffmanTable* dht = new DefineHuffmanTable(encodingTable, encodingTable, encodingTable, encodingTable);
 	segments.push_back(dht);
 	
+    DefineQuantizationTable* dqt = new DefineQuantizationTable(0); // 0 = 8bit precision
+    segments.push_back(dqt);
+    
     EndOfImage* eoi = new EndOfImage();
     segments.push_back(eoi);
-	
     
     for (size_t i = 0; i < segments.size(); ++i) {
         segments[i]->addToStream(stream);
