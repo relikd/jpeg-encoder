@@ -68,6 +68,7 @@ EncodingTable ImageDataEncoding::generateDCEncodingTable(Encoding* encodings) {
 	}
 	huffman.generateNodeList();
 	
+	delete [] encodings;
 	return huffman.canonicalEncoding(16);
 }
 
@@ -98,10 +99,11 @@ void ImageDataEncoding::sortZickZack() {
 Encoding* ImageDataEncoding::differenceEncoding() {
 	Encoding* encodings = new Encoding[verticalBlocks * horizontalBlocks];
 	
+	const unsigned int rowOffset = width * BLOCKDIMENSION;
 	unsigned int blockIndex = 1;
 	unsigned int blockInRow = 0;
 	unsigned int imageSize = width * height;
-	const unsigned int rowOffset = width * BLOCKDIMENSION;
+	
 	
 	encodings[0] = calculateCategory(sortedData[0]);
 	
