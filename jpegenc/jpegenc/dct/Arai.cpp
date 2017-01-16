@@ -186,86 +186,57 @@ void Arai::transformInlineTranspose(float* values, const size_t image_width, con
 // #
 // ################################################################
 
-static const unsigned int hwThreadCount = std::thread::hardware_concurrency();
+#include "../helper/ctpl_stl.h"
+static ctpl::thread_pool p( std::thread::hardware_concurrency() );
 
 void Arai::transformMT(float* input, const size_t width, const size_t height) {
-	//	if (height < 8 * hwThreadCount) {
-	//		DCT::transform(input, output, width, height);
-	//		return;
-	//	}
-	std::thread* threads = new std::thread[hwThreadCount];
+	size_t numThreads = height / 8;
+	std::vector<std::future<void>> results(numThreads);
 	
-	size_t heightPerThread = height / hwThreadCount;
-	if (heightPerThread & 0b111) {
-		heightPerThread -= heightPerThread & 0b111; // floor to full 8-float block
-	}
-	size_t threadHeight = height - (heightPerThread * (hwThreadCount - 1)); // height of last thread
-	
-	unsigned int i = hwThreadCount;
+	size_t i = numThreads;
 	while (i--) {
-		size_t threadOffset = heightPerThread * width * i;
-		threads[i] = std::thread([threadHeight, width, threadOffset, input]{
+		results[i] = p.push( [i, width, input](int){
 			// Process Rows
-			float *rowPointer = &input[threadOffset];
-			size_t rowRepeat = width * threadHeight / 8;
+			float *rowPointer = &input[i*width];
+			size_t rowRepeat = width; // "/8*8"
 			while (rowRepeat--) {
 				ARAI_ROW(rowPointer);
 				rowPointer += 8;
 			}
-			
 			// Process Columns
-			float *colPointer = &input[threadOffset];
-			size_t lineSkip = width * 7; // 7 because one line was already processed
-			size_t y = threadHeight / 8;
-			while (y--) {
-				size_t x = width;
-				while (x--) {
-					ARAI_COL(colPointer, width);
-					++colPointer;
-				}
-				colPointer += lineSkip;
+			float *colPointer = &input[i*width];
+			size_t colRepeat = width;
+			while (colRepeat--) {
+				ARAI_COL(colPointer, width);
+				++colPointer;
 			}
 		});
-		threadHeight = heightPerThread; // all other, except the last thread are of equal height
 	}
 	
-	i = hwThreadCount;
+	i = numThreads;
 	while (i--) {
-		threads[i].join();
+		results[i].get();
 	}
-	delete [] threads;
 }
 
 void Arai::transformInlineTransposeMT(float* input, const size_t width, const size_t height) {
-	//	if (height < 8 * hwThreadCount) {
-	//		DCT::transform2(input, output, width, height);
-	//		return;
-	//	}
-	std::thread* threads = new std::thread[hwThreadCount];
+	size_t numThreads = height / 8;
+	std::vector<std::future<void>> results(numThreads);
 	
-	size_t heightPerThread = height / hwThreadCount;
-	if (heightPerThread & 0b111) {
-		heightPerThread -= heightPerThread & 0b111; // floor to full 8-float block
-	}
-	size_t threadHeight = height - (heightPerThread * (hwThreadCount - 1)); // height of last thread
-	
-	unsigned int i = hwThreadCount;
+	size_t i = numThreads;
 	while (i--) {
-		size_t threadOffset = heightPerThread * width * i;
-		threads[i] = std::thread([threadHeight, width, threadOffset, input]{
-			float *outValues = new float[threadHeight * width];
+		results[i] = p.push( [i, width, input](int){
+			float *outValues = new float[8 * width];
 			
-			araiWithInlineTranspose(&input[threadOffset], outValues, width, threadHeight);
-			araiWithInlineTranspose(outValues, &input[threadOffset], width, threadHeight);
+			araiWithInlineTranspose(&input[i*width], outValues, width, 8);
+			araiWithInlineTranspose(outValues, &input[i*width], width, 8);
 			
 			delete[] outValues;
 		});
-		threadHeight = heightPerThread; // all other, except the last thread are of equal height
 	}
 	
-	i = hwThreadCount;
+	i = numThreads;
 	while (i--) {
-		threads[i].join();
+		results[i].get();
 	}
-	delete [] threads;
 }
