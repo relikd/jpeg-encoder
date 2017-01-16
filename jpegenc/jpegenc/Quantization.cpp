@@ -8,17 +8,14 @@
 
 #include "Quantization.hpp"
 
-
-void Quantization::run(float* &dctCoefficient, float* &quantizationMatrix){
-	size_t blocksPerLine = 8;
-	size_t numberOfBlocks = 64;
-	size_t blockWidth = 8;
-	size_t imageWidth = blocksPerLine * blockWidth;
-	size_t matrixLength = blockWidth * blockWidth;
+void Quantization::run(float* &dctCoefficient, size_t picWidth, size_t picHeigth, float* &quantizationMatrix) {
+	size_t matrixWidth = 8;
+	size_t numberOfBlocks = (picWidth * picHeigth) / (matrixWidth * matrixWidth);
+	size_t matrixLength = matrixWidth * matrixWidth;
 	
 	for (unsigned int i = 0; i < numberOfBlocks; i++) {
 		for (unsigned int j = 0; j < matrixLength; j++) {
-			dctCoefficient[i * imageWidth + j] = dctCoefficient[i * imageWidth + j] / quantizationMatrix[(i % blockWidth) * blockWidth + j % blockWidth];
+			dctCoefficient[i * picWidth + j] = dctCoefficient[i * picWidth + j] / quantizationMatrix[(i % matrixWidth) * matrixWidth + j % matrixWidth];
 		}
 	}
 }
