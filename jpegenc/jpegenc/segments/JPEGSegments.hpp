@@ -111,10 +111,14 @@ namespace JPEGSegments {
     struct DefineQuantizationTable : JpegSegment {
         uint16_t length;
         uint8_t precision;
+        const uint8_t* table;
+        uint8_t qt_number;
         
-        DefineQuantizationTable(uint8_t precision) : JpegSegment(0xFFDB) {
+        DefineQuantizationTable(uint8_t qt_number, uint8_t precision, const uint8_t* table) : JpegSegment(0xFFDB) {
+            this->table = table;
+            this->qt_number = qt_number;
             this->precision = precision;
-            this->length = 2 + 2 * 64 * (precision + 1);
+            this->length = 2 + 64 * (precision + 1);
         }
         
         virtual void addToStream(Bitstream &stream);
@@ -151,7 +155,7 @@ namespace JPEGSegments {
 		JPEGWriter() {
 		}
 		
-		void writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile, EncodingTable encodingTable);
+		void writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile);
 	};
 }
 
