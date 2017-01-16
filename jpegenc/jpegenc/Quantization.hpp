@@ -16,6 +16,9 @@
 class Quantization {
 public:
 	static void run(float* &dctCoefficient, size_t picWidth, size_t picHeigth, uint8_t* &quantizationMatrix);
+    
+    static const uint8_t* getLuminanceQT();
+    static const uint8_t* getChrominanceQT();
 };
 
 #endif /* Quantization_hpp */
