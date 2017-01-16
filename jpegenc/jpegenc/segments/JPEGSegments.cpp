@@ -65,9 +65,9 @@ void DefineHuffmanTable::addToStream(Bitstream &stream) {
 
 void DefineHuffmanTable::addTableData(uint8_t htNumber, uint8_t htType, EncodingTable table, Bitstream &stream) {
     // HT Information
-    stream.add(htNumber, 4);
-    stream.add(htType, 1);
     stream.add(0, 3); // rest
+    stream.add(htType, 1);
+    stream.add(htNumber, 4);
 
     // number of symbols per level
     unsigned char symbolsPerLevel[16] = {0};
@@ -90,8 +90,8 @@ void DefineQuantizationTable::addToStream(Bitstream &stream) {
     stream.add(type, 16);
     stream.add(length, 16);
     
-    stream.add(qt_number, 4); // 0 = Y
     stream.add(precision, 4);
+    stream.add(qt_number, 4);
     
     for (int i = 0; i < 64; ++i) {
         stream.add(table[i], 8);
