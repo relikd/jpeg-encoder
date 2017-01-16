@@ -10,6 +10,7 @@
 #define ImageDataEncoding_hpp
 
 #include <stdio.h>
+#include <vector>
 #include "../huffman/Encoding.hpp"
 #include "../huffman/Huffman.hpp"
 
@@ -45,14 +46,14 @@ struct ImageDataEncoding {
 
 	
 	void init();
-	EncodingTable generateACEncodingTable(uint8_t* byteReps, Encoding* encodings);
-	EncodingTable generateDCEncodingTable(Encoding* encodings);
+	EncodingTable generateACEncodingTable(std::vector<uint8_t> &byteReps, std::vector<Encoding> &encodings);
+	EncodingTable generateDCEncodingTable(std::vector<Encoding> &encodings);
 	void sortZickZack();
-	Encoding* differenceEncoding();
-	unsigned int runLengthEncoding(uint8_t* byteRepresentations, Encoding* encodings);
-	unsigned int runLengthEncodingSingleBlock(uint8_t* byteRepresentations, Encoding* encodings, unsigned int offset, unsigned int encodingIndex);
+	std::vector<Encoding> differenceEncoding();
+	unsigned int runLengthEncoding(std::vector<uint8_t> &byteRepresentations, std::vector<Encoding> &encodings);
+	unsigned int runLengthEncodingSingleBlock(std::vector<uint8_t> &byteRepresentations, std::vector<Encoding> &encodings, unsigned int offset, unsigned int encodingIndex);
 	
-	void addEndOfBlock(uint8_t* byteRepresentations, Encoding* encodings, unsigned int index);
+	void addEndOfBlock(std::vector<uint8_t> &byteRepresentations, std::vector<Encoding> &encodings, unsigned int index);
 };
 
 #endif /* ImageDataEncoding_hpp */
