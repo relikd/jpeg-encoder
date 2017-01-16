@@ -118,7 +118,7 @@ namespace JPEGSegments {
             this->table = table;
             this->qt_number = qt_number;
             this->precision = precision;
-            this->length = 2 + 64 * (precision + 1);
+            this->length = 2 + 1 + 64 * (precision + 1);
         }
         
         virtual void addToStream(Bitstream &stream);
