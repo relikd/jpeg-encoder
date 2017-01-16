@@ -2,9 +2,14 @@
 #include <stdlib.h>
 #include <thread>
 #include <math.h>
+#include <mutex>
 #include "../helper/Performance.hpp"
 #include "../dct/Arai.hpp"
 #include "../dct/DCT.hpp"
+
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
 // 1, 7, 3, 4, 5, 4, 3, 2
 // one way transform gets:
@@ -187,9 +192,107 @@ void testMultiThread(const char* desc, float* matrix, size_t width, size_t heigh
 	delete [] threads;
 }
 
+#ifdef _WIN32
+CRITICAL_SECTION g_critSec;
+#else
+std::mutex lock;
+#endif
+
+unsigned long threadSyncedCounter = 0;
+inline bool multiThreadShouldProcess(unsigned long val) {
+#ifdef _WIN32
+	EnterCriticalSection( &g_critSec );
+#else
+	lock.lock();
+#endif
+	if (val > threadSyncedCounter) {
+#ifdef _WIN32
+		LeaveCriticalSection( &g_critSec );
+#else
+		lock.unlock();
+#endif
+		return false;
+	} else {
+		threadSyncedCounter = val + 1;
+#ifdef _WIN32
+		LeaveCriticalSection( &g_critSec );
+#else
+		lock.unlock();
+#endif
+		return true;
+	}
+}
+
+void testMultiThread2(const char* desc, float* matrix, size_t width, size_t height, double seconds, std::function<void(float*,float*,size_t)> func) {
+	static const unsigned int hwThreadCount = std::thread::hardware_concurrency();
+	unsigned long* counters = new unsigned long[hwThreadCount];
+	std::thread* threads = new std::thread[hwThreadCount];
+	
+	float* src = new float[width * height];
+	float* dst = new float[width * height];
+	copyArray(src, matrix, width * height);
+	
+	// calc size and offset
+	size_t heightPerThread = height / hwThreadCount;
+	if (heightPerThread & 0b111) {
+		heightPerThread -= heightPerThread & 0b111; // floor to full 8-float block
+	}
+	size_t threadHeight = height - (heightPerThread * (hwThreadCount - 1)); // height of last thread
+	
+	// Start as many threads as supported
+	unsigned int i = hwThreadCount;
+	Timer t;
+	while (i--) {
+		threads[i] = std::thread([heightPerThread, threadHeight, src, dst, seconds, i, func, &counters, width]{
+			float* ptrSrc = &src[ i * width * heightPerThread ];
+			float* ptrDst = &dst[ i * width * heightPerThread ];
+			unsigned long innerCounter = 0;
+			Timer inner;
+			while (inner.elapsed() < seconds) {
+				if (multiThreadShouldProcess(innerCounter)) {
+					func(ptrSrc, ptrDst, threadHeight);
+					++innerCounter;
+				}
+			}
+			counters[i] = innerCounter;
+		});
+		threadHeight = heightPerThread;
+	}
+	
+	i = hwThreadCount;
+	while (i--) {
+		threads[i].join();
+	}
+	
+	double time = t.elapsed();
+	PerformancePrintOperationsPerSecond(desc, time, threadSyncedCounter);
+	
+	// Cleanup
+	delete [] counters;
+	delete [] threads;
+}
+
 void runCPUMultiCore(float* matrix, size_t width, size_t height, double seconds) {
-	testMultiThread("Normal DCT", matrix, width, height, seconds, [width, height](float *in, float* outy){
-		DCT::transform(in, outy, width, height);
+#ifdef _WIN32
+	InitializeCriticalSection( &g_critSec );
+#endif
+	printf("Threading on single image:\n");
+	testMultiThread2("Normal DCT", matrix, width, height, seconds, [width, height](float *in, float* out, size_t h){
+		DCT::transform(in, out, width, h);
+	});
+	testMultiThread2("Separated DCT", matrix, width, height, seconds, [width, height](float *in, float*, size_t h){
+		DCT::transform2(in, width, h);
+	});
+	testMultiThread2("Arai inline transpose", matrix, width, height, seconds, [width, height](float *in, float*, size_t h){
+		Arai::transformInlineTranspose(in, width, h);
+	});
+	testMultiThread2("Arai DCT", matrix, width, height, seconds, [width, height](float *in, float*, size_t h){
+		Arai::transform(in, width, h);
+	});
+	
+	printf("\nThreading on image queue:\n");
+	testMultiThread("Normal DCT", matrix, width, height, seconds, [width, height](float *in, float* out){
+		DCT::transform(in, out, width, height);
 	});
 	testMultiThread("Separated DCT", matrix, width, height, seconds, [width, height](float *in, float*){
 		DCT::transform2(in, width, height);
@@ -200,6 +303,10 @@ void runCPUMultiCore(float* matrix, size_t width, size_t height, double seconds)
 	testMultiThread("Arai DCT", matrix, width, height, seconds, [width, height](float *in, float*){
 		Arai::transform(in, width, height);
 	});
+	
+#ifdef _WIN32
+	DeleteCriticalSection( &g_critSec );
+#endif
 }
 
 // ################################################################
@@ -211,7 +318,7 @@ void runCPUMultiCore(float* matrix, size_t width, size_t height, double seconds)
 void SpeedContest::run(double seconds, bool skipSingeCore) {
 	size_t width = 256, height = 256;
 	float *matrix = createTestMatrix(width, height); // (x+y*8) % 256;
-	
+	printf("Size: %lux%lu\n", width, height);
 	if (skipSingeCore == false) {
 		printf("\n== Single-Threaded ==\n");
 		runCPUSingleCore(matrix, width, height, seconds);
