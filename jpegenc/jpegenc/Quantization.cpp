@@ -31,16 +31,32 @@ static const uint8_t chrominanceQuantizationTable[64] = {
 };
 
 
-void Quantization::run(float* &dctCoefficient, size_t picWidth, size_t picHeigth, const uint8_t* &quantizationMatrix) {
+void Quantization::run(float* &dctCoefficient, size_t picWidth, size_t picHeight, const uint8_t* &quantizationMatrix) {
 	size_t matrixWidth = 8;
-	size_t numberOfBlocks = (picWidth * picHeigth) / (matrixWidth * matrixWidth);
-	size_t matrixLength = matrixWidth * matrixWidth;
-	
-	for (unsigned int i = 0; i < numberOfBlocks; i++) {
-		for (unsigned int j = 0; j < matrixLength; j++) {
-			dctCoefficient[i * picWidth + j] = roundf(dctCoefficient[i * picWidth + j] / quantizationMatrix[(i % matrixWidth) * matrixWidth + j % matrixWidth]);
-		}
-	}
+    size_t matrixLength = matrixWidth * matrixWidth;
+
+    size_t horizontalBlocks = picWidth / matrixWidth;
+    size_t verticalBlocks = picHeight / matrixWidth;
+    
+    size_t verticalOffset = 0;
+    size_t horizontalOffset = 0;
+    
+    
+    for (unsigned int verticalIndex = 0; verticalIndex < verticalBlocks; ++verticalIndex) {
+        verticalOffset = verticalIndex * matrixWidth * picWidth;
+        
+        for (unsigned int horizontalIndex = 0; horizontalIndex < horizontalBlocks; ++horizontalIndex) {
+            horizontalOffset = horizontalIndex * matrixWidth;
+            
+            for (int i = 0; i < matrixLength; ++i) {
+                size_t innerBlockOffset = (i / matrixWidth) * (picWidth - matrixWidth);
+                size_t totalOffset = verticalOffset + horizontalOffset + innerBlockOffset;
+
+                dctCoefficient[i + totalOffset] = roundf(dctCoefficient[i + totalOffset] / quantizationMatrix[i]);
+            }
+        }
+    }
+
 }
 
 const uint8_t* Quantization::getLuminanceQT() {

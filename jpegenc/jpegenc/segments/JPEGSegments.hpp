@@ -27,7 +27,14 @@ namespace JPEGSegments {
 		
 		virtual void addToStream(Bitstream &stream) = 0;
 	};
-	
+    
+    struct StartOfImage : JpegSegment {
+        
+        StartOfImage() : JpegSegment(0xFFD8) {
+        }
+        virtual void addToStream(Bitstream &stream);
+    };
+    
 	struct APP0 : JpegSegment {
 		const unsigned char JFIF[5] = {0x4a, 0x46, 0x49, 0x46, 0x00};
 		const unsigned char MAJOR_REVISION_NUMBER = 1;
@@ -69,14 +76,6 @@ namespace JPEGSegments {
 		
 		virtual void addToStream(Bitstream &stream);
 	};
-	
-	struct StartOfImage : JpegSegment {
-		
-		StartOfImage() : JpegSegment(0xFFD8) {
-		}
-		virtual void addToStream(Bitstream &stream);
-	};
-	
 	struct EndOfImage : JpegSegment {
 		
 		EndOfImage() : JpegSegment(0xFFD9) {
@@ -127,33 +126,6 @@ namespace JPEGSegments {
         virtual void addToStream(Bitstream &stream);
     };
 	
-	struct StartOfScan : JpegSegment {
-		uint16_t length;
-		uint8_t numberOfComponents;
-        
-		
-		StartOfScan(uint8_t numberOfComponents) : JpegSegment(0xFFDA) {
-			this->numberOfComponents = numberOfComponents;
-			this->length = 6 + 2 * numberOfComponents;
-		}
-		virtual void addToStream(Bitstream &stream);
-        void addToStreamNoFF(Encoding encoding, Bitstream &stream);
-	};
-    
-	struct JPEGWriter {
-		std::vector<JpegSegment*> segments;
-		Bitstream stream;
-        std::shared_ptr<Image> image;
-        const uint8_t *luminanceQT = Quantization::getLuminanceQT();
-        const uint8_t *chrominanceQT = Quantization::getChrominanceQT();
-        
-        JPEGWriter(std::shared_ptr<Image> image) {
-            this->image = image;
-		}
-		
-		void writeJPEGImage(const char *pathToFile);
-	};
-    
     struct EncodedImageData {
         std::vector<Encoding> Y_DC_encoding;
         std::vector<uint8_t> Y_AC_byteReps;
@@ -179,22 +151,22 @@ namespace JPEGSegments {
         size_t Y_numberOfPixels;
         size_t Y_width;
         size_t Y_height;
-
+        
         size_t CbCr_numberOfPixels;
         size_t CbCr_width;
         size_t CbCr_height;
         
         EncodedImageData(ChannelData* channelData) : channelData(channelData),
-                                                    Y_numberOfPixels(channelData->channel1->numberOfPixel()),
-                                                    Y_width(channelData->channel1->imageSize.width),
-                                                    Y_height(channelData->channel1->imageSize.height),
-                                                    CbCr_numberOfPixels(channelData->channel2->numberOfPixel()),
-                                                    CbCr_width(channelData->channel2->imageSize.width),
-                                                    CbCr_height(channelData->channel2->imageSize.height)
+        Y_numberOfPixels(channelData->channel1->numberOfPixel()),
+        Y_width(channelData->channel1->imageSize.width),
+        Y_height(channelData->channel1->imageSize.height),
+        CbCr_numberOfPixels(channelData->channel2->numberOfPixel()),
+        CbCr_width(channelData->channel2->imageSize.width),
+        CbCr_height(channelData->channel2->imageSize.height)
         {}
-
+        
         void initialize();
-
+        
     private:
         void generateYDataAndHT();
         void generateCbCrDataAndHT();
@@ -203,6 +175,34 @@ namespace JPEGSegments {
         void generateCbCrHT_AC();
         void unnormalize(int maxValue);
     };
+
+    struct StartOfScan : JpegSegment {
+		uint16_t length;
+		uint8_t numberOfComponents;
+        EncodedImageData *encodedImageData;
+		
+		StartOfScan(uint8_t numberOfComponents, EncodedImageData *encodedImageData) : JpegSegment(0xFFDA) {
+			this->numberOfComponents = numberOfComponents;
+			this->length = 6 + 2 * numberOfComponents;
+            this->encodedImageData = encodedImageData;
+		}
+		virtual void addToStream(Bitstream &stream);
+	};
+    
+	struct JPEGWriter {
+		std::vector<JpegSegment*> segments;
+		Bitstream stream;
+        std::shared_ptr<Image> image;
+        const uint8_t *luminanceQT = Quantization::getLuminanceQT();
+        const uint8_t *chrominanceQT = Quantization::getChrominanceQT();
+        
+        JPEGWriter(std::shared_ptr<Image> image) {
+            this->image = image;
+		}
+		
+		void writeJPEGImage(const char *pathToFile);
+	};
+    
 }
 
 #endif
