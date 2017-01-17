@@ -179,7 +179,6 @@ namespace JPEGSegments {
         void generateCbCrHT();
         void generateCbCrHT_DC();
         void generateCbCrHT_AC();
-        void unnormalize(int maxValue);
     };
 
     struct StartOfScan : JpegSegment {

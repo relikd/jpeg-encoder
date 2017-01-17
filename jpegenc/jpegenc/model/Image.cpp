@@ -67,3 +67,15 @@ void Image::setReadingRuleForAllChannel() {
 	channel3->setReadIndexAccessMappingRule(imageSize);
 }
 
+
+void ChannelData::unnormalize(int maxValue) {
+	for (int i = 0; i < channel1->numberOfPixel(); ++i) {
+		channel1->values[i] *= maxValue;
+	}
+	
+	for (int i = 0; i < channel2->numberOfPixel(); ++i) {
+		channel2->values[i] *= maxValue;
+		channel3->values[i] *= maxValue;
+	}
+}
+
