@@ -1,5 +1,4 @@
 #include "Arai.hpp"
-#include <thread>
 
 #define A1 0.707106781186547524400844362104849039284835937688474036588F
 #define A2 0.541196100146196984399723205366389420061072063378015444681F
@@ -176,67 +175,4 @@ void Arai::transformInlineTranspose(float* values, const size_t image_width, con
 	araiWithInlineTranspose(outValues, values, image_width, image_height);
 	
 	delete[] outValues;
-}
-
-
-
-// ################################################################
-// #
-// #  Multi Threading
-// #
-// ################################################################
-
-#include "../helper/ctpl_stl.h"
-static ctpl::thread_pool p( std::thread::hardware_concurrency() );
-
-void Arai::transformMT(float* input, const size_t width, const size_t height) {
-	size_t numThreads = height / 8;
-	std::vector<std::future<void>> results(numThreads);
-	
-	size_t i = numThreads;
-	while (i--) {
-		results[i] = p.push( [i, width, input](int){
-			// Process Rows
-			float *rowPointer = &input[i*width];
-			size_t rowRepeat = width; // "/8*8"
-			while (rowRepeat--) {
-				ARAI_ROW(rowPointer);
-				rowPointer += 8;
-			}
-			// Process Columns
-			float *colPointer = &input[i*width];
-			size_t colRepeat = width;
-			while (colRepeat--) {
-				ARAI_COL(colPointer, width);
-				++colPointer;
-			}
-		});
-	}
-	
-	i = numThreads;
-	while (i--) {
-		results[i].get();
-	}
-}
-
-void Arai::transformInlineTransposeMT(float* input, const size_t width, const size_t height) {
-	size_t numThreads = height / 8;
-	std::vector<std::future<void>> results(numThreads);
-	
-	size_t i = numThreads;
-	while (i--) {
-		results[i] = p.push( [i, width, input](int){
-			float *outValues = new float[8 * width];
-			
-			araiWithInlineTranspose(&input[i*width], outValues, width, 8);
-			araiWithInlineTranspose(outValues, &input[i*width], width, 8);
-			
-			delete[] outValues;
-		});
-	}
-	
-	i = numThreads;
-	while (i--) {
-		results[i].get();
-	}
 }
