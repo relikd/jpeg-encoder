@@ -73,31 +73,24 @@ void addToStreamNoFF(Bitstream &stream, Encoding enc) {
 void DefineHuffmanTable::addToStream(Bitstream &stream) {
     stream.add(type, 16);
     stream.add(length, 16);
-    
-    addTableData(0, 0, Y_DC, stream);
-    addTableData(1, 1, Y_AC, stream);
-    addTableData(2, 0, CbCr_DC, stream);
-    addTableData(3, 1, CbCr_AC, stream);
-}
 
-void DefineHuffmanTable::addTableData(uint8_t htNumber, uint8_t htType, EncodingTable table, Bitstream &stream) {
     // HT Information
     stream.add(0, 3); // rest
     stream.add(htType, 1);
     stream.add(htNumber, 4);
-
+    
     // number of symbols per level
     unsigned char symbolsPerLevel[16] = {0};
-
+    
     for (const std::pair<Symbol, Encoding> &encoding : table) {
         unsigned short numberOfBits = encoding.second.numberOfBits;
         symbolsPerLevel[numberOfBits - 1] += 1;
     }
-
+    
     for (int i = 0; i < 16; ++i) {
         stream.add(symbolsPerLevel[i], 8);
     }
-
+    
     for (const std::pair<Symbol, Encoding> &encoding : table) {
         stream.add(encoding.first, 8);
     }
@@ -227,17 +220,17 @@ void JPEGWriter::writeJPEGImage(const char *pathToFile) {
     
     encodedImageData->initialize();
     
-    DefineHuffmanTable* dht = new DefineHuffmanTable(encodedImageData->Y_DC, encodedImageData->Y_AC, encodedImageData->CbCr_DC, encodedImageData->CbCr_AC);
-    segments.push_back(dht);
+    DefineHuffmanTable* Y_DC_dht = new DefineHuffmanTable(0, 0, encodedImageData->Y_DC);
+    segments.push_back(Y_DC_dht);
     
-    DefineHuffmanTable* dht = new DefineHuffmanTable(encodedImageData->Y_DC, encodedImageData->Y_AC, encodedImageData->CbCr_DC, encodedImageData->CbCr_AC);
-    segments.push_back(dht);
+    DefineHuffmanTable* Y_AC_dht = new DefineHuffmanTable(1, 1, encodedImageData->Y_AC);
+    segments.push_back(Y_AC_dht);
     
-    DefineHuffmanTable* dht = new DefineHuffmanTable(encodedImageData->Y_DC, encodedImageData->Y_AC, encodedImageData->CbCr_DC, encodedImageData->CbCr_AC);
-    segments.push_back(dht);
+    DefineHuffmanTable* CbCr_DC_dht = new DefineHuffmanTable(2, 0, encodedImageData->CbCr_DC);
+    segments.push_back(CbCr_DC_dht);
     
-    DefineHuffmanTable* dht = new DefineHuffmanTable(encodedImageData->Y_DC, encodedImageData->Y_AC, encodedImageData->CbCr_DC, encodedImageData->CbCr_AC);
-    segments.push_back(dht);
+    DefineHuffmanTable* CbCr_AC_dht = new DefineHuffmanTable(3, 1, encodedImageData->CbCr_AC);
+    segments.push_back(CbCr_AC_dht);
     
     StartOfScan* sos = new StartOfScan(3, encodedImageData);
     segments.push_back(sos);

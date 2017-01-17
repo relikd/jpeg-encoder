@@ -84,36 +84,21 @@ namespace JPEGSegments {
 	};
     
 	struct DefineHuffmanTable : JpegSegment {
-		uint16_t length;
-        EncodingTable Y_DC;
-        EncodingTable Y_AC;
-        EncodingTable CbCr_DC;
-        EncodingTable CbCr_AC;
-		
-        DefineHuffmanTable(EncodingTable Y_DC, EncodingTable Y_AC, EncodingTable CbCr_DC, EncodingTable CbCr_AC) : JpegSegment(0xFFC4) {
-            this->Y_DC = Y_DC;
-            this->Y_AC = Y_AC;
-            this->CbCr_DC = CbCr_DC;
-            this->CbCr_AC = CbCr_AC;
-            this->length = (uint16_t)(
-                            2 // 1 *  2 length
-                         +  4 // 4 *  1 HT info
-                         + 64 // 4 * 16 number of symbols
-                         + Y_DC.size()
-                         + Y_AC.size()
-                         + CbCr_DC.size()
-                         + CbCr_AC.size()
-            );
-        }
+        uint16_t length;
+        uint8_t htNumber;
+        uint8_t htType;
+        EncodingTable table;
         
-        DefineHuffmanTable(EncodingTable table) : JpegSegment(0xFFC4)
+        DefineHuffmanTable(uint8_t htNumber, uint8_t htType, EncodingTable table) : JpegSegment(0xFFC4)
         {
-            
+            this->htNumber = htNumber;
+            this->htType = htType;
+            this->table = table;
+            this->length = (uint16_t)(2+1+16+ table.size());
         }
         
 		virtual void addToStream(Bitstream &stream);
-        void addTableData(uint8_t htNumber, uint8_t htType, EncodingTable table, Bitstream &stream);
-	};
+    };
     
     struct DefineQuantizationTable : JpegSegment {
         uint16_t length;
