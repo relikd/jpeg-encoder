@@ -15,7 +15,7 @@
 
 TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
     PPMLoader ppmLoader;
-    auto image = ppmLoader.load("../data/8x8_blau.ppm");
+    auto image = ppmLoader.load("../data/singapore4k.test.ppm");
 
     RGBToYCbCrConverter converter;
     converter.convert(image);
