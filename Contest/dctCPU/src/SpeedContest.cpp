@@ -3,13 +3,33 @@
 #include <thread>
 #include <math.h>
 #include <mutex>
-#include "../helper/Performance.hpp"
-#include "../dct/Arai.hpp"
-#include "../dct/DCT.hpp"
+#include "Arai.hpp"
+#include "DCT.hpp"
 
 #ifdef _WIN32
 #include <Windows.h>
 #endif
+
+#include <functional>
+#include <chrono>
+
+#define PerformancePrintOperationsPerSecond(__desc, __time, __count) \
+printf("<%s> took %lfsec with %lu iterations (%lfms per operation)\n", __desc, __time, (unsigned long)__count, (__time / __count) * 1000);
+
+
+class Timer {
+public:
+	Timer() : beg_(clock_::now()) {}
+	void reset() { beg_ = clock_::now(); }
+	double elapsed() const {
+		return std::chrono::duration_cast<second_>
+		(clock_::now() - beg_).count(); }
+	
+private:
+	typedef std::chrono::high_resolution_clock clock_;
+	typedef std::chrono::duration<double, std::ratio<1> > second_;
+	std::chrono::time_point<clock_> beg_;
+};
 
 // 1, 7, 3, 4, 5, 4, 3, 2
 // one way transform gets:
@@ -105,29 +125,42 @@ void verify(const char* desc, float* originalMatrix, size_t width, size_t height
 // #
 // ################################################################
 
+void testSingleCore(const double seconds, const char* description, std::function<void()> func)
+{
+	unsigned long numberOfIterations = 0;
+	Timer t;
+	while (t.elapsed() < seconds) {
+		func();
+		++numberOfIterations;
+	}
+	double time = t.elapsed();
+	
+	PerformancePrintOperationsPerSecond(description, time, numberOfIterations);
+}
+
 void runCPUSingleCore(float* matrix, size_t width, size_t height, double seconds) {
 	size_t size = width * height;
 	float* vls = new float[size];
 	float* out = new float[size];
 	
 	copyArray(vls, matrix, size);
-	Performance::howManyOperationsInSeconds(seconds, "Normal DCT", [&]{
+	testSingleCore(seconds, "Normal DCT", [&]{
 		DCT::transform(vls, out, width, height);
 	});
 	delete [] out;
 	
 	copyArray(vls, matrix, size);
-	Performance::howManyOperationsInSeconds(seconds, "Separated DCT", [&]{
+	testSingleCore(seconds, "Separated DCT", [&]{
 		DCT::transform2(vls, width, height);
 	});
 	
 	copyArray(vls, matrix, size);
-	Performance::howManyOperationsInSeconds(seconds, "Arai inline transpose", [&]{
+	testSingleCore(seconds, "Arai inline transpose", [&]{
 		Arai::transformInlineTranspose(vls, width, height);
 	});
 	
 	copyArray(vls, matrix, size);
-	Performance::howManyOperationsInSeconds(seconds, "Arai DCT", [&]{
+	testSingleCore(seconds, "Arai DCT", [&]{
 		Arai::transform(vls, width, height);
 	});
 	
