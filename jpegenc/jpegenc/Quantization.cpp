@@ -38,7 +38,7 @@ void Quantization::run(float* &dctCoefficient, size_t picWidth, size_t picHeigth
 	
 	for (unsigned int i = 0; i < numberOfBlocks; i++) {
 		for (unsigned int j = 0; j < matrixLength; j++) {
-			dctCoefficient[i * picWidth + j] = dctCoefficient[i * picWidth + j] / quantizationMatrix[(i % matrixWidth) * matrixWidth + j % matrixWidth];
+			dctCoefficient[i * picWidth + j] = roundf(dctCoefficient[i * picWidth + j] / quantizationMatrix[(i % matrixWidth) * matrixWidth + j % matrixWidth]);
 		}
 	}
 }
