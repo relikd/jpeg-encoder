@@ -15,11 +15,11 @@
 
 TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
     PPMLoader ppmLoader;
-    auto image = ppmLoader.load("data/very_small.ppm");
+    auto image = ppmLoader.load("../data/8x8_blau.ppm");
 
     RGBToYCbCrConverter converter;
     converter.convert(image);
     
     JPEGSegments::JPEGWriter writer(image);
-    writer.writeJPEGImage("data/very_small.jpg");
+    writer.writeJPEGImage("out.jpg");
 }

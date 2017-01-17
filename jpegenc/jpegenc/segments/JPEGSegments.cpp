@@ -13,6 +13,10 @@
 
 using namespace JPEGSegments;
 
+void StartOfImage::addToStream(Bitstream &stream) {
+    stream.add(type, 16);
+}
+
 void APP0::addToStream(Bitstream &stream) {
 	stream.add(type, 16);
 	stream.add(length, 16);
@@ -37,19 +41,33 @@ void StartOfFrame0::addToStream(Bitstream &stream) {
 	stream.add(height, 16);
 	stream.add(width, 16);
 	stream.add(numberOfComponents, 8);
-	while (numberOfComponents--) {
-		stream.add(0x01, 8);    // ID (Y)
-		stream.add(0x22, 8);    // Subsampling
-		stream.add(0x00, 8);    // Quantisierungstabelle
-	}
-}
-
-void StartOfImage::addToStream(Bitstream &stream) {
-    stream.add(type, 16);
+    
+    for (int i = 1; i <= numberOfComponents; ++i) {
+        stream.add(i, 8);    // ID
+        stream.add(0x22, 8); // Subsampling
+        stream.add(i != 1, 8);
+    }
 }
 
 void EndOfImage::addToStream(Bitstream &stream) {
     stream.add(type, 16);
+}
+
+unsigned short ffCounter = 0;
+void addToStreamNoFF(Bitstream &stream, Encoding enc) {
+    unsigned short n = enc.numberOfBits;
+    while (n--) {
+        if (enc.code & (1 << n)) {
+            stream.add(1);
+            ++ffCounter;
+            if (ffCounter >= 8) {
+                stream.add(0x00, 8);
+            }
+        } else {
+            stream.add(0);
+            ffCounter = 0;
+        }
+    }
 }
 
 void DefineHuffmanTable::addToStream(Bitstream &stream) {
@@ -60,23 +78,6 @@ void DefineHuffmanTable::addToStream(Bitstream &stream) {
     addTableData(1, 1, Y_AC, stream);
     addTableData(2, 0, CbCr_DC, stream);
     addTableData(3, 1, CbCr_AC, stream);
-}
-
-unsigned short ffCounter = 0;
-void addToStreamNoFF(Bitstream &stream, Encoding enc) {
-	unsigned short n = enc.numberOfBits;
-	while (n--) {
-		if (enc.code & (1 << n)) {
-			stream.add(1);
-			++ffCounter;
-			if (ffCounter >= 8) {
-				stream.add(0x00, 8);
-			}
-		} else {
-			stream.add(0);
-			ffCounter = 0;
-		}
-	}
 }
 
 void DefineHuffmanTable::addTableData(uint8_t htNumber, uint8_t htType, EncodingTable table, Bitstream &stream) {
@@ -146,7 +147,63 @@ void StartOfScan::addToStream(Bitstream &stream) {
     stream.add(0x3f, 8);
     stream.add(0x00, 8);
     
-    // TODO: Entropy coded segment data
+    size_t numberOfBlocks = encodedImageData->Y_DC_encoding.size();
+
+    int k_y = 0;
+    int k_cb = 0;
+    int k_cr = 0;
+    
+    for (int i = 0; i < numberOfBlocks; ++i) {
+        
+        // Y_DC
+        auto index = encodedImageData->Y_DC_encoding[i].numberOfBits;
+        addToStreamNoFF(stream, encodedImageData->Y_DC.at(index));
+        addToStreamNoFF(stream, encodedImageData->Y_DC_encoding.at(i));
+        
+        // Y_AC
+        for (; encodedImageData->Y_AC_byteReps[k_y] != 0; ++k_y)
+        {
+            index = encodedImageData->Y_AC_byteReps[k_y];
+            addToStreamNoFF(stream, encodedImageData->Y_AC.at(index));
+            addToStreamNoFF(stream, encodedImageData->Y_AC_encoding.at(k_y));
+        }
+        stream.add(encodedImageData->Y_AC.at(0).code, encodedImageData->Y_AC.at(0).numberOfBits);
+        ++k_y;
+    
+        
+        // Cb_DC
+        index = encodedImageData->Cb_DC_encoding[i].numberOfBits;
+        addToStreamNoFF(stream, encodedImageData->CbCr_DC.at(index));
+        addToStreamNoFF(stream, encodedImageData->Cb_DC_encoding.at(i));
+        
+        // Cb_AC
+        for (; encodedImageData->Cb_AC_byteReps[k_cb] != 0; ++k_cb)
+        {
+            index = encodedImageData->Cb_AC_byteReps[k_cb];
+            addToStreamNoFF(stream, encodedImageData->CbCr_AC.at(index));
+            addToStreamNoFF(stream, encodedImageData->Cb_AC_encoding.at(k_cb));
+        }
+        stream.add(encodedImageData->CbCr_AC.at(0).code, encodedImageData->CbCr_AC.at(0).numberOfBits);
+        ++k_cb;
+
+        
+        // Cr_DC
+        index = encodedImageData->Cr_DC_encoding[i].numberOfBits;
+        addToStreamNoFF(stream, encodedImageData->CbCr_DC.at(index));
+        addToStreamNoFF(stream, encodedImageData->Cr_DC_encoding.at(i));
+        
+        // Cr_AC
+        for (; encodedImageData->Cr_AC_byteReps[k_cr] != 0; ++k_cr)
+        {
+            index = encodedImageData->Cr_AC_byteReps[k_cr];
+            addToStreamNoFF(stream, encodedImageData->CbCr_AC.at(index));
+            addToStreamNoFF(stream, encodedImageData->Cr_AC_encoding.at(k_cr));
+        }
+        stream.add(encodedImageData->CbCr_AC.at(0).code, encodedImageData->CbCr_AC.at(0).numberOfBits);
+        ++k_cr;
+    }
+    auto bitsToFill = 8 - (stream.numberOfBits() % 8);
+    stream.add(0xFF, bitsToFill);
 }
 
 void JPEGWriter::writeJPEGImage(const char *pathToFile) {    
@@ -162,18 +219,19 @@ void JPEGWriter::writeJPEGImage(const char *pathToFile) {
     DefineQuantizationTable* CbCr_dqt = new DefineQuantizationTable(1, 0, chrominanceQT);
     segments.push_back(CbCr_dqt);
     
-    StartOfFrame0* sof0 = new StartOfFrame0(1, image);  // 1 = numberOfComponents
+    StartOfFrame0* sof0 = new StartOfFrame0(3, image);
     segments.push_back(sof0);
     
     ChannelData* channelData= new ChannelData(image);
-    EncodedImageData encodedImageData(channelData);
+    EncodedImageData *encodedImageData = new EncodedImageData(channelData);
     
-    encodedImageData.initialize();
+    encodedImageData->initialize();
     
-    DefineHuffmanTable* dht = new DefineHuffmanTable(encodedImageData.Y_DC, encodedImageData.Y_AC, encodedImageData.CbCr_DC, encodedImageData.CbCr_AC);
+    DefineHuffmanTable* dht = new DefineHuffmanTable(encodedImageData->Y_DC, encodedImageData->Y_AC, encodedImageData->CbCr_DC, encodedImageData->CbCr_AC);
     segments.push_back(dht);
-    
-    // sos
+
+    StartOfScan* sos = new StartOfScan(3, encodedImageData);
+    segments.push_back(sos);
     
     EndOfImage* eoi = new EndOfImage();
     segments.push_back(eoi);
@@ -182,6 +240,9 @@ void JPEGWriter::writeJPEGImage(const char *pathToFile) {
         segments[i]->addToStream(stream);
     }
     stream.saveToFile(pathToFile);
+    
+    delete channelData;
+    delete encodedImageData;
 }
 
 void EncodedImageData::generateYDataAndHT()
