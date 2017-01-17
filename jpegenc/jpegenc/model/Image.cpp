@@ -86,7 +86,7 @@ void ChannelData::print(int channel) {
 				if (i % channel1->imageSize.width == 0) {
 					std::cout << std::endl;
 				}
-				std::cout << channel1->values[i];
+				std::cout << channel1->values[i] << "\t\t";
 			}
 			std::cout << std::endl;
 			break;
@@ -95,7 +95,7 @@ void ChannelData::print(int channel) {
 				if (i % channel2->imageSize.width == 0) {
 					std::cout << std::endl;
 				}
-				std::cout << channel2->values[i];
+				std::cout << channel2->values[i] << "\t\t";
 			}
 			std::cout << std::endl;
 			break;
@@ -104,7 +104,7 @@ void ChannelData::print(int channel) {
 				if (i % channel3->imageSize.width == 0) {
 					std::cout << std::endl;
 				}
-				std::cout << channel3->values[i];
+				std::cout << channel3->values[i] << "\t\t";
 			}
 			std::cout << std::endl;
 			break;
