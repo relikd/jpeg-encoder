@@ -36,4 +36,23 @@ struct Image {
 	void setReadingRuleForAllChannel();
 };
 
+struct ChannelData {
+    Channel *channel1;
+    Channel *channel2;
+    Channel *channel3;
+    
+    ChannelData(std::shared_ptr<Image> image) {
+        // Copy channel data from image
+        channel1 = Channel::enlarge(image->channel1, 1, 1);
+        channel2 = Channel::enlarge(image->channel2, 1, 1);
+        channel3 = Channel::enlarge(image->channel3, 1, 1);
+    }
+
+    ~ChannelData() {
+        delete channel1;
+        delete channel2;
+        delete channel3;
+    }
+};
+
 #endif /* Image_hpp */
