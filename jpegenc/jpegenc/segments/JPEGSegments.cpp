@@ -62,6 +62,23 @@ void DefineHuffmanTable::addToStream(Bitstream &stream) {
     addTableData(3, 1, CbCr_AC, stream);
 }
 
+unsigned short ffCounter = 0;
+void addToStreamNoFF(Bitstream &stream, Encoding enc) {
+	unsigned short n = enc.numberOfBits;
+	while (n--) {
+		if (enc.code & (1 << n)) {
+			stream.add(1);
+			++ffCounter;
+			if (ffCounter >= 8) {
+				stream.add(0x00, 8);
+			}
+		} else {
+			stream.add(0);
+			ffCounter = 0;
+		}
+	}
+}
+
 void DefineHuffmanTable::addTableData(uint8_t htNumber, uint8_t htType, EncodingTable table, Bitstream &stream) {
     // HT Information
     stream.add(0, 3); // rest
