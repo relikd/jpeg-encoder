@@ -83,7 +83,7 @@ void ChannelData::print(int channel) {
 	switch(channel) {
 		case 1:
 			for (int i = 0; i < channel1->numberOfPixel(); ++i) {
-				if (i % channel1->imageSize.width) {
+				if (i % channel1->imageSize.width == 0) {
 					std::cout << std::endl;
 				}
 				std::cout << channel1->values[i];
@@ -92,7 +92,7 @@ void ChannelData::print(int channel) {
 			break;
 		case 2:
 			for (int i = 0; i < channel2->numberOfPixel(); ++i) {
-				if (i % channel2->imageSize.width) {
+				if (i % channel2->imageSize.width == 0) {
 					std::cout << std::endl;
 				}
 				std::cout << channel2->values[i];
@@ -101,7 +101,7 @@ void ChannelData::print(int channel) {
 			break;
 		case 3:
 			for (int i = 0; i < channel3->numberOfPixel(); ++i) {
-				if (i % channel3->imageSize.width) {
+				if (i % channel3->imageSize.width == 0) {
 					std::cout << std::endl;
 				}
 				std::cout << channel3->values[i];
