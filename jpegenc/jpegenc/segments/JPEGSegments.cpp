@@ -270,7 +270,7 @@ void EncodedImageData::generateCbCrDataAndHT()
 }
 
 void EncodedImageData::initialize() {
-    unnormalize(255);
+    channelData->unnormalize(255);
     
     Arai::transform(channelData->channel1->values, Y_width, Y_height);
     Arai::transform(channelData->channel2->values, CbCr_width, CbCr_height);
@@ -282,17 +282,6 @@ void EncodedImageData::initialize() {
     
     generateYDataAndHT();
     generateCbCrDataAndHT();
-}
-
-void EncodedImageData::unnormalize(int maxValue) {
-    for (int i = 0; i < Y_numberOfPixels; ++i) {
-        channelData->channel1->values[i] *= maxValue;
-    }
-
-    for (int i = 0; i < CbCr_numberOfPixels; ++i) {
-        channelData->channel2->values[i] *= maxValue;
-        channelData->channel3->values[i] *= maxValue;
-    }
 }
 
 void EncodedImageData::generateCbCrHT() {

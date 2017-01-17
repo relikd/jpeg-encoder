@@ -53,6 +53,8 @@ struct ChannelData {
         delete channel2;
         delete channel3;
     }
+	
+	void unnormalize(int maxValue);
 };
 
 #endif /* Image_hpp */
