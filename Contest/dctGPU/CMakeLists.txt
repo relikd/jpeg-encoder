@@ -7,7 +7,6 @@ file( GLOB CL_FILES opencl/* )
 # Add C++ 11 support
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" )
 set( EXECUTABLE_OUTPUT_PATH "../bin" CACHE PATH "Output directory" )
-set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast" )
 
 add_executable( dctGPU ${SOURCE_FILES} ${CL_FILES} )
 
@@ -30,8 +29,6 @@ ELSE (APPLE)
 	#   $(INTELOCLSDKROOT)\lib\x64   || or x86
 	target_link_libraries( dctGPU "OpenCL.lib" )
 ENDIF (APPLE)
-
-SET_TARGET_PROPERTIES(dctGPU PROPERTIES LINK_FLAGS -Wall,-Wextra,-Weverything)#-Werror
 
 # copy all .cl files automatically to bin
 add_custom_command(
