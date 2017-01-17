@@ -229,7 +229,16 @@ void JPEGWriter::writeJPEGImage(const char *pathToFile) {
     
     DefineHuffmanTable* dht = new DefineHuffmanTable(encodedImageData->Y_DC, encodedImageData->Y_AC, encodedImageData->CbCr_DC, encodedImageData->CbCr_AC);
     segments.push_back(dht);
-
+    
+    DefineHuffmanTable* dht = new DefineHuffmanTable(encodedImageData->Y_DC, encodedImageData->Y_AC, encodedImageData->CbCr_DC, encodedImageData->CbCr_AC);
+    segments.push_back(dht);
+    
+    DefineHuffmanTable* dht = new DefineHuffmanTable(encodedImageData->Y_DC, encodedImageData->Y_AC, encodedImageData->CbCr_DC, encodedImageData->CbCr_AC);
+    segments.push_back(dht);
+    
+    DefineHuffmanTable* dht = new DefineHuffmanTable(encodedImageData->Y_DC, encodedImageData->Y_AC, encodedImageData->CbCr_DC, encodedImageData->CbCr_AC);
+    segments.push_back(dht);
+    
     StartOfScan* sos = new StartOfScan(3, encodedImageData);
     segments.push_back(sos);
     

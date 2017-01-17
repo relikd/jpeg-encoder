@@ -104,7 +104,13 @@ namespace JPEGSegments {
                          + CbCr_DC.size()
                          + CbCr_AC.size()
             );
-        }		
+        }
+        
+        DefineHuffmanTable(EncodingTable table) : JpegSegment(0xFFC4)
+        {
+            
+        }
+        
 		virtual void addToStream(Bitstream &stream);
         void addTableData(uint8_t htNumber, uint8_t htType, EncodingTable table, Bitstream &stream);
 	};
