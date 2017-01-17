@@ -113,9 +113,24 @@ void StartOfScan::addToStream(Bitstream &stream) {
 	stream.add(type, 16);
 	stream.add(length, 16);
 	stream.add(numberOfComponents, 8);
-	//todo add components
-	//stream.add(ignorableBytes, 24);
-	
+    
+    stream.add(1, 8); // Y
+    stream.add(0, 4); // Y_DC
+    stream.add(1, 4); // Y_AC
+    
+    stream.add(2, 8); // Cb
+    stream.add(2, 4); // CbCr_DC
+    stream.add(3, 4); // CbCr_AC
+    
+    stream.add(3, 8); // Cr
+    stream.add(2, 4); // CbCr_DC
+    stream.add(3, 4); // CbCr_AC
+    
+    stream.add(0x00, 8);
+    stream.add(0x3f, 8);
+    stream.add(0x00, 8);
+    
+    // TODO: Entropy coded segment data
 }
 
 void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile) {
