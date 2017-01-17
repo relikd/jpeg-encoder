@@ -15,6 +15,8 @@
 #include "../bitstream/Bitstream.hpp"
 #include "../model/Image.hpp"
 #include "../huffman/Huffman.hpp"
+#include "../Quantization.hpp"
+#include "../model/Channel.hpp"
 
 namespace JPEGSegments {
 	
@@ -128,26 +130,78 @@ namespace JPEGSegments {
 	struct StartOfScan : JpegSegment {
 		uint16_t length;
 		uint8_t numberOfComponents;
+        
 		
 		StartOfScan(uint8_t numberOfComponents) : JpegSegment(0xFFDA) {
 			this->numberOfComponents = numberOfComponents;
 			this->length = 6 + 2 * numberOfComponents;
 		}
-        
 		virtual void addToStream(Bitstream &stream);
+        void addToStreamNoFF(Encoding encoding, Bitstream &stream);
 	};
     
 	struct JPEGWriter {
 		std::vector<JpegSegment*> segments;
 		Bitstream stream;
-		
-		JPEGWriter() {
+        std::shared_ptr<Image> image;
+        const uint8_t *luminanceQT = Quantization::getLuminanceQT();
+        const uint8_t *chrominanceQT = Quantization::getChrominanceQT();
+        
+        JPEGWriter(std::shared_ptr<Image> image) {
+            this->image = image;
 		}
 		
-		void writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile);
+		void writeJPEGImage(const char *pathToFile);
 	};
+    
+    struct EncodedImageData {
+        std::vector<Encoding> Y_DC_encoding;
+        std::vector<uint8_t> Y_AC_byteReps;
+        std::vector<Encoding> Y_AC_encoding;
+        EncodingTable Y_DC;
+        EncodingTable Y_AC;
+        
+        std::vector<Encoding> Cb_DC_encoding;
+        std::vector<Encoding> Cr_DC_encoding;
+        std::vector<Encoding> Cb_AC_encoding;
+        std::vector<Encoding> Cr_AC_encoding;
+        std::vector<uint8_t> Cb_AC_byteReps;
+        std::vector<uint8_t> Cr_AC_byteReps;
+        
+        EncodingTable CbCr_DC;
+        EncodingTable CbCr_AC;
+        
+        const uint8_t *luminanceQT = Quantization::getLuminanceQT();
+        const uint8_t *chrominanceQT = Quantization::getChrominanceQT();
+        
+        ChannelData* channelData;
+        
+        size_t Y_numberOfPixels;
+        size_t Y_width;
+        size_t Y_height;
+
+        size_t CbCr_numberOfPixels;
+        size_t CbCr_width;
+        size_t CbCr_height;
+        
+        EncodedImageData(ChannelData* channelData) : channelData(channelData),
+                                                    Y_numberOfPixels(channelData->channel1->numberOfPixel()),
+                                                    Y_width(channelData->channel1->imageSize.width),
+                                                    Y_height(channelData->channel1->imageSize.height),
+                                                    CbCr_numberOfPixels(channelData->channel2->numberOfPixel()),
+                                                    CbCr_width(channelData->channel2->imageSize.width),
+                                                    CbCr_height(channelData->channel2->imageSize.height)
+        {}
+
+        void initialize();
+
+    private:
+        void generateYDataAndHT();
+        void generateCbCrDataAndHT();
+        void generateCbCrHT();
+        void generateCbCrHT_DC();
+        void generateCbCrHT_AC();
+    };
 }
-
-
 
 #endif

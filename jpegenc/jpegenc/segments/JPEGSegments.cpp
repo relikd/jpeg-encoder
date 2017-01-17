@@ -8,7 +8,6 @@
 
 #include "JPEGSegments.hpp"
 #include <iostream>
-#include "../Quantization.hpp"
 #include "../dct/Arai.hpp"
 #include "ImageDataEncoding.hpp"
 
@@ -133,10 +132,7 @@ void StartOfScan::addToStream(Bitstream &stream) {
     // TODO: Entropy coded segment data
 }
 
-void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathToFile) {
-    const uint8_t *luminanceQT = Quantization::getLuminanceQT();
-    const uint8_t *chrominanceQT = Quantization::getChrominanceQT();
-    
+void JPEGWriter::writeJPEGImage(const char *pathToFile) {    
     StartOfImage* soi = new StartOfImage();
     segments.push_back(soi);
     
@@ -151,71 +147,13 @@ void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathTo
     
     StartOfFrame0* sof0 = new StartOfFrame0(1, image);  // 1 = numberOfComponents
     segments.push_back(sof0);
-
-    float *copyOfChannel1 = new float[image->channel1->numberOfPixel()];
-    float *copyOfChannel2 = new float[image->channel2->numberOfPixel()];
-    float *copyOfChannel3 = new float[image->channel3->numberOfPixel()];
-
-    memcpy(copyOfChannel1, image->channel1, image->channel1->numberOfPixel() * sizeof(float));
-    memcpy(copyOfChannel2, image->channel2, image->channel2->numberOfPixel() * sizeof(float));
-    memcpy(copyOfChannel3, image->channel3, image->channel3->numberOfPixel() * sizeof(float));
-
-    Arai::transform(copyOfChannel1, image->channel1->imageSize.width, image->channel1->imageSize.height);
-    Arai::transform(copyOfChannel2, image->channel2->imageSize.width, image->channel2->imageSize.height);
-    Arai::transform(copyOfChannel3, image->channel3->imageSize.width, image->channel3->imageSize.height);
-
-    Quantization::run(copyOfChannel1, image->channel1->imageSize.width, image->channel1->imageSize.height, luminanceQT);
-    Quantization::run(copyOfChannel2, image->channel2->imageSize.width, image->channel2->imageSize.height, chrominanceQT);
-    Quantization::run(copyOfChannel3, image->channel3->imageSize.width, image->channel3->imageSize.height, chrominanceQT);
     
-    ImageDataEncoding channel1Encoder(copyOfChannel1, image->channel1->imageSize.width, image->channel1->imageSize.height);
-    ImageDataEncoding channel2Encoder(copyOfChannel2, image->channel2->imageSize.width, image->channel2->imageSize.height);
-    ImageDataEncoding channel3Encoder(copyOfChannel3, image->channel3->imageSize.width, image->channel3->imageSize.height);
-    
-    channel1Encoder.init();
-    channel2Encoder.init();
-    channel3Encoder.init();
-
-    std::vector<Encoding> Y_DC_encoding;
-    auto Y_DC = channel1Encoder.generateDCEncodingTable(Y_DC_encoding);
-    
-    std::vector<uint8_t> Y_AC_byteReps;
-    std::vector<Encoding> Y_AC_encoding;
-    auto Y_AC = channel1Encoder.generateACEncodingTable(Y_AC_byteReps, Y_AC_encoding);
-    
-    std::vector<Encoding> Cb_DC_encoding = channel2Encoder.differenceEncoding();
-    std::vector<Encoding> Cr_DC_encoding = channel3Encoder.differenceEncoding();
-    Huffman DC_huffman;
-    for (auto &current : Cb_DC_encoding) {
-        DC_huffman.addSymbol(current.numberOfBits);
-    }
-    for (auto &current : Cr_DC_encoding) {
-        DC_huffman.addSymbol(current.numberOfBits);
-    }
-    DC_huffman.generateNodeList();
-    auto CbCr_DC = DC_huffman.canonicalEncoding(16);
-    
-    std::vector<Encoding> Cb_AC_encoding;
-    std::vector<Encoding> Cr_AC_encoding;
-    std::vector<uint8_t> Cb_AC_byteReps;
-    std::vector<uint8_t> Cr_AC_byteReps;
-    channel2Encoder.runLengthEncoding(Cb_AC_byteReps, Cb_AC_encoding);
-    channel3Encoder.runLengthEncoding(Cr_AC_byteReps, Cr_AC_encoding);
-    Huffman AC_huffman;
-    for (auto &current : Cb_AC_byteReps)
-    {
-        AC_huffman.addSymbol(current);
-    }
-    for (auto &current : Cr_AC_byteReps)
-    {
-        AC_huffman.addSymbol(current);
-    }
-    AC_huffman.generateNodeList();
-    auto CbCr_AC = AC_huffman.canonicalEncoding(16);
-    
-    DefineHuffmanTable* dht = new DefineHuffmanTable(Y_DC, Y_AC, CbCr_DC, CbCr_AC);
+    ChannelData* channelData= new ChannelData(image);
+    EncodedImageData encodedImageData(channelData);
+    encodedImageData.initialize();
+    DefineHuffmanTable* dht = new DefineHuffmanTable(encodedImageData.Y_DC, encodedImageData.Y_AC, encodedImageData.CbCr_DC, encodedImageData.CbCr_AC);
     segments.push_back(dht);
-
+    
     // sos
     
     EndOfImage* eoi = new EndOfImage();
@@ -225,4 +163,75 @@ void JPEGWriter::writeJPEGImage(std::shared_ptr<Image> image, const char *pathTo
         segments[i]->addToStream(stream);
     }
     stream.saveToFile(pathToFile);
+}
+
+void EncodedImageData::generateYDataAndHT()
+{
+    ImageDataEncoding channel1Encoder(channelData->channel1->values, (unsigned int) Y_width, (unsigned int) Y_height);
+    channel1Encoder.init();
+
+    Y_DC = channel1Encoder.generateDCEncodingTable(Y_DC_encoding);
+    Y_AC = channel1Encoder.generateACEncodingTable(Y_AC_byteReps, Y_AC_encoding);
+}
+
+void EncodedImageData::generateCbCrDataAndHT()
+{
+    ImageDataEncoding channel2Encoder(channelData->channel2->values, (unsigned int) CbCr_width, (unsigned int) CbCr_height);
+    ImageDataEncoding channel3Encoder(channelData->channel3->values, (unsigned int) CbCr_width, (unsigned int) CbCr_height);
+    channel2Encoder.init();
+    channel3Encoder.init();
+    
+    Cb_DC_encoding = channel2Encoder.differenceEncoding();
+    Cr_DC_encoding = channel3Encoder.differenceEncoding();
+    channel2Encoder.runLengthEncoding(Cb_AC_byteReps, Cb_AC_encoding);
+    channel3Encoder.runLengthEncoding(Cr_AC_byteReps, Cr_AC_encoding);
+    
+    generateCbCrHT();
+}
+
+void EncodedImageData::initialize() {
+    Arai::transform(channelData->channel1->values, Y_width, Y_height);
+    Arai::transform(channelData->channel2->values, CbCr_width, CbCr_height);
+    Arai::transform(channelData->channel3->values, CbCr_width, CbCr_height);
+
+    Quantization::run(channelData->channel1->values, Y_width, Y_height, luminanceQT);
+    Quantization::run(channelData->channel2->values, CbCr_width, CbCr_height, chrominanceQT);
+    Quantization::run(channelData->channel3->values, CbCr_width, CbCr_height, chrominanceQT);
+}
+
+void EncodedImageData::generateCbCrHT() {
+    generateCbCrHT_DC();
+    generateCbCrHT_AC();
+}
+
+void EncodedImageData::generateCbCrHT_DC() {
+    Huffman DC_huffman;
+    
+    for (auto &current : Cb_DC_encoding) {
+        DC_huffman.addSymbol(current.numberOfBits);
+    }
+    
+    for (auto &current : Cr_DC_encoding) {
+        DC_huffman.addSymbol(current.numberOfBits);
+    }
+    
+    DC_huffman.generateNodeList();
+    
+    CbCr_DC = DC_huffman.canonicalEncoding(16);
+}
+
+void EncodedImageData::generateCbCrHT_AC() {
+    Huffman AC_huffman;
+    
+    for (auto &current : Cb_AC_byteReps)
+    {
+        AC_huffman.addSymbol(current);
+    }
+    
+    for (auto &current : Cr_AC_byteReps)
+    {
+        AC_huffman.addSymbol(current);
+    }
+    AC_huffman.generateNodeList();
+    CbCr_AC = AC_huffman.canonicalEncoding(16);    
 }

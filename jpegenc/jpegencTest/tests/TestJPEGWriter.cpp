@@ -20,6 +20,6 @@ TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
     RGBToYCbCrConverter converter;
     converter.convert(image);
     
-    JPEGSegments::JPEGWriter writer;
-    writer.writeJPEGImage(image, "data/very_small.jpg");
+    JPEGSegments::JPEGWriter writer(image);
+    writer.writeJPEGImage("data/very_small.jpg");
 }
