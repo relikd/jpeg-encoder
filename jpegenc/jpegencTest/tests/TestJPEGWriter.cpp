@@ -19,6 +19,8 @@ TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
 
     RGBToYCbCrConverter converter;
     converter.convert(image);
+	
+	ChannelData* channelData = new ChannelData(image);
     
     JPEGSegments::JPEGWriter writer(image);
     writer.writeJPEGImage("out.jpg");
