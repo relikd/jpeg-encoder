@@ -150,7 +150,9 @@ void JPEGWriter::writeJPEGImage(const char *pathToFile) {
     
     ChannelData* channelData= new ChannelData(image);
     EncodedImageData encodedImageData(channelData);
+    
     encodedImageData.initialize();
+    
     DefineHuffmanTable* dht = new DefineHuffmanTable(encodedImageData.Y_DC, encodedImageData.Y_AC, encodedImageData.CbCr_DC, encodedImageData.CbCr_AC);
     segments.push_back(dht);
     
@@ -190,6 +192,8 @@ void EncodedImageData::generateCbCrDataAndHT()
 }
 
 void EncodedImageData::initialize() {
+    unnormalize(255);
+    
     Arai::transform(channelData->channel1->values, Y_width, Y_height);
     Arai::transform(channelData->channel2->values, CbCr_width, CbCr_height);
     Arai::transform(channelData->channel3->values, CbCr_width, CbCr_height);
@@ -197,6 +201,20 @@ void EncodedImageData::initialize() {
     Quantization::run(channelData->channel1->values, Y_width, Y_height, luminanceQT);
     Quantization::run(channelData->channel2->values, CbCr_width, CbCr_height, chrominanceQT);
     Quantization::run(channelData->channel3->values, CbCr_width, CbCr_height, chrominanceQT);
+    
+    generateYDataAndHT();
+    generateCbCrDataAndHT();
+}
+
+void EncodedImageData::unnormalize(int maxValue) {
+    for (int i = 0; i < Y_numberOfPixels; ++i) {
+        channelData->channel1->values[i] *= maxValue;
+    }
+
+    for (int i = 0; i < CbCr_numberOfPixels; ++i) {
+        channelData->channel2->values[i] *= maxValue;
+        channelData->channel3->values[i] *= maxValue;
+    }
 }
 
 void EncodedImageData::generateCbCrHT() {
