@@ -21,6 +21,7 @@ TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
     converter.convert(image);
 	
 	ChannelData* channelData = new ChannelData(image);
+	channelData->unnormalize(255);
     
     JPEGSegments::JPEGWriter writer(image);
     writer.writeJPEGImage("out.jpg");

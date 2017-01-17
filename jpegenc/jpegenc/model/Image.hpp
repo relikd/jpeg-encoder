@@ -55,6 +55,7 @@ struct ChannelData {
     }
 	
 	void unnormalize(int maxValue);
+	void print(int channel);
 };
 
 #endif /* Image_hpp */
