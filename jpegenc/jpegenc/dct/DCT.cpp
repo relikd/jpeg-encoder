@@ -1,5 +1,4 @@
 #include "DCT.hpp"
-#include <thread>
 
 //  ---------------------------------------------------------------
 // |
@@ -170,60 +169,3 @@ void DCT::inverse(float* input, float* output, const size_t width, const size_t 
 		}
 	}
 }
-
-
-
-// ################################################################
-// #
-// #  Multi Threading
-// #
-// ################################################################
-
-#include "../helper/ctpl_stl.h"
-static ctpl::thread_pool p( std::thread::hardware_concurrency() );
-
-void DCT::transformMT(float* input, float* output, const size_t width, const size_t height) {
-	size_t numThreads = height / 8;
-	std::vector<std::future<void>> results(numThreads);
-
-	size_t i = numThreads;
-	while (i--) {
-		results[i] = p.push( [i, width, input, output](int){
-			size_t x = width / N;
-			while (x--) {
-				size_t offset = (i * width * N) + (x * N);
-				transform8x8_normal(&input[offset], &output[offset], width);
-			}
-		});
-	}
-	
-	i = numThreads;
-	while (i--) {
-		results[i].get();
-	}
-}
-
-void DCT::transform2MT(float* input, const size_t width, const size_t height) {
-	size_t numThreads = height / 8;
-	std::vector<std::future<void>> results(numThreads);
-	
-	size_t i = numThreads;
-	while (i--) {
-		results[i] = p.push( [i, width, input](int){
-			float* temp = new float[64];
-			size_t x = width / N;
-			while (x--) {
-				float *ptr = &input[ (i * width * N) + (x * N) ];
-				multiplyMatrixAWith(ptr, temp, width); // a * input
-				multiplyWithTransposedMatrixA(temp, ptr, width); // input * a^t
-			}
-			delete[] temp;
-		});
-	}
-	
-	i = numThreads;
-	while (i--) {
-		results[i].get();
-	}
-}
-
