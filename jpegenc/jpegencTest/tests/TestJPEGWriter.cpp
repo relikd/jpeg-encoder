@@ -17,7 +17,7 @@
 
 TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
     PPMLoader ppmLoader;
-    auto image = ppmLoader.load("../data/very_small.ppm");
+    auto image = ppmLoader.load("../data/testbild.ppm");
 
     RGBToYCbCrConverter converter;
     converter.convert(image);
@@ -41,9 +41,10 @@ TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
 	channelData->print(3);
 	
 	auto qTable = Quantization::getLuminanceQT();
+	auto q2Table = Quantization::getChrominanceQT();
 	Quantization::run(channelData->channel1->values, 8, 8, qTable);
-	Quantization::run(channelData->channel2->values, 8, 8, qTable);
-	Quantization::run(channelData->channel3->values, 8, 8, qTable);
+	Quantization::run(channelData->channel2->values, 8, 8, q2Table);
+	Quantization::run(channelData->channel3->values, 8, 8, q2Table);
 	
 	std::cout << "After Quantization" << std::endl;
 	channelData->print(1);
