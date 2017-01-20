@@ -113,5 +113,9 @@ void Node::exportTree() {
 
 /** Function for sorting Node* pointer */
 bool sortNode(const Node* node1, const Node* node2) {
-	return node1->frequency < node2->frequency;
+    if ( node1->frequency == node2->frequency )
+    {
+        return node1->symbol < node2->symbol;
+    }
+    return node1->frequency < node2->frequency;
 }

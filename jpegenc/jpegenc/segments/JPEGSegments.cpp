@@ -44,7 +44,7 @@ void StartOfFrame0::addToStream(Bitstream &stream) {
     
     for (int i = 1; i <= numberOfComponents; ++i) {
         stream.add(i, 8);    // ID
-        stream.add(0x22, 8); // Subsampling
+        stream.add(0x11, 8); // Subsampling
         stream.add(i != 1, 8);
     }
 }
@@ -120,22 +120,12 @@ void DefineQuantizationTable::addToStream(Bitstream &stream) {
     stream.add(type, 16);
     stream.add(length, 16);
     
-    // y
     stream.add(0, 4); // precision
-    stream.add(0, 4); // number
-    uint8_t* y_qt_sorted = sortZickZack(y_qt);
+    stream.add(qt_number, 4); // number
+    uint8_t* qt_sorted = sortZickZack(qt);
     
     for (int i = 0; i < 64; ++i) {
-        stream.add(y_qt_sorted[i], 8);
-    }
-    
-    // cbcr
-    stream.add(0, 4); // precision
-    stream.add(1, 4); // number
-    uint8_t* cbcr_qt_sorted = sortZickZack(cbcr_qt);
-    
-    for (int i = 0; i < 64; ++i) {
-        stream.add(cbcr_qt_sorted[i], 8);
+        stream.add(qt_sorted[i], 8);
     }
 }
 
@@ -146,15 +136,15 @@ void StartOfScan::addToStream(Bitstream &stream) {
     
     stream.add(1, 8); // Y
     stream.add(0, 4); // Y_DC
-    stream.add(1, 4); // Y_AC
+    stream.add(0, 4); // Y_AC
     
     stream.add(2, 8); // Cb
-    stream.add(2, 4); // CbCr_DC
-    stream.add(3, 4); // CbCr_AC
+    stream.add(1, 4); // CbCr_DC
+    stream.add(1, 4); // CbCr_AC
     
     stream.add(3, 8); // Cr
-    stream.add(2, 4); // CbCr_DC
-    stream.add(3, 4); // CbCr_AC
+    stream.add(1, 4); // CbCr_DC
+    stream.add(1, 4); // CbCr_AC
     
     stream.add(0x00, 8);
     stream.add(0x3f, 8);
@@ -236,8 +226,11 @@ void JPEGWriter::writeJPEGImage(const char *pathToFile) {
     APP0* app0 = new APP0();
     app0->addToStream(stream);
 
-    DefineQuantizationTable* dqt = new DefineQuantizationTable(luminanceQT, chrominanceQT);
-    dqt->addToStream(stream);
+    DefineQuantizationTable* y_dqt = new DefineQuantizationTable(0, luminanceQT);
+    y_dqt->addToStream(stream);
+    
+    DefineQuantizationTable* cbcr_dqt = new DefineQuantizationTable(1, chrominanceQT);
+    cbcr_dqt->addToStream(stream);
     
     StartOfFrame0* sof0 = new StartOfFrame0(3, image);
     sof0->addToStream(stream);
@@ -249,13 +242,13 @@ void JPEGWriter::writeJPEGImage(const char *pathToFile) {
     DefineHuffmanTable* Y_DC_dht = new DefineHuffmanTable(0, 0, encodedImageData->Y_DC);
     Y_DC_dht->addToStream(stream);
     
-    DefineHuffmanTable* Y_AC_dht = new DefineHuffmanTable(1, 1, encodedImageData->Y_AC);
+    DefineHuffmanTable* Y_AC_dht = new DefineHuffmanTable(0, 1, encodedImageData->Y_AC);
     Y_AC_dht->addToStream(stream);
     
-    DefineHuffmanTable* CbCr_DC_dht = new DefineHuffmanTable(2, 0, encodedImageData->CbCr_DC);
+    DefineHuffmanTable* CbCr_DC_dht = new DefineHuffmanTable(1, 0, encodedImageData->CbCr_DC);
     CbCr_DC_dht->addToStream(stream);
 
-    DefineHuffmanTable* CbCr_AC_dht = new DefineHuffmanTable(3, 1, encodedImageData->CbCr_AC);
+    DefineHuffmanTable* CbCr_AC_dht = new DefineHuffmanTable(1, 1, encodedImageData->CbCr_AC);
     CbCr_AC_dht->addToStream(stream);
     
     StartOfScan* sos = new StartOfScan(3, encodedImageData);
@@ -318,6 +311,16 @@ void EncodedImageData::generateCbCrHT() {
 void EncodedImageData::generateCbCrHT_DC() {
     Huffman DC_huffman;
 	
+    // TODO: DELETE TESTCODE
+    // ...
+    DC_huffman.addSymbol(9);
+    DC_huffman.addSymbol(9);
+    DC_huffman.addSymbol(9);
+    DC_huffman.addSymbol(9);
+    DC_huffman.addSymbol(9);
+    DC_huffman.addSymbol(9);
+    // ...
+
     for (auto &current : Cb_DC_encoding) {
         DC_huffman.addSymbol(current.numberOfBits);
     }

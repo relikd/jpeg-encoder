@@ -71,11 +71,22 @@ void Image::setReadingRuleForAllChannel() {
 void ChannelData::unnormalize(int maxValue) {
 	for (int i = 0; i < channel1->numberOfPixel(); ++i) {
 		channel1->values[i] *= maxValue;
+        
+        if (channel1->values[i] > 127) {
+            channel1->values[i] = 127;
+        }
 	}
 	
 	for (int i = 0; i < channel2->numberOfPixel(); ++i) {
 		channel2->values[i] *= maxValue;
 		channel3->values[i] *= maxValue;
+
+        if (channel2->values[i] > 127) {
+            channel2->values[i] = 127;
+        }
+        if (channel3->values[i] > 127) {
+            channel3->values[i] = 127;
+        }
 	}
 }
 
