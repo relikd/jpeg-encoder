@@ -220,43 +220,39 @@ void StartOfScan::addToStream(Bitstream &stream) {
 
 void JPEGWriter::writeJPEGImage(const char *pathToFile) {    
     StartOfImage* soi = new StartOfImage();
-    segments.push_back(soi);
+    soi->addToStream(stream);
     
     APP0* app0 = new APP0();
-    segments.push_back(app0);
+    app0->addToStream(stream);
 
     DefineQuantizationTable* dqt = new DefineQuantizationTable(luminanceQT, chrominanceQT);
-    segments.push_back(dqt);
+    dqt->addToStream(stream);
     
     StartOfFrame0* sof0 = new StartOfFrame0(3, image);
-    segments.push_back(sof0);
+    sof0->addToStream(stream);
 	
     ChannelData* channelData= new ChannelData(image);
     EncodedImageData *encodedImageData = new EncodedImageData(channelData);
-    
     encodedImageData->initialize();
     
     DefineHuffmanTable* Y_DC_dht = new DefineHuffmanTable(0, 0, encodedImageData->Y_DC);
-    segments.push_back(Y_DC_dht);
+    Y_DC_dht->addToStream(stream);
     
     DefineHuffmanTable* Y_AC_dht = new DefineHuffmanTable(1, 1, encodedImageData->Y_AC);
-    segments.push_back(Y_AC_dht);
+    Y_AC_dht->addToStream(stream);
     
     DefineHuffmanTable* CbCr_DC_dht = new DefineHuffmanTable(2, 0, encodedImageData->CbCr_DC);
-    segments.push_back(CbCr_DC_dht);
-    
+    CbCr_DC_dht->addToStream(stream);
+
     DefineHuffmanTable* CbCr_AC_dht = new DefineHuffmanTable(3, 1, encodedImageData->CbCr_AC);
-    segments.push_back(CbCr_AC_dht);
+    CbCr_AC_dht->addToStream(stream);
     
     StartOfScan* sos = new StartOfScan(3, encodedImageData);
-    segments.push_back(sos);
+    sos->addToStream(stream);
     
     EndOfImage* eoi = new EndOfImage();
-    segments.push_back(eoi);
+    eoi->addToStream(stream);
 	
-    for (size_t i = 0; i < segments.size(); ++i) {
-        segments[i]->addToStream(stream);
-    }
 	stream.print();
     stream.saveToFile(pathToFile);
 	
