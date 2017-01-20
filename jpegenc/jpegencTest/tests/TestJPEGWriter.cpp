@@ -17,16 +17,15 @@
 
 TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
     PPMLoader ppmLoader;
-    auto image = ppmLoader.load("../data/very_small.ppm");
+    auto image = ppmLoader.load("../data/testbild.ppm");
 
     RGBToYCbCrConverter converter;
     converter.convert(image);
 	
 	ChannelData* channelData = new ChannelData(image);
-	
 	channelData->unnormalize(255);
 	
-	std::cout << "Unnormalized blue image" << std::endl;
+	std::cout << "Unnormalized image" << std::endl;
 	channelData->print(1);
 	channelData->print(2);
 	channelData->print(3);

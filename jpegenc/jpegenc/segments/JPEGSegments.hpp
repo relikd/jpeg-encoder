@@ -94,7 +94,7 @@ namespace JPEGSegments {
             this->htNumber = htNumber;
             this->htType = htType;
             this->table = table;
-            this->length = (uint16_t)(2+1+16+ table.size());
+            this->length = (uint16_t)(2+1+16+table.size());
         }
         
 		virtual void addToStream(Bitstream &stream);
