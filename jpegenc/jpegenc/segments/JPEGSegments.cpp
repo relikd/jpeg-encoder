@@ -109,13 +109,22 @@ void DefineQuantizationTable::addToStream(Bitstream &stream) {
     stream.add(type, 16);
     stream.add(length, 16);
     
-    stream.add(precision, 4);
-    stream.add(qt_number, 4);
-    
-    uint8_t* sortedTable = sortZickZack(table);
+    // y
+    stream.add(0, 4); // precision
+    stream.add(0, 4); // number
+    uint8_t* y_qt_sorted = sortZickZack(y_qt);
     
     for (int i = 0; i < 64; ++i) {
-        stream.add(sortedTable[i], 8);
+        stream.add(y_qt_sorted[i], 8);
+    }
+    
+    // cbcr
+    stream.add(0, 4); // precision
+    stream.add(1, 4); // number
+    uint8_t* cbcr_qt_sorted = sortZickZack(cbcr_qt);
+    
+    for (int i = 0; i < 64; ++i) {
+        stream.add(cbcr_qt_sorted[i], 8);
     }
 }
 
@@ -206,11 +215,8 @@ void JPEGWriter::writeJPEGImage(const char *pathToFile) {
     APP0* app0 = new APP0();
     segments.push_back(app0);
 
-    DefineQuantizationTable* Y_dqt = new DefineQuantizationTable(0, 0, luminanceQT);
-    segments.push_back(Y_dqt);
-    
-    DefineQuantizationTable* CbCr_dqt = new DefineQuantizationTable(1, 0, chrominanceQT);
-    segments.push_back(CbCr_dqt);
+    DefineQuantizationTable* dqt = new DefineQuantizationTable(luminanceQT, chrominanceQT);
+    segments.push_back(dqt);
     
     StartOfFrame0* sof0 = new StartOfFrame0(3, image);
     segments.push_back(sof0);
