@@ -166,13 +166,20 @@ void StartOfScan::addToStream(Bitstream &stream) {
 //		std::cout << encodedImageData->Y_DC_encoding.at(i) << std::endl;
         
         // Y_AC
+        int written_AC = 0;
         for (; encodedImageData->Y_AC_byteReps[k_y] != 0; ++k_y)
         {
             index = encodedImageData->Y_AC_byteReps[k_y];
+            int leadingZeros = (index & 0xF0) >> 4;
+            written_AC += leadingZeros + 1;
             addToStreamNoFF(stream, encodedImageData->Y_AC.at(index));
             addToStreamNoFF(stream, encodedImageData->Y_AC_encoding.at(k_y));
         }
-        stream.add(encodedImageData->Y_AC.at(0).code, encodedImageData->Y_AC.at(0).numberOfBits);
+        
+        if (written_AC < 63) {
+            // Add EOB
+            stream.add(encodedImageData->Y_AC.at(0).code, encodedImageData->Y_AC.at(0).numberOfBits);
+        }
         ++k_y;
 		
 		
@@ -186,13 +193,18 @@ void StartOfScan::addToStream(Bitstream &stream) {
 
         
         // Cb_AC
+        written_AC = 0;
         for (; encodedImageData->Cb_AC_byteReps[k_cb] != 0; ++k_cb)
         {
             index = encodedImageData->Cb_AC_byteReps[k_cb];
+            int leadingZeros = (index & 0xF0) >> 4;
+            written_AC += leadingZeros + 1;
             addToStreamNoFF(stream, encodedImageData->CbCr_AC.at(index));
             addToStreamNoFF(stream, encodedImageData->Cb_AC_encoding.at(k_cb));
         }
-        stream.add(encodedImageData->CbCr_AC.at(0).code, encodedImageData->CbCr_AC.at(0).numberOfBits);
+        if (written_AC < 63) {
+            stream.add(encodedImageData->CbCr_AC.at(0).code, encodedImageData->CbCr_AC.at(0).numberOfBits);
+        }
         ++k_cb;
 
         
@@ -205,13 +217,18 @@ void StartOfScan::addToStream(Bitstream &stream) {
 		
 
         // Cr_AC
+        written_AC = 0;
         for (; encodedImageData->Cr_AC_byteReps[k_cr] != 0; ++k_cr)
         {
             index = encodedImageData->Cr_AC_byteReps[k_cr];
+            int leadingZeros = (index & 0xF0) >> 4;
+            written_AC += leadingZeros + 1;
             addToStreamNoFF(stream, encodedImageData->CbCr_AC.at(index));
             addToStreamNoFF(stream, encodedImageData->Cr_AC_encoding.at(k_cr));
         }
-        stream.add(encodedImageData->CbCr_AC.at(0).code, encodedImageData->CbCr_AC.at(0).numberOfBits);
+        if (written_AC < 63) {
+            stream.add(encodedImageData->CbCr_AC.at(0).code, encodedImageData->CbCr_AC.at(0).numberOfBits);
+        }
         ++k_cr;
     }
 
