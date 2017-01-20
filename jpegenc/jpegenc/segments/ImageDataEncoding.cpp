@@ -49,6 +49,7 @@ EncodingTable ImageDataEncoding::generateACEncodingTable(std::vector<uint8_t> &b
 		huffman.addSymbol(byteReps[i]);
 	}
 	huffman.generateNodeList();
+	huffman.preventAllOnesPath();
 	
 	return huffman.canonicalEncoding(16);
 }
@@ -60,10 +61,12 @@ EncodingTable ImageDataEncoding::generateDCEncodingTable(std::vector<Encoding> &
 	encodings = differenceEncoding();
 	Huffman huffman;
 	
+	
 	for (unsigned int i = 0; i < verticalBlocks * horizontalBlocks; ++i) {
 		huffman.addSymbol(encodings[i].numberOfBits);
 	}
 	huffman.generateNodeList();
+	huffman.preventAllOnesPath();
 	
 	return huffman.canonicalEncoding(16);
 }
@@ -123,7 +126,7 @@ std::vector<Encoding> ImageDataEncoding::differenceEncoding() {
 unsigned int ImageDataEncoding::runLengthEncoding(std::vector<uint8_t> &byteRepresentations,std::vector<Encoding> &encodings) {
 	int encodingIndex = 0;
 	
-	for (unsigned int i = 1; i < width * height; i += 64) {
+	for (unsigned int i = 1; i < width * height; i += TOTAL_BLOCK_SIZE) {
 		encodingIndex = runLengthEncodingSingleBlock(byteRepresentations, encodings, i, encodingIndex);
 	}
 	
@@ -144,7 +147,7 @@ unsigned int ImageDataEncoding::runLengthEncodingSingleBlock(std::vector<uint8_t
 		
 		if (sortedData[i] == 0 && lastIndexEOB > encodingIndex) {
 			lastIndexEOB = encodingIndex;
-		} else {
+		} else if (sortedData[i] != 0) {
 			lastIndexEOB = INT_MAX;
 		}
 		
