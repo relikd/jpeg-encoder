@@ -17,11 +17,12 @@
 
 TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
     PPMLoader ppmLoader;
-    auto image = ppmLoader.load("../data/testbild.ppm");
+    auto image = ppmLoader.load("../data/640x400_sw-muster.ppm");
 
     RGBToYCbCrConverter converter;
     converter.convert(image);
 	
+    /*
 	ChannelData* channelData = new ChannelData(image);
 	channelData->unnormalize(255);
 	
@@ -109,6 +110,7 @@ TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
 		std::cout << std::hex << (int)byteReps3[i] << std::endl;
 	}
 
+    */
     
     JPEGSegments::JPEGWriter writer(image);
     writer.writeJPEGImage("out.jpg");

@@ -102,13 +102,13 @@ namespace JPEGSegments {
     
     struct DefineQuantizationTable : JpegSegment {
         uint16_t length;
-        const uint8_t* y_qt;
-        const uint8_t* cbcr_qt;
+        const uint8_t* qt;
+        uint8_t qt_number;
         
-        DefineQuantizationTable(const uint8_t* y_qt, const uint8_t* cbcr_qt) : JpegSegment(0xFFDB) {
-            this->y_qt = y_qt;
-            this->cbcr_qt = cbcr_qt;
-            this->length = 132;
+        DefineQuantizationTable(uint8_t qt_number, const uint8_t* qt) : JpegSegment(0xFFDB) {
+            this->qt_number = qt_number;
+            this->qt = qt;
+            this->length = 67;
         }
         
         uint8_t* sortZickZack(const uint8_t* table);
