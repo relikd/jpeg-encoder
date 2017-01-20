@@ -310,16 +310,6 @@ void EncodedImageData::generateCbCrHT() {
 
 void EncodedImageData::generateCbCrHT_DC() {
     Huffman DC_huffman;
-	
-    // TODO: DELETE TESTCODE
-    // ...
-    DC_huffman.addSymbol(9);
-    DC_huffman.addSymbol(9);
-    DC_huffman.addSymbol(9);
-    DC_huffman.addSymbol(9);
-    DC_huffman.addSymbol(9);
-    DC_huffman.addSymbol(9);
-    // ...
 
     for (auto &current : Cb_DC_encoding) {
         DC_huffman.addSymbol(current.numberOfBits);
