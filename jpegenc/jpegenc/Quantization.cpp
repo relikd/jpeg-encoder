@@ -7,7 +7,7 @@
 //
 
 #include "Quantization.hpp"
-
+/*
 static const uint8_t luminaceQuantizationTable[64] = {
     16, 11, 10, 16, 24, 40, 51, 61,
     12, 12, 14, 19, 26, 58, 60, 55,
@@ -30,7 +30,8 @@ static const uint8_t chrominanceQuantizationTable[64] = {
     99, 99, 99, 99, 99, 99, 99, 99
 };
 
-/*
+*/
+
 static const uint8_t luminaceQuantizationTable[64] = {
     1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1,
@@ -52,7 +53,6 @@ static const uint8_t chrominanceQuantizationTable[64] = {
     1,1,1,1,1,1,1,1,
     1,1,1,1,1,1,1,1
 };
-*/
 
 
 void Quantization::run(float* &dctCoefficient, size_t picWidth, size_t picHeight, const uint8_t* &quantizationMatrix) {
