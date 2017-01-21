@@ -15,45 +15,57 @@
 #include "../../jpegenc/dct/Arai.hpp"
 #include "../../jpegenc/segments/ImageDataEncoding.hpp"
 
+
+void printArray(float* data, int offset, int width, int height) {
+	for (int i = offset; i < offset + width * height; ++i) {
+		if (i % width == 0) {
+			std::cout << std::endl;
+		}
+		std::cout << data[i] << "\t\t\t";
+	}
+	
+	std::cout << std::endl;
+}
+
 TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
     PPMLoader ppmLoader;
-    auto image = ppmLoader.load("../data/singapore4k.test.ppm");
+    auto image = ppmLoader.load("../data/400x400_bund-muster.ppm");
 
     RGBToYCbCrConverter converter;
     converter.convert(image);
 	
-    /*
+	
 	ChannelData* channelData = new ChannelData(image);
 	channelData->unnormalize(255);
 	
 	std::cout << "Unnormalized image" << std::endl;
-	channelData->print(1);
-	channelData->print(2);
-	channelData->print(3);
+//	channelData->print(1);
+//	channelData->print(2);
+//	channelData->print(3);
 	
-	Arai::transform(channelData->channel1->values, 8, 8);
-	Arai::transform(channelData->channel2->values, 8, 8);
-	Arai::transform(channelData->channel3->values, 8, 8);
+	Arai::transform(channelData->channel1->values, 400, 400);
+	Arai::transform(channelData->channel2->values, 400, 400);
+	Arai::transform(channelData->channel3->values, 400, 400);
 	
 	std::cout << "After Arai" << std::endl;
-	channelData->print(1);
-	channelData->print(2);
-	channelData->print(3);
+//	channelData->print(1);
+//	channelData->print(2);
+//	channelData->print(3);
 	
 	auto qTable = Quantization::getLuminanceQT();
 	auto q2Table = Quantization::getChrominanceQT();
-	Quantization::run(channelData->channel1->values, 8, 8, qTable);
-	Quantization::run(channelData->channel2->values, 8, 8, q2Table);
-	Quantization::run(channelData->channel3->values, 8, 8, q2Table);
+	Quantization::run(channelData->channel1->values, 400, 400, qTable);
+	Quantization::run(channelData->channel2->values, 400, 400, q2Table);
+	Quantization::run(channelData->channel3->values, 400, 400, q2Table);
 	
 	std::cout << "After Quantization" << std::endl;
-	channelData->print(1);
-	channelData->print(2);
-	channelData->print(3);
+//	channelData->print(1);
+//	channelData->print(2);
+//	channelData->print(3);
 	
-	ImageDataEncoding encoding1(channelData->channel1->values, 8 , 8);
-	ImageDataEncoding encoding2(channelData->channel2->values, 8 , 8);
-	ImageDataEncoding encoding3(channelData->channel3->values, 8 , 8);
+	ImageDataEncoding encoding1(channelData->channel1->values, 400 , 400);
+	ImageDataEncoding encoding2(channelData->channel2->values, 400 , 400);
+	ImageDataEncoding encoding3(channelData->channel3->values, 400 , 400);
 	
 	encoding1.init();
 	encoding2.init();
@@ -68,16 +80,16 @@ TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
 	for (auto encoding : dc_encodings1) {
 		std::cout << encoding.numberOfBits << " " << encoding.code << std::endl;
 	}
-	
-	std::cout << "DC Encodings 2" << std::endl;
-	for (auto encoding : dc_encodings2) {
-		std::cout << encoding.numberOfBits << " " << encoding.code << std::endl;
-	}
-	
-	std::cout << "DC Encodings 3" << std::endl;
-	for (auto encoding : dc_encodings3) {
-		std::cout << encoding.numberOfBits << " " << encoding.code << std::endl;
-	}
+//
+//	std::cout << "DC Encodings 2" << std::endl;
+//	for (auto encoding : dc_encodings2) {
+//		std::cout << encoding.numberOfBits << " " << encoding.code << std::endl;
+//	}
+//	
+//	std::cout << "DC Encodings 3" << std::endl;
+//	for (auto encoding : dc_encodings3) {
+//		std::cout << encoding.numberOfBits << " " << encoding.code << std::endl;
+//	}
 	
 	
 	std::vector<uint8_t> byteReps1;
@@ -91,26 +103,29 @@ TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
 	encoding1.runLengthEncoding(byteReps1, encodings1);
 	encoding2.runLengthEncoding(byteReps2, encodings2);
 	encoding3.runLengthEncoding(byteReps3, encodings3);
+	
+	std::cout << "Print first Block" << std::endl;
+	printArray(encoding1.sortedData, 64, 8, 8);
 
 	std::cout << "AC Encoding 1" << std::endl;
-	for (int i = 0 ; i < encodings1.size(); ++i) {
-		std::cout << encodings1[i] << std::endl;
+	for (int i = 0 ; byteReps1[i] != 0; ++i) {
+//		std::cout << encodings1[i] << std::endl;
 		std::cout << std::hex << (int)byteReps1[i] << std::endl;
 	}
 	
-	std::cout << "AC Encoding 2" << std::endl;
-	for (int i = 0 ; i < encodings2.size(); ++i) {
-		std::cout << encodings2[i] << std::endl;
-		std::cout << std::hex << (int)byteReps2[i] << std::endl;
-	}
-	
-	std::cout << "AC Encoding 3" << std::endl;
-	for (int i = 0 ; i < encodings3.size(); ++i) {
-		std::cout << encodings3[i] << std::endl;
-		std::cout << std::hex << (int)byteReps3[i] << std::endl;
-	}
+//	std::cout << "AC Encoding 2" << std::endl;
+//	for (int i = 0 ; i < encodings2.size(); ++i) {
+//		std::cout << encodings2[i] << std::endl;
+//		std::cout << std::hex << (int)byteReps2[i] << std::endl;
+//	}
+//	
+//	std::cout << "AC Encoding 3" << std::endl;
+//	for (int i = 0 ; i < encodings3.size(); ++i) {
+//		std::cout << encodings3[i] << std::endl;
+//		std::cout << std::hex << (int)byteReps3[i] << std::endl;
+//	}
 
-    */
+	
     
     JPEGSegments::JPEGWriter writer(image);
     writer.writeJPEGImage("out.jpg");

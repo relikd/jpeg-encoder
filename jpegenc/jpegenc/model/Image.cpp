@@ -74,7 +74,7 @@ void ChannelData::unnormalize(int maxValue) {
         
         if (channel1->values[i] > 127) {
             channel1->values[i] = 127;
-        }
+		}
 	}
 	
 	for (int i = 0; i < channel2->numberOfPixel(); ++i) {
