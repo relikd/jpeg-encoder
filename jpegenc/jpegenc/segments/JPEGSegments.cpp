@@ -160,11 +160,11 @@ void StartOfScan::addToStream(Bitstream &stream) {
         
         // Y_DC
         auto index = encodedImageData->Y_DC_encoding[i].numberOfBits;
-//		std::cout << encodedImageData->Y_DC.at(index) << std::endl;
+		std::cout << encodedImageData->Y_DC.at(index) << std::endl;
         addToStreamNoFF(stream, encodedImageData->Y_DC.at(index));
         addToStreamNoFF(stream, encodedImageData->Y_DC_encoding.at(i));
-//		std::cout << encodedImageData->Y_DC_encoding.at(i) << std::endl;
-        
+		std::cout << encodedImageData->Y_DC_encoding.at(i) << std::endl;
+		
         // Y_AC
         int written_AC = 0;
         for (; encodedImageData->Y_AC_byteReps[k_y] != 0; ++k_y)
