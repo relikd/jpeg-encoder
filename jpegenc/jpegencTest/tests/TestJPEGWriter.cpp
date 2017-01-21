@@ -77,9 +77,9 @@ TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
 
 	std::cout << "DC Encodings 1" << std::endl;
 
-	for (auto encoding : dc_encodings1) {
-		std::cout << encoding.numberOfBits << " " << encoding.code << std::endl;
-	}
+//	for (auto encoding : dc_encodings1) {
+//		std::cout << encoding.numberOfBits << " " << encoding.code << std::endl;
+//	}
 //
 //	std::cout << "DC Encodings 2" << std::endl;
 //	for (auto encoding : dc_encodings2) {
