@@ -28,12 +28,34 @@ void printArray(float* data, int offset, int width, int height) {
 }
 
 TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
-    PPMLoader ppmLoader;
-    auto image = ppmLoader.load("../data/400x400_bund-muster.ppm");
+    
+    int from_image = 0;
+    int to_image   = 76;
 
-    RGBToYCbCrConverter converter;
-    converter.convert(image);
-	
+    for ( int i = from_image; i <= to_image; ++i )
+    {
+        std::ostringstream input_stream;
+        input_stream << "../data/series/" << i << ".ppm";
+        const char* input = input_stream.str().c_str();
+        
+        std::ostringstream output_stream;
+        output_stream << "series/" << i << ".jpg";
+        const char* output = output_stream.str().c_str();
+
+        std::cout << "Converting " << input << " to " << output << std::endl;
+        {
+            PPMLoader ppmLoader;
+            auto image = ppmLoader.load(input);
+        
+            RGBToYCbCrConverter converter;
+            converter.convert(image);
+        
+            JPEGSegments::JPEGWriter writer(image);
+            writer.writeJPEGImage(output);
+        }
+    }
+    
+    /*
 	
 	ChannelData* channelData = new ChannelData(image);
 	channelData->unnormalize(255);
@@ -125,8 +147,5 @@ TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
 //		std::cout << std::hex << (int)byteReps3[i] << std::endl;
 //	}
 
-	
-    
-    JPEGSegments::JPEGWriter writer(image);
-    writer.writeJPEGImage("out.jpg");
+	*/
 }
