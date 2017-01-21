@@ -87,7 +87,7 @@ void ImageDataEncoding::sortZickZack() {
 			horizontalOffset = horizontalIndex * BLOCKDIMENSION;
 			
 			for (int i = 0; i < TOTAL_BLOCK_SIZE; ++i) {
-				unsigned int innerBlockOffset = (ZICK_ZACK_INDEXES[i] / BLOCKDIMENSION) * (width - BLOCKDIMENSION);
+				unsigned int innerBlockOffset = (ZICK_ZACK_INDEXES[i] / BLOCKDIMENSION) * width;
 				unsigned int totalOffset = verticalOffset + horizontalOffset + innerBlockOffset;
 				sortedData[outputIndex++] = data[ZICK_ZACK_INDEXES[i] + totalOffset];
 			}
