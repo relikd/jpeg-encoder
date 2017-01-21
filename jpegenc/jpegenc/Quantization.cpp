@@ -73,7 +73,7 @@ void Quantization::run(float* &dctCoefficient, size_t picWidth, size_t picHeight
             horizontalOffset = horizontalIndex * matrixWidth;
             
             for (int i = 0; i < matrixLength; ++i) {
-                size_t innerBlockOffset = (i / matrixWidth) * (picWidth - matrixWidth);
+                size_t innerBlockOffset = (i / matrixWidth) * picWidth;
                 size_t totalOffset = verticalOffset + horizontalOffset + innerBlockOffset;
 
                 dctCoefficient[i + totalOffset] = roundf(dctCoefficient[i + totalOffset] / quantizationMatrix[i]);

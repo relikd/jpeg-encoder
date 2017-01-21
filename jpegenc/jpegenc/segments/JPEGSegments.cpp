@@ -44,7 +44,7 @@ void StartOfFrame0::addToStream(Bitstream &stream) {
     
     for (int i = 1; i <= numberOfComponents; ++i) {
         stream.add(i, 8);    // ID
-        stream.add(0x11, 8); // Subsampling
+        stream.add(0x22, 8); // Subsampling
         stream.add(i != 1, 8);
     }
 }
@@ -265,12 +265,12 @@ void JPEGWriter::writeJPEGImage(const char *pathToFile) {
     DefineHuffmanTable* Y_AC_dht = new DefineHuffmanTable(0, 1, encodedImageData->Y_AC);
     Y_AC_dht->addToStream(stream);
     
-    DefineHuffmanTable* CbCr_DC_dht = new DefineHuffmanTable(1, 0, encodedImageData->CbCr_DC);
-    CbCr_DC_dht->addToStream(stream);
-
-    DefineHuffmanTable* CbCr_AC_dht = new DefineHuffmanTable(1, 1, encodedImageData->CbCr_AC);
-    CbCr_AC_dht->addToStream(stream);
-    
+//    DefineHuffmanTable* CbCr_DC_dht = new DefineHuffmanTable(1, 0, encodedImageData->CbCr_DC);
+//    CbCr_DC_dht->addToStream(stream);
+//
+//    DefineHuffmanTable* CbCr_AC_dht = new DefineHuffmanTable(1, 1, encodedImageData->CbCr_AC);
+//    CbCr_AC_dht->addToStream(stream);
+	
     StartOfScan* sos = new StartOfScan(1, encodedImageData);
     sos->addToStream(stream);
     
