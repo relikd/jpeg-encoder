@@ -47,6 +47,59 @@ float lengthEncodingData[256] = {
 	0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
+float lengthEncodingData2[512] = {
+	8, 12, 10, 2, 6, 10, 10, 12, 3, 3, 7, 4, 7, 11, 8, 3,
+	1, 0, 7, 4, 2, 0, 2, 0, 4, 12, 5, 10, 6, 0, 7, 7,
+	3, 2, 4, 3, 12, 0, 0, 11, 4, 2, 10, 10, 11, 4, 0, 3,
+	0, 2, 2, 6, 6, 9, 0, 8, 7, 9, 4, 5, 0, 10, 11, 3,
+	11, 9, 12, 8, 9, 0, 6, 11, 7, 3, 0, 12, 12, 11, 8, 0,
+	10, 12, 11, 8, 10, 12, 10, 11, 4, 12, 5, 9, 0, 11, 0, 8,
+	0, 11, 0, 7, 5, 0, 12, 0, 8, 0, 0, 12, 0, 0, 11, 9,
+	6, 7, 9, 0, 0, 0, 9, 0, 0, 0, 6, 10, 8, 0, 10, 8,
+	11, 8, 12, 9, 11, 0, 0, 11, 7, 0, 0, 9, 10, 0, 12, 0,
+	0, 0, 0, 7, 7, 0, 0, 0, 0, 10, 0, 0, 8, 0, 0, 0,
+	0, 8, 12, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 11,
+	0, 0, 11, 0, 0, 10, 0, 0, 0, 0, 12, 0, 0, 0, 12, 0,
+	0, 10, 0, 11, 0, 11, 10, 0, 10, 0, 0, 0, 0, 0, 11, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 12, 0, 11, 0, 0, 0, 0, 0,
+	0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10,
+	8, 12, 10, 2, 6, 10, 10, 12, 3, 3, 7, 4, 7, 11, 8, 3,
+	1, 0, 7, 4, 2, 0, 2, 0, 4, 12, 5, 10, 6, 0, 7, 7,
+	3, 2, 4, 3, 12, 0, 0, 11, 4, 2, 10, 10, 11, 4, 0, 3,
+	0, 2, 2, 6, 6, 9, 0, 8, 7, 9, 4, 5, 0, 10, 11, 3,
+	11, 9, 12, 8, 9, 0, 6, 11, 7, 3, 0, 12, 12, 11, 8, 0,
+	10, 12, 11, 8, 10, 12, 10, 11, 4, 12, 5, 9, 0, 11, 0, 8,
+	0, 11, 0, 7, 5, 0, 12, 0, 8, 0, 0, 12, 0, 0, 11, 9,
+	6, 7, 9, 0, 0, 0, 9, 0, 0, 0, 6, 10, 8, 0, 10, 8,
+	11, 8, 12, 9, 11, 0, 0, 11, 7, 0, 0, 9, 10, 0, 12, 0,
+	0, 0, 0, 7, 7, 0, 0, 0, 0, 10, 0, 0, 8, 0, 0, 0,
+	0, 8, 12, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 11,
+	0, 0, 11, 0, 0, 10, 0, 0, 0, 0, 12, 0, 0, 0, 12, 0,
+	0, 10, 0, 11, 0, 11, 10, 0, 10, 0, 0, 0, 0, 0, 11, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 12, 0, 11, 0, 0, 0, 0, 0,
+	0, 0, 12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10  };
+
+
+float lengthEncodingData3[256] = {
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11  };
+
 
 const unsigned int lengthEncodingBitRepsSize = 130;
 const unsigned int lengthEncodingBitReps[lengthEncodingBitRepsSize] = {
@@ -152,10 +205,61 @@ TEST_CASE("Test image data encoding", "[imageDataEncoding]") {
 		REQUIRE(encodings.size() == lengthEncodingBitRepsSize);
 		
 		for(int i = 0; i < length; ++i) {
-//			std::cout << std::hex << (int)byteReps[i] << std::endl;
+//			if (i % 16 == 0) {
+//				std::cout << std::endl;
+//			}
+//			std::cout << std::hex << (int)byteReps[i] << "\t";
+
 			REQUIRE(byteReps[i] == lengthEncodingBitReps[i]);
 		}
 	}
+	
+	SECTION("Test run length encoding2") {
+		std::vector<uint8_t> byteReps;
+		std::vector<Encoding> encodings;
+		float* input = lengthEncodingData2;
+		ImageDataEncoding encoding(input, 32, 16);
+		
+		// Don't do that! Only for testing purposes
+		encoding.sortedData = input;
+		int length = encoding.runLengthEncoding(byteReps, encodings);
+		
+		
+//		for(int i = 0; i < length; ++i) {
+//			if (i % 16 == 0) {
+//				std::cout << std::endl;
+//			}
+//			std::cout << std::hex << (int)byteReps[i] << "\t";
+////			REQUIRE(byteReps[i] == lengthEncodingBitReps[i]);
+//		}
+		
+//		std::cout << std::endl;
+		
+	}
+	
+	SECTION("Test run length encoding3") {
+		std::vector<uint8_t> byteReps;
+		std::vector<Encoding> encodings;
+		float* input = lengthEncodingData3;
+		ImageDataEncoding encoding(input, width, height);
+		
+		// Don't do that! Only for testing purposes
+		encoding.sortedData = input;
+		int length = encoding.runLengthEncoding(byteReps, encodings);
+		
+		
+		for(int i = 0; i < length; ++i) {
+//			if (i % 16 == 0) {
+//				std::cout << std::endl;
+//			}
+//			std::cout << std::hex << (int)byteReps[i] << "\t";
+			//			REQUIRE(byteReps[i] == lengthEncodingBitReps[i]);
+		}
+		
+		std::cout << std::endl;
+		
+	}
+
 	
 	SECTION("Test difference encoding") {
 		float* input = lengthEncodingData;
