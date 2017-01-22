@@ -97,7 +97,6 @@ void ImageDataEncoding::sortZickZack() {
 
 std::vector<Encoding> ImageDataEncoding::differenceEncoding() {
 	std::vector<Encoding> encodings;
-	const unsigned int rowOffset = width * BLOCKDIMENSION;
 	unsigned int blockInRow = 0;
 	unsigned int imageSize = width * height;
 	
@@ -107,9 +106,7 @@ std::vector<Encoding> ImageDataEncoding::differenceEncoding() {
 	++blockInRow;
 	
 	for (int dcIndex = TOTAL_BLOCK_SIZE; dcIndex < imageSize; dcIndex += TOTAL_BLOCK_SIZE, ++blockInRow) {
-		int neighborBlockOffset = TOTAL_BLOCK_SIZE;
-		
-		encodings.push_back(calculateCategory(sortedData[dcIndex] - sortedData[dcIndex - neighborBlockOffset]));
+		encodings.push_back(calculateCategory(sortedData[dcIndex] - sortedData[dcIndex - TOTAL_BLOCK_SIZE]));
 	}
 	
 	return encodings;
