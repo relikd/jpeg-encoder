@@ -46,7 +46,7 @@ TEST_CASE("Test quantization", "[quanti]") {
 TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
     
 	PPMLoader ppmLoader;
-	auto image = ppmLoader.load("../data/series/34.ppm");
+	auto image = ppmLoader.load("../data/gigantic.test.ppm");
 	auto width = image->imageSize.width;
 	auto height = image->imageSize.height;
 	
@@ -54,34 +54,34 @@ TEST_CASE("TestJPEGWriter", "[jpegwriter]") {
 	converter.convert(image);
 
 	
-	ChannelData* channelData = new ChannelData(image);
-	channelData->unnormalize(255);
-	
-	std::cout << "Unnormalized image" << std::endl;
-	channelData->print(1);
-	channelData->print(2);
-	channelData->print(3);
-//
-	Arai::transform(channelData->channel1->values, width, height);
-	Arai::transform(channelData->channel2->values, width, height);
-	Arai::transform(channelData->channel3->values, width, height);
+//	ChannelData* channelData = new ChannelData(image);
+//	channelData->unnormalize(255);
+//	
+//	std::cout << "Unnormalized image" << std::endl;
+//	channelData->print(1);
+//	channelData->print(2);
+//	channelData->print(3);
+////
+//	Arai::transform(channelData->channel1->values, width, height);
+//	Arai::transform(channelData->channel2->values, width, height);
+//	Arai::transform(channelData->channel3->values, width, height);
 //
 //	std::cout << "After Arai" << std::endl;
 ////	channelData->print(1);
 ////	channelData->print(2);
 ////	channelData->print(3);
 //	
-	auto qTable = Quantization::getLuminanceQT();
-	auto q2Table = Quantization::getChrominanceQT();
-	Quantization::run(channelData->channel1->values, width, height, qTable);
-	Quantization::run(channelData->channel2->values, width, height, q2Table);
-	Quantization::run(channelData->channel3->values, width, height, q2Table);
-//
-	std::cout << "After Quantization" << std::endl;
-	channelData->print(1);
-	channelData->print(2);
-	channelData->print(3);
-//
+//	auto qTable = Quantization::getLuminanceQT();
+//	auto q2Table = Quantization::getChrominanceQT();
+//	Quantization::run(channelData->channel1->values, width, height, qTable);
+//	Quantization::run(channelData->channel2->values, width, height, q2Table);
+//	Quantization::run(channelData->channel3->values, width, height, q2Table);
+////
+//	std::cout << "After Quantization" << std::endl;
+//	channelData->print(1);
+//	channelData->print(2);
+//	channelData->print(3);
+////
 //	ImageDataEncoding encoding1(channelData->channel1->values, width , height);
 //	ImageDataEncoding encoding2(channelData->channel2->values, width , height);
 //	ImageDataEncoding encoding3(channelData->channel3->values, width , height);

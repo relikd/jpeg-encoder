@@ -156,9 +156,6 @@ void StartOfScan::addToStream(Bitstream &stream) {
     stream.add(0x00, 8);
     size_t numberOfBlocks = encodedImageData->Y_DC_encoding.size();
 	
-//	addToStreamNoFF(stream, Encoding(4128831, 32));
-//	addToStreamNoFF(stream, Encoding(0xFF, 6));
-//	addToStreamNoFF(stream, Encoding(0x1, 2));
 	
     int k_y = 0;
     int k_cb = 0;
@@ -168,11 +165,9 @@ void StartOfScan::addToStream(Bitstream &stream) {
         
         // Y_DC
         auto index = encodedImageData->Y_DC_encoding[i].numberOfBits;
-//		std::cout << encodedImageData->Y_DC.at(index) << std::endl;
         addToStreamNoFF(stream, encodedImageData->Y_DC.at(index));
 		if (index != 0) {
 			addToStreamNoFF(stream, encodedImageData->Y_DC_encoding.at(i));
-//			std::cout << encodedImageData->Y_DC_encoding.at(i) << std::endl;
 		}
 		
 		
@@ -191,10 +186,6 @@ void StartOfScan::addToStream(Bitstream &stream) {
         if (written_AC < 63) {
             // Add EOB
 			addToStreamNoFF(stream,encodedImageData->Y_AC.at(0));
-//			std::cout << encodedImageData->Y_AC.at(0) << std::endl;
-		} else {
-//			std::cout << written_AC + 1 <<  " " << i << std::endl;
-			
 		}
         ++k_y;
 		
@@ -202,11 +193,9 @@ void StartOfScan::addToStream(Bitstream &stream) {
         
         // Cb_DC
         index = encodedImageData->Cb_DC_encoding[i].numberOfBits;
-//		std::cout << encodedImageData->CbCr_DC.at(index) << std::endl;
         addToStreamNoFF(stream, encodedImageData->CbCr_DC.at(index));
 		if (index != 0) {
 			addToStreamNoFF(stream, encodedImageData->Cb_DC_encoding.at(i));
-//			std::cout << encodedImageData->Cb_DC_encoding.at(i)<< std::endl;
 		}
         
         // Cb_AC
@@ -221,18 +210,15 @@ void StartOfScan::addToStream(Bitstream &stream) {
         }
         if (written_AC < 63) {
 			addToStreamNoFF(stream, encodedImageData->CbCr_AC.at(0));
-//			std::cout << encodedImageData->CbCr_AC.at(0) << std::endl;
         }
         ++k_cb;
 
         
         // Cr_DC
         index = encodedImageData->Cr_DC_encoding[i].numberOfBits;
-//		std::cout << encodedImageData->CbCr_DC.at(index) << std::endl;
         addToStreamNoFF(stream, encodedImageData->CbCr_DC.at(index));
 		if (index != 0) {
 			addToStreamNoFF(stream, encodedImageData->Cr_DC_encoding.at(i));
-//			std::cout << encodedImageData->Cr_DC_encoding.at(i)<< std::endl;
 		}
 
         // Cr_AC
@@ -247,7 +233,6 @@ void StartOfScan::addToStream(Bitstream &stream) {
         }
         if (written_AC < 63) {
            addToStreamNoFF(stream, encodedImageData->CbCr_AC.at(0));
-//			std::cout << encodedImageData->CbCr_AC.at(0) << std::endl;
         }
         ++k_cr;
     }
