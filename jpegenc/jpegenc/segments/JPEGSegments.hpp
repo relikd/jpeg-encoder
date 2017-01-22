@@ -20,6 +20,7 @@
 
 namespace JPEGSegments {
 	
+	
 	struct JpegSegment {
 		const uint16_t type;
 		
