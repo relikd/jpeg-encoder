@@ -109,11 +109,6 @@ std::vector<Encoding> ImageDataEncoding::differenceEncoding() {
 	for (int dcIndex = TOTAL_BLOCK_SIZE; dcIndex < imageSize; dcIndex += TOTAL_BLOCK_SIZE, ++blockInRow) {
 		int neighborBlockOffset = TOTAL_BLOCK_SIZE;
 		
-//		if (blockInRow == horizontalBlocks) {
-//			blockInRow = 0;
-//			neighborBlockOffset = rowOffset;
-//		}
-		
 		encodings.push_back(calculateCategory(sortedData[dcIndex] - sortedData[dcIndex - neighborBlockOffset]));
 	}
 	

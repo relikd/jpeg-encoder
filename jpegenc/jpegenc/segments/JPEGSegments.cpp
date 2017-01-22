@@ -53,12 +53,10 @@ void EndOfImage::addToStream(Bitstream &stream) {
     stream.add(type, 16);
 }
 
-unsigned short ffCounter = 0;
-unsigned int buffer = 0;
-unsigned int bufferIndex = 0;
-void addToStreamNoFF(Bitstream &stream, Encoding enc) {
+
+void StartOfScan::addToStreamNoFF(Bitstream &stream, Encoding enc) {
 	short n = enc.numberOfBits - 1;
-	
+
 	for (; n >= 0; --n) {
 		uint8_t firstBit = (enc.code >> n) & 1;
 		
@@ -158,7 +156,7 @@ void StartOfScan::addToStream(Bitstream &stream) {
     stream.add(0x00, 8);
     size_t numberOfBlocks = encodedImageData->Y_DC_encoding.size();
 	
-//	addToStreamNoFF(stream, Encoding(3473342333, 32));
+//	addToStreamNoFF(stream, Encoding(4128831, 32));
 //	addToStreamNoFF(stream, Encoding(0xFF, 6));
 //	addToStreamNoFF(stream, Encoding(0x1, 2));
 	

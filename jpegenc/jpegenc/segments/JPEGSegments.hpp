@@ -170,12 +170,17 @@ namespace JPEGSegments {
 		uint8_t numberOfComponents;
         EncodedImageData *encodedImageData;
 		
+		unsigned short ffCounter = 0;
+		unsigned int buffer = 0;
+		unsigned int bufferIndex = 0;
+		
 		StartOfScan(uint8_t numberOfComponents, EncodedImageData *encodedImageData) : JpegSegment(0xFFDA) {
 			this->numberOfComponents = numberOfComponents;
 			this->length = 6 + 2 * numberOfComponents;
             this->encodedImageData = encodedImageData;
 		}
 		virtual void addToStream(Bitstream &stream);
+		void addToStreamNoFF(Bitstream &stream, Encoding enc);
 	};
     
 	struct JPEGWriter {
