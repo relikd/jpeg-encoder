@@ -1,5 +1,6 @@
 #include <iostream>
 #include "Image.hpp"
+#include <math.h>
 
 
 std::ostream& operator<<(std::ostream& out, const ColorSpace value){
@@ -70,17 +71,17 @@ void Image::setReadingRuleForAllChannel() {
 
 void ChannelData::unnormalize(int maxValue) {
 	for (int i = 0; i < channel1->numberOfPixel(); ++i) {
-		channel1->values[i] *= maxValue;
+		channel1->values[i] = roundf(channel1->values[i] * maxValue - 128);
         
-        if (channel1->values[i] > 127) {
-            channel1->values[i] = 127;
-		}
+//        if (channel1->values[i] > 127) {
+//            channel1->values[i] = 127;
+//		}
 	}
 	
 	for (int i = 0; i < channel2->numberOfPixel(); ++i) {
-		channel2->values[i] *= maxValue;
-		channel3->values[i] *= maxValue;
-
+		channel2->values[i] = roundf(channel2->values[i] * maxValue - 128);
+		channel3->values[i] = roundf(channel3->values[i] * maxValue - 128);
+		
         if (channel2->values[i] > 127) {
             channel2->values[i] = 127;
         }
@@ -119,8 +120,8 @@ void ChannelData::print(int channel) {
 			}
 			std::cout << std::endl;
 			break;
-			
-			
 	}
+	
+	std::cout << std::endl;
 }
 

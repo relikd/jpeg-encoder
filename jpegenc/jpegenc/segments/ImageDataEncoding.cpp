@@ -89,7 +89,7 @@ void ImageDataEncoding::sortZickZack() {
 			for (int i = 0; i < TOTAL_BLOCK_SIZE; ++i) {
 				unsigned int innerBlockOffset = (ZICK_ZACK_INDEXES[i] / BLOCKDIMENSION) * width;
 				unsigned int totalOffset = verticalOffset + horizontalOffset + innerBlockOffset;
-				sortedData[outputIndex++] = data[ZICK_ZACK_INDEXES[i] + totalOffset];
+				sortedData[outputIndex++] = data[ZICK_ZACK_INDEXES[i] % 8 + totalOffset];
 			}
 		}
 	}
@@ -103,14 +103,16 @@ std::vector<Encoding> ImageDataEncoding::differenceEncoding() {
 	
 	
 	encodings.push_back(calculateCategory(sortedData[0]));
+	// first block is handled;
+	++blockInRow;
 	
 	for (int dcIndex = TOTAL_BLOCK_SIZE; dcIndex < imageSize; dcIndex += TOTAL_BLOCK_SIZE, ++blockInRow) {
 		int neighborBlockOffset = TOTAL_BLOCK_SIZE;
 		
-		if (blockInRow == horizontalBlocks) {
-			blockInRow = 0;
-			neighborBlockOffset = rowOffset;
-		}
+//		if (blockInRow == horizontalBlocks) {
+//			blockInRow = 0;
+//			neighborBlockOffset = rowOffset;
+//		}
 		
 		encodings.push_back(calculateCategory(sortedData[dcIndex] - sortedData[dcIndex - neighborBlockOffset]));
 	}

@@ -44,7 +44,7 @@ void StartOfFrame0::addToStream(Bitstream &stream) {
     
     for (int i = 1; i <= numberOfComponents; ++i) {
         stream.add(i, 8);    // ID
-        stream.add(0x22, 8); // Subsampling
+        stream.add(0x11, 8); // Subsampling
         stream.add(i != 1, 8);
     }
 }
@@ -54,22 +54,30 @@ void EndOfImage::addToStream(Bitstream &stream) {
 }
 
 unsigned short ffCounter = 0;
+unsigned int buffer = 0;
+unsigned int bufferIndex = 0;
 void addToStreamNoFF(Bitstream &stream, Encoding enc) {
-    unsigned short n = enc.numberOfBits;
-    while (n--) {
-        if (enc.code & (1 << n)) {
-            stream.add(1);
-            ++ffCounter;
-            if (ffCounter >= 8) {
-                stream.add(0x00, 8);
-            }
-        } else {
-            stream.add(0);
-            ffCounter = 0;
-        }
-    }
+	short n = enc.numberOfBits - 1;
+	
+	for (; n >= 0; --n) {
+		uint8_t firstBit = (enc.code >> n) & 1;
+		
+		if (bufferIndex < 8) {
+			buffer <<= 1;
+			buffer |= firstBit;
+			++bufferIndex;
+		} else {
+			if (buffer == 0xff) {
+				stream.add(0x00, 8);
+			}
+			
+			bufferIndex = 1;
+			buffer = firstBit;
+		}
+		
+		stream.add(firstBit);
+	}
 }
-
 bool comparePairs(const std::pair<Symbol, Encoding> &pair1, const std::pair<Symbol, Encoding> &pair2) {
     return pair1.second.code < pair2.second.code;
 }
@@ -133,7 +141,6 @@ void StartOfScan::addToStream(Bitstream &stream) {
 	stream.add(type, 16);
 	stream.add(length, 16);
 	stream.add(numberOfComponents, 8);
-    
     stream.add(1, 8); // Y
     stream.add(0, 4); // Y_DC
     stream.add(0, 4); // Y_AC
@@ -149,21 +156,28 @@ void StartOfScan::addToStream(Bitstream &stream) {
     stream.add(0x00, 8);
     stream.add(0x3f, 8);
     stream.add(0x00, 8);
-	
     size_t numberOfBlocks = encodedImageData->Y_DC_encoding.size();
-
+	
+//	addToStreamNoFF(stream, Encoding(3473342333, 32));
+//	addToStreamNoFF(stream, Encoding(0xFF, 6));
+//	addToStreamNoFF(stream, Encoding(0x1, 2));
+	
     int k_y = 0;
     int k_cb = 0;
     int k_cr = 0;
-    
+	
     for (int i = 0; i < numberOfBlocks; ++i) {
         
         // Y_DC
         auto index = encodedImageData->Y_DC_encoding[i].numberOfBits;
 //		std::cout << encodedImageData->Y_DC.at(index) << std::endl;
         addToStreamNoFF(stream, encodedImageData->Y_DC.at(index));
-        addToStreamNoFF(stream, encodedImageData->Y_DC_encoding.at(i));
-//		std::cout << encodedImageData->Y_DC_encoding.at(i) << std::endl;
+		if (index != 0) {
+			addToStreamNoFF(stream, encodedImageData->Y_DC_encoding.at(i));
+//			std::cout << encodedImageData->Y_DC_encoding.at(i) << std::endl;
+		}
+		
+		
 		
         // Y_AC
         int written_AC = 0;
@@ -178,7 +192,8 @@ void StartOfScan::addToStream(Bitstream &stream) {
         
         if (written_AC < 63) {
             // Add EOB
-            stream.add(encodedImageData->Y_AC.at(0).code, encodedImageData->Y_AC.at(0).numberOfBits);
+			addToStreamNoFF(stream,encodedImageData->Y_AC.at(0));
+//			std::cout << encodedImageData->Y_AC.at(0) << std::endl;
 		} else {
 //			std::cout << written_AC + 1 <<  " " << i << std::endl;
 			
@@ -187,52 +202,56 @@ void StartOfScan::addToStream(Bitstream &stream) {
 		
 		
         
-//        // Cb_DC
-//        index = encodedImageData->Cb_DC_encoding[i].numberOfBits;
-////		std::cout << encodedImageData->CbCr_DC.at(index) << std::endl;
-//        addToStreamNoFF(stream, encodedImageData->CbCr_DC.at(index));
-//        addToStreamNoFF(stream, encodedImageData->Cb_DC_encoding.at(i));
-////		std::cout << encodedImageData->Cb_DC_encoding.at(i)<< std::endl;
-//
-//        
-//        // Cb_AC
-//        written_AC = 0;
-//        for (; encodedImageData->Cb_AC_byteReps[k_cb] != 0; ++k_cb)
-//        {
-//            index = encodedImageData->Cb_AC_byteReps[k_cb];
-//            int leadingZeros = (index & 0xF0) >> 4;
-//            written_AC += leadingZeros + 1;
-//            addToStreamNoFF(stream, encodedImageData->CbCr_AC.at(index));
-//            addToStreamNoFF(stream, encodedImageData->Cb_AC_encoding.at(k_cb));
-//        }
-//        if (written_AC < 63) {
-//            stream.add(encodedImageData->CbCr_AC.at(0).code, encodedImageData->CbCr_AC.at(0).numberOfBits);
-//        }
-//        ++k_cb;
-//
-//        
-//        // Cr_DC
-//        index = encodedImageData->Cr_DC_encoding[i].numberOfBits;
-////		std::cout << encodedImageData->CbCr_DC.at(index) << std::endl;
-//        addToStreamNoFF(stream, encodedImageData->CbCr_DC.at(index));
-//        addToStreamNoFF(stream, encodedImageData->Cr_DC_encoding.at(i));
-////		std::cout << encodedImageData->Cr_DC_encoding.at(i)<< std::endl;
-//		
-//
-//        // Cr_AC
-//        written_AC = 0;
-//        for (; encodedImageData->Cr_AC_byteReps[k_cr] != 0; ++k_cr)
-//        {
-//            index = encodedImageData->Cr_AC_byteReps[k_cr];
-//            int leadingZeros = (index & 0xF0) >> 4;
-//            written_AC += leadingZeros + 1;
-//            addToStreamNoFF(stream, encodedImageData->CbCr_AC.at(index));
-//            addToStreamNoFF(stream, encodedImageData->Cr_AC_encoding.at(k_cr));
-//        }
-//        if (written_AC < 63) {
-//            stream.add(encodedImageData->CbCr_AC.at(0).code, encodedImageData->CbCr_AC.at(0).numberOfBits);
-//        }
-//        ++k_cr;
+        // Cb_DC
+        index = encodedImageData->Cb_DC_encoding[i].numberOfBits;
+//		std::cout << encodedImageData->CbCr_DC.at(index) << std::endl;
+        addToStreamNoFF(stream, encodedImageData->CbCr_DC.at(index));
+		if (index != 0) {
+			addToStreamNoFF(stream, encodedImageData->Cb_DC_encoding.at(i));
+//			std::cout << encodedImageData->Cb_DC_encoding.at(i)<< std::endl;
+		}
+        
+        // Cb_AC
+        written_AC = 0;
+        for (; encodedImageData->Cb_AC_byteReps[k_cb] != 0; ++k_cb)
+        {
+            index = encodedImageData->Cb_AC_byteReps[k_cb];
+            int leadingZeros = (index & 0xF0) >> 4;
+            written_AC += leadingZeros + 1;
+            addToStreamNoFF(stream, encodedImageData->CbCr_AC.at(index));
+            addToStreamNoFF(stream, encodedImageData->Cb_AC_encoding.at(k_cb));
+        }
+        if (written_AC < 63) {
+			addToStreamNoFF(stream, encodedImageData->CbCr_AC.at(0));
+//			std::cout << encodedImageData->CbCr_AC.at(0) << std::endl;
+        }
+        ++k_cb;
+
+        
+        // Cr_DC
+        index = encodedImageData->Cr_DC_encoding[i].numberOfBits;
+//		std::cout << encodedImageData->CbCr_DC.at(index) << std::endl;
+        addToStreamNoFF(stream, encodedImageData->CbCr_DC.at(index));
+		if (index != 0) {
+			addToStreamNoFF(stream, encodedImageData->Cr_DC_encoding.at(i));
+//			std::cout << encodedImageData->Cr_DC_encoding.at(i)<< std::endl;
+		}
+
+        // Cr_AC
+        written_AC = 0;
+        for (; encodedImageData->Cr_AC_byteReps[k_cr] != 0; ++k_cr)
+        {
+            index = encodedImageData->Cr_AC_byteReps[k_cr];
+            int leadingZeros = (index & 0xF0) >> 4;
+            written_AC += leadingZeros + 1;
+            addToStreamNoFF(stream, encodedImageData->CbCr_AC.at(index));
+            addToStreamNoFF(stream, encodedImageData->Cr_AC_encoding.at(k_cr));
+        }
+        if (written_AC < 63) {
+           addToStreamNoFF(stream, encodedImageData->CbCr_AC.at(0));
+//			std::cout << encodedImageData->CbCr_AC.at(0) << std::endl;
+        }
+        ++k_cr;
     }
 
 	auto bitsToFill = stream.numberOfBits() % 8 == 0 ? 0 : 8 - (stream.numberOfBits() % 8);
@@ -252,7 +271,7 @@ void JPEGWriter::writeJPEGImage(const char *pathToFile) {
     DefineQuantizationTable* cbcr_dqt = new DefineQuantizationTable(1, chrominanceQT);
     cbcr_dqt->addToStream(stream);
     
-    StartOfFrame0* sof0 = new StartOfFrame0(1, image);
+    StartOfFrame0* sof0 = new StartOfFrame0(3, image);
     sof0->addToStream(stream);
 	
     ChannelData* channelData= new ChannelData(image);
@@ -265,13 +284,13 @@ void JPEGWriter::writeJPEGImage(const char *pathToFile) {
     DefineHuffmanTable* Y_AC_dht = new DefineHuffmanTable(0, 1, encodedImageData->Y_AC);
     Y_AC_dht->addToStream(stream);
     
-//    DefineHuffmanTable* CbCr_DC_dht = new DefineHuffmanTable(1, 0, encodedImageData->CbCr_DC);
-//    CbCr_DC_dht->addToStream(stream);
-//
-//    DefineHuffmanTable* CbCr_AC_dht = new DefineHuffmanTable(1, 1, encodedImageData->CbCr_AC);
-//    CbCr_AC_dht->addToStream(stream);
+    DefineHuffmanTable* CbCr_DC_dht = new DefineHuffmanTable(1, 0, encodedImageData->CbCr_DC);
+    CbCr_DC_dht->addToStream(stream);
+
+    DefineHuffmanTable* CbCr_AC_dht = new DefineHuffmanTable(1, 1, encodedImageData->CbCr_AC);
+    CbCr_AC_dht->addToStream(stream);
 	
-    StartOfScan* sos = new StartOfScan(1, encodedImageData);
+    StartOfScan* sos = new StartOfScan(3, encodedImageData);
     sos->addToStream(stream);
     
     EndOfImage* eoi = new EndOfImage();
